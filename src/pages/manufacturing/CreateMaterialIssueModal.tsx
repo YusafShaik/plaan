@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, AlertCircle, CheckCircle2, PackageCheck, Sparkles } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
 import type {
   ProductionOrder,
@@ -248,7 +249,7 @@ export function CreateMaterialIssueModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -256,14 +257,14 @@ export function CreateMaterialIssueModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -281,7 +282,7 @@ export function CreateMaterialIssueModal({
                 type="text"
                 disabled
                 value={issueNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
               />
               <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
             </div>
@@ -294,7 +295,7 @@ export function CreateMaterialIssueModal({
                 type="date"
                 value={issueDate}
                 onChange={(e) => setIssueDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
               />
             </div>
           </div>
@@ -309,7 +310,7 @@ export function CreateMaterialIssueModal({
                 type="text"
                 disabled
                 value={`${order.orderNumber} (${order.productName})`}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium truncate"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium truncate"
               />
             </div>
 
@@ -321,7 +322,7 @@ export function CreateMaterialIssueModal({
                 type="text"
                 disabled
                 value={`${order.sourceWarehouseName} (${order.sourceWarehouseCode})`}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium truncate"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium truncate"
               />
             </div>
           </div>
@@ -343,37 +344,36 @@ export function CreateMaterialIssueModal({
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                    <th className="py-2.5 px-3.5">Material</th>
-                    <th className="py-2.5 px-3 text-right">Pending</th>
-                    <th className="py-2.5 px-3 text-right">On Hand</th>
-                    <th className="py-2.5 px-3 text-right w-36">Issue Qty</th>
-                    <th className="py-2.5 px-3.5">UOM</th>
+            <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Material</TH>
+                    <TH className="py-2.5 text-right">Pending</TH>
+                    <TH className="py-2.5 text-right">On Hand</TH>
+                    <TH className="py-2.5 text-right w-36">Issue Qty</TH>
+                    <TH className="py-2.5">UOM</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+                </THead>
+                <TBody className="divide-y divide-border/60">
                   {rows.map((r) => {
                     const isExceedingPending = r.issueQuantity !== '' && Number(r.issueQuantity) > r.pendingQuantity
                     const isExceedingOnHand = r.issueQuantity !== '' && Number(r.issueQuantity) > r.onHandQuantity
 
                     return (
-                      <tr key={r.materialId} className="hover:bg-secondary/30 transition-colors">
-                        <td className="py-2.5 px-3.5">
+                      <TR key={r.materialId} className="hover:bg-secondary/30 transition-colors">
+                        <TD className="py-2.5 px-3.5">
                           <p className="font-medium text-foreground">{r.materialName}</p>
                           <p className="text-[10px] text-muted-foreground font-mono">
                             {r.materialCode}
                           </p>
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(r.pendingQuantity)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
                           {formatQuantity(r.onHandQuantity)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right">
                           <input
                             type="number"
                             min="0"
@@ -381,31 +381,30 @@ export function CreateMaterialIssueModal({
                             placeholder="0"
                             value={r.issueQuantity}
                             onChange={(e) => handleRowQuantityChange(r.materialId, e.target.value)}
-                            className={`flex h-8 w-28 ml-auto rounded-[6px] border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
+                            className={`flex h-8 w-28 ml-auto rounded-md border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
                               isExceedingPending || isExceedingOnHand
                                 ? 'border-destructive bg-destructive/10 text-destructive focus:border-destructive'
                                 : 'border-border/80 bg-secondary/40 text-foreground focus:border-foreground focus:ring-1 focus:ring-foreground'
                             }`}
                           />
-                        </td>
-                        <td className="py-2.5 px-3.5 text-muted-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3.5 text-muted-foreground">
                           {r.unitOfMeasure}
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     )
                   })}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+            </Table>
 
             {/* Quick action button: Fill available quantities */}
             <div className="pt-0.5">
               <button
                 type="button"
                 onClick={handleFillAvailable}
-                className="inline-flex items-center gap-1.5 rounded-[8px] border border-border/80 bg-secondary/40 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary hover:border-foreground transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-secondary/40 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary hover:border-foreground transition-colors cursor-pointer"
               >
-                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                <Sparkles className="h-3.5 w-3.5 text-warning" />
                 <span>Fill available quantities</span>
               </button>
             </div>
@@ -421,7 +420,7 @@ export function CreateMaterialIssueModal({
               placeholder="Additional material issue information..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
 
@@ -433,7 +432,7 @@ export function CreateMaterialIssueModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-[8px] px-3.5"
+              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
               Save Draft
             </Button>
@@ -443,7 +442,7 @@ export function CreateMaterialIssueModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-xs rounded-[8px] px-4 flex items-center gap-1.5"
+              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
             >
               <PackageCheck className="h-4 w-4" />
               <span>{isSubmitting ? 'Posting...' : 'Post Material Issue'}</span>

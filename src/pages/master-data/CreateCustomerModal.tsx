@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { Check, X } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Select } from '../../components/ui/Select'
 import { masterDataService } from '../../services/masterDataService'
 import type { Customer, CreateCustomerPayload, UpdateCustomerPayload } from '../../types/masterData'
 
@@ -171,7 +172,7 @@ export function CreateCustomerModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -179,7 +180,7 @@ export function CreateCustomerModal({
 
         {/* Error Alert */}
         {error && (
-          <div className="rounded-[8px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             {error}
           </div>
         )}
@@ -191,7 +192,7 @@ export function CreateCustomerModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-xs font-medium text-foreground mb-1.5">
-                Customer Code <span className="text-rose-500">*</span>
+                Customer Code <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -199,13 +200,13 @@ export function CreateCustomerModal({
                 onChange={(e) => setCustomerCode(e.target.value)}
                 placeholder="CUS-001"
                 disabled={isEditing}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground font-mono focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground disabled:opacity-60"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground disabled:opacity-60"
               />
             </div>
 
             <div>
               <label className="block text-xs font-medium text-foreground mb-1.5">
-                Customer Name <span className="text-rose-500">*</span>
+                Customer Name <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -213,7 +214,7 @@ export function CreateCustomerModal({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="ABC Furniture"
                 required
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
           </div>
@@ -228,7 +229,7 @@ export function CreateCustomerModal({
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
                 placeholder="Full name"
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
 
@@ -241,7 +242,7 @@ export function CreateCustomerModal({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Contact number"
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
           </div>
@@ -256,7 +257,7 @@ export function CreateCustomerModal({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email address"
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
 
@@ -269,7 +270,7 @@ export function CreateCustomerModal({
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
                 placeholder="Tax registration number"
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground uppercase font-mono focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground uppercase font-mono focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
           </div>
@@ -290,7 +291,7 @@ export function CreateCustomerModal({
               value={billingAddress}
               onChange={(e) => handleBillingAddressChange(e.target.value)}
               placeholder="Enter billing address"
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
 
@@ -323,42 +324,24 @@ export function CreateCustomerModal({
               onChange={(e) => setShippingAddress(e.target.value)}
               disabled={shippingSameAsBilling}
               placeholder="Enter shipping address"
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none disabled:opacity-60"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none disabled:opacity-60"
             />
           </div>
         </div>
 
         <div className="border-t border-border/80 pt-2" />
 
-        {/* Status Section */}
-        <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold text-foreground">Status</h3>
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-foreground select-none">
-              <input
-                type="radio"
-                name="customerStatus"
-                checked={active}
-                onChange={() => setActive(true)}
-                className="h-4 w-4 accent-foreground cursor-pointer"
-              />
-              <span>Active</span>
-            </label>
+        <Select
+          label="Status"
+          value={active ? 'active' : 'inactive'}
+          onChange={(v) => setActive(v === 'active')}
+          disabled={isLoading}
+          options={[
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+          ]}
+        />
 
-            <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-foreground select-none">
-              <input
-                type="radio"
-                name="customerStatus"
-                checked={!active}
-                onChange={() => setActive(false)}
-                className="h-4 w-4 accent-foreground cursor-pointer"
-              />
-              <span>Inactive</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Footer Actions */}
         <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
           <Button
             type="button"
@@ -366,18 +349,17 @@ export function CreateCustomerModal({
             size="sm"
             onClick={onClose}
             disabled={isLoading}
-            className="text-xs font-medium cursor-pointer"
           >
             Cancel
           </Button>
-
           <Button
             type="submit"
+            variant="primary"
             size="sm"
             disabled={isLoading}
-            className="bg-[#107048] hover:bg-[#0d603e] text-white font-medium text-xs px-4 h-9 rounded-[8px] cursor-pointer shadow-xs disabled:opacity-50"
+            isLoading={isLoading}
           >
-            {isLoading ? 'Saving...' : 'Save Customer'}
+            {isEditing ? 'Save changes' : 'Save customer'}
           </Button>
         </div>
       </form>

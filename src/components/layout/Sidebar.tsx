@@ -47,7 +47,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     <aside className="flex h-screen w-72 shrink-0 flex-col border-r border-border bg-background p-5 select-none">
       {/* 1. Brand Logo */}
       <div className="flex items-center gap-2 px-1">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-deep text-brand-foreground text-xs font-bold">
           <svg
             className="h-3 w-3 fill-current"
             viewBox="0 0 24 24"
@@ -64,7 +64,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       {/* 2. Profile Summary Card (Matching Reference Style) */}
       <div className="my-6 flex flex-col items-center text-center">
         <div className="relative">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-foreground text-2xl font-semibold shadow-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-deep text-brand-foreground text-2xl font-semibold shadow-sm">
             {userInitial}
           </div>
           <button
@@ -84,7 +84,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </p>
 
         {organization && (
-          <span className="mt-1.5 inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+          <span className="mt-1.5 inline-flex items-center rounded-md bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
             {organization.name}
           </span>
         )}
@@ -119,7 +119,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         <div className="flex w-full items-center justify-between px-1">
           <button
             type="button"
-            className="rounded-full bg-secondary text-secondary-foreground hover:bg-muted px-4 py-1 text-xs font-medium transition-colors cursor-pointer"
+            className="rounded-md bg-secondary text-secondary-foreground hover:bg-muted px-4 py-1 text-xs font-medium transition-colors cursor-pointer"
           >
             Help
           </button>

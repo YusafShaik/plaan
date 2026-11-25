@@ -335,7 +335,7 @@ export function CreateBomModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -343,14 +343,14 @@ export function CreateBomModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -369,7 +369,7 @@ export function CreateBomModal({
                 type="text"
                 disabled
                 value={bomCode}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
               />
               <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
             </div>
@@ -382,7 +382,7 @@ export function CreateBomModal({
               <button
                 type="button"
                 onClick={() => setIsProductOpen(!isProductOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
               >
                 <span className={selectedProduct ? 'font-medium truncate' : 'text-muted-foreground'}>
                   {selectedProduct ? `${selectedProduct.name} (${selectedProduct.itemCode})` : 'Select product...'}
@@ -391,7 +391,7 @@ export function CreateBomModal({
               </button>
 
               {isProductOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                   <div className="relative mb-1.5">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
@@ -399,7 +399,7 @@ export function CreateBomModal({
                       placeholder="Search product code or name..."
                       value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -422,7 +422,7 @@ export function CreateBomModal({
                               setIsProductOpen(false)
                               setProductSearch('')
                             }}
-                            className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs cursor-pointer transition-colors ${
+                            className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
                               isSelected
                                 ? 'bg-secondary text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -464,7 +464,7 @@ export function CreateBomModal({
                   const val = e.target.value
                   setOutputQuantity(val === '' ? '' : Math.max(0, parseFloat(val) || 0))
                 }}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
               <p className="mt-1 text-[11px] text-muted-foreground">
                 Batch size / finished units per recipe
@@ -480,7 +480,7 @@ export function CreateBomModal({
                 type="text"
                 disabled
                 value={selectedProduct ? selectedProduct.unitOfMeasure : '—'}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
               />
               <p className="mt-1 text-[11px] text-muted-foreground">From Product Master</p>
             </div>
@@ -493,7 +493,7 @@ export function CreateBomModal({
                 Component materials
               </h3>
               {!productId && (
-                <span className="text-[11px] text-amber-500 font-medium">
+                <span className="text-[11px] text-warning font-medium">
                   Select a product to begin building the BOM recipe
                 </span>
               )}
@@ -532,7 +532,7 @@ export function CreateBomModal({
                       <button
                         type="button"
                         onClick={() => handleToggleRowDropdown(row.id, !row.isDropdownOpen)}
-                        className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
                       >
                         <span className={itemObj ? 'font-medium truncate' : 'text-muted-foreground'}>
                           {itemObj ? `${itemObj.name} (${itemObj.itemCode})` : 'Select material...'}
@@ -541,7 +541,7 @@ export function CreateBomModal({
                       </button>
 
                       {row.isDropdownOpen && (
-                        <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[280px] rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                        <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[280px] rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                           <div className="relative mb-1.5">
                             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                             <input
@@ -549,7 +549,7 @@ export function CreateBomModal({
                               placeholder="Search material code or name..."
                               value={row.searchQuery}
                               onChange={(e) => handleRowSearchChange(row.id, e.target.value)}
-                              className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                              className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                               autoFocus
                               onClick={(e) => e.stopPropagation()}
                             />
@@ -570,7 +570,7 @@ export function CreateBomModal({
                                       e.stopPropagation()
                                       handleSelectMaterial(row.id, it)
                                     }}
-                                    className={`flex w-full items-center justify-between rounded-[8px] p-2 text-xs cursor-pointer transition-colors ${
+                                    className={`flex w-full items-center justify-between rounded-md p-2 text-xs cursor-pointer transition-colors ${
                                       isSelected
                                         ? 'bg-secondary text-foreground font-semibold'
                                         : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -603,7 +603,7 @@ export function CreateBomModal({
                         placeholder="e.g. 1"
                         value={row.quantity}
                         onChange={(e) => handleQuantityChange(row.id, e.target.value)}
-                        className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3 text-center text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:border-foreground focus:ring-foreground"
+                        className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3 text-center text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:border-foreground focus:ring-foreground"
                       />
                     </div>
 
@@ -619,7 +619,7 @@ export function CreateBomModal({
                       <button
                         type="button"
                         onClick={() => handleRemoveRow(row.id)}
-                        className="rounded-[8px] p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                        className="rounded-md p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                         title="Remove component"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -635,7 +635,7 @@ export function CreateBomModal({
               <button
                 type="button"
                 onClick={handleAddRow}
-                className="inline-flex items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Material</span>
@@ -653,7 +653,7 @@ export function CreateBomModal({
               placeholder="Additional manufacturing information..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
 
@@ -665,7 +665,7 @@ export function CreateBomModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-[8px] px-3.5"
+              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
               Save Draft
             </Button>
@@ -675,7 +675,7 @@ export function CreateBomModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-xs rounded-[8px] px-4 flex items-center gap-1.5"
+              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
             >
               <PackageCheck className="h-4 w-4" />
               <span>{isSubmitting ? 'Saving...' : 'Save & Activate'}</span>

@@ -2,9 +2,6 @@ import {
   X,
   Warehouse as WarehouseIcon,
   Calendar,
-  CheckCircle2,
-  Clock,
-  Ban,
   FileText,
   PackageCheck,
   TrendingUp,
@@ -12,6 +9,8 @@ import {
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import type { StockAdjustment } from '../../types/inventory'
 
 export interface StockAdjustmentDetailsModalProps {
@@ -64,26 +63,17 @@ export function StockAdjustmentDetailsModal({
         <div className="flex items-start justify-between border-b border-border/80 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xl font-bold tracking-tight text-foreground">
+              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
                 {adjustment.adjustmentNumber}
               </span>
               {adjustment.status === 'POSTED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Posted
-                </span>
+                <Badge variant="success">Posted</Badge>
               )}
               {adjustment.status === 'DRAFT' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
-                  <Clock className="h-3.5 w-3.5" />
-                  Draft
-                </span>
+                <Badge variant="warning">Draft</Badge>
               )}
               {adjustment.status === 'CANCELLED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-500 border border-rose-500/20">
-                  <Ban className="h-3.5 w-3.5" />
-                  Cancelled
-                </span>
+                <Badge variant="destructive">Cancelled</Badge>
               )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -100,7 +90,7 @@ export function StockAdjustmentDetailsModal({
         </div>
 
         {/* Info Strip */}
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 rounded-[12px] border border-border/80 bg-secondary/30 p-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 rounded-md border border-border/80 bg-secondary/30 p-4">
           <div>
             <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
               <WarehouseIcon className="h-3.5 w-3.5" />
@@ -132,7 +122,7 @@ export function StockAdjustmentDetailsModal({
               <PackageCheck className="h-3.5 w-3.5" />
               Items Count
             </span>
-            <p className="mt-1 text-sm font-semibold text-foreground font-mono">
+            <p className="mt-1 text-sm font-medium text-foreground font-mono">
               {adjustment.totalItems} {adjustment.totalItems === 1 ? 'item' : 'items'}
             </p>
             <p className="text-[11px] text-muted-foreground font-mono">
@@ -144,12 +134,12 @@ export function StockAdjustmentDetailsModal({
         {/* Visual Cards Strip matching screenshot 2: Positive Adjustment In & Negative Adjustment Out */}
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Positive Adjustment Card */}
-          <div className="rounded-[12px] border border-border/80 bg-card p-4">
+          <div className="rounded-md border border-border/80 bg-card p-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <TrendingUp className="h-4 w-4 text-success" />
               <span className="text-xs font-semibold text-foreground">Positive Adjustment</span>
             </div>
-            <p className="mt-2 text-2xl font-bold font-mono text-emerald-500">
+            <p className="mt-2 text-2xl font-medium font-mono text-success">
               +{formatQuantity(totalPositiveQty)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -158,12 +148,12 @@ export function StockAdjustmentDetailsModal({
           </div>
 
           {/* Negative Adjustment Card */}
-          <div className="rounded-[12px] border border-border/80 bg-card p-4">
+          <div className="rounded-md border border-border/80 bg-card p-4">
             <div className="flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-rose-500" />
+              <TrendingDown className="h-4 w-4 text-destructive" />
               <span className="text-xs font-semibold text-foreground">Negative Adjustment</span>
             </div>
-            <p className="mt-2 text-2xl font-bold font-mono text-rose-500">
+            <p className="mt-2 text-2xl font-medium font-mono text-destructive">
               -{formatQuantity(totalNegativeQty)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -174,7 +164,7 @@ export function StockAdjustmentDetailsModal({
 
         {/* Notes */}
         {adjustment.notes && (
-          <div className="mt-4 rounded-[10px] border border-border/70 bg-card p-3">
+          <div className="mt-4 rounded-md border border-border/70 bg-card p-3">
             <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 mb-1">
               <FileText className="h-3.5 w-3.5" />
               Notes
@@ -188,65 +178,63 @@ export function StockAdjustmentDetailsModal({
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Adjusted Items
           </h4>
-          <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-[11px] font-semibold text-muted-foreground bg-secondary/30">
-                  <th className="py-2.5 px-3">Item</th>
-                  <th className="py-2.5 px-3 text-right">System Qty</th>
-                  <th className="py-2.5 px-3 text-right">Physical Qty</th>
-                  <th className="py-2.5 px-3 text-right">Difference</th>
-                  <th className="py-2.5 px-3 text-right">Movement</th>
+          <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Item</TH>
+                  <TH className="py-2.5 text-right">System Qty</TH>
+                  <TH className="py-2.5 text-right">Physical Qty</TH>
+                  <TH className="py-2.5 text-right">Difference</TH>
+                  <TH className="py-2.5 text-right">Movement</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 text-xs">
+              </THead>
+              <TBody className="divide-y divide-border/60 text-xs">
                 {adjustment.items.map((it) => (
-                  <tr key={it.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="py-2.5 px-3">
+                  <TR key={it.id} className="hover:bg-secondary/30 transition-colors">
+                    <TD className="py-2.5 px-3">
                       <p className="font-medium text-foreground">{it.itemName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
+                      <p className="text-[11px] text-ref text-muted-foreground">
                         {it.itemCode}
                       </p>
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                    </TD>
+                    <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
                       {formatQuantity(it.systemQuantity)} {it.unitOfMeasure}
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                    </TD>
+                    <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
                       {formatQuantity(it.physicalQuantity)} {it.unitOfMeasure}
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold">
+                    </TD>
+                    <TD className="py-2.5 px-3 text-right font-mono font-medium">
                       {it.adjustmentQuantity > 0 ? (
-                        <span className="text-emerald-500">
+                        <span className="text-success">
                           +{formatQuantity(it.adjustmentQuantity)}
                         </span>
                       ) : it.adjustmentQuantity < 0 ? (
-                        <span className="text-rose-500">
+                        <span className="text-destructive">
                           {formatQuantity(it.adjustmentQuantity)}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">0</span>
                       )}
-                    </td>
-                    <td className="py-2.5 px-3 text-right">
+                    </TD>
+                    <TD className="py-2.5 px-3 text-right">
                       {it.adjustmentQuantity > 0 ? (
-                        <span className="inline-block rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 border border-emerald-500/20">
+                        <Badge variant="success" className="h-auto px-2 py-0.5 text-[10px]">
                           Adjustment In
-                        </span>
+                        </Badge>
                       ) : it.adjustmentQuantity < 0 ? (
-                        <span className="inline-block rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-500 border border-rose-500/20">
+                        <Badge variant="destructive" className="h-auto px-2 py-0.5 text-[10px]">
                           Adjustment Out
-                        </span>
+                        </Badge>
                       ) : (
-                        <span className="inline-block rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                        <Badge variant="neutral" className="h-auto px-2 py-0.5 text-[10px]">
                           No difference
-                        </span>
+                        </Badge>
                       )}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TBody>
+            </Table>
         </div>
 
         {/* Footer */}

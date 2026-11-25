@@ -2,7 +2,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+  Plaan Design System tokens (approved)
+  Source of truth for agents: /Design.md
+  Use Tailwind token utilities only — no one-off hex / radii in product UI.
+*/
+
 @theme {
+  /* Semantic surfaces */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -16,23 +23,72 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: var(--font-sans);
+  /* Brand / ink / status */
+  --color-ink: var(--ink);
+  --color-ink-hover: var(--ink-hover);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-muted: var(--surface-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-muted: var(--border-muted);
 
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 64px;
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* Ramp-sharp radius — 2px everywhere except full (avatars / logo) */
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
   --radius-full: 999px;
 
-  --shadow-panel: 0px 28px 56px 0px rgba(23, 23, 23, 0.08);
-  --shadow-card: 0px 11.916px 30.64px 0px rgba(23, 23, 23, 0.08);
-  --shadow-subtle: 0px 14px 28px 0px rgba(23, 23, 23, 0.08);
-  --shadow-inset-border: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.12);
+  /* Control heights */
+  --spacing-control-xs: 28px;
+  --spacing-control-sm: 32px;
+  --spacing-control-md: 40px;
+  --spacing-control-lg: 44px;
+  --spacing-control-xl: 48px;
+  --spacing-control-stacked: 56px;
+
+  /* Layout */
+  --spacing-sidebar: 288px;
+  --spacing-page-x: 32px;
+  --spacing-page-y: 24px;
+  --spacing-modal-sm: 480px;
+  --spacing-modal-md: 540px;
+  --spacing-modal-lg: 780px;
+
+  --shadow-xs: 0 1px 2px rgba(23, 23, 23, 0.05);
+  --shadow-sm: 0 2px 4px rgba(23, 23, 23, 0.06);
+  --shadow-panel: 0 28px 56px rgba(23, 23, 23, 0.08);
+  --shadow-card: 0 12px 31px rgba(23, 23, 23, 0.08);
+  --shadow-subtle: 0 14px 28px rgba(23, 23, 23, 0.08);
+  --shadow-inset-border: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --default-transition-duration: 150ms;
 }
 
 :root {
@@ -40,20 +96,81 @@
   --foreground: #171717;
   --card: #ffffff;
   --card-foreground: #171717;
+
+  --ink: #171717;
+  --ink-hover: #262626;
+  --ink-foreground: #ffffff;
   --primary: #171717;
   --primary-foreground: #ffffff;
+
+  --brand: #107048;
+  --brand-hover: #0d603e;
+  --brand-deep: #011e0f;
+  --brand-foreground: #ffffff;
+  --brand-soft: rgba(16, 112, 72, 0.1);
+
   --secondary: #f4f4f6;
   --secondary-foreground: #171717;
   --muted: #eaebee;
   --muted-foreground: #71717a;
+  --surface-subtle: #f8f9fa;
+  --surface-muted: #fafafa;
+
   --accent: #011e0f;
   --accent-foreground: #ffffff;
+
+  --success: #048140;
+  --success-foreground: #ffffff;
+  --success-soft: rgba(4, 129, 64, 0.1);
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --warning-soft: rgba(217, 119, 6, 0.1);
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
+  --info-soft: rgba(59, 130, 246, 0.1);
   --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: rgba(220, 38, 38, 0.1);
+
   --border: #e4e4e7;
+  --border-subtle: color-mix(in srgb, var(--border) 80%, transparent);
+  --border-muted: color-mix(in srgb, var(--border) 60%, transparent);
   --input: #f4f4f6;
   --ring: #171717;
-  --radius: 10px;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --radius: 2px;
+  --border-width: 1px;
+  --border-width-thick: 2px;
+
+  --control-xs: 28px;
+  --control-sm: 32px;
+  --control-md: 40px;
+  --control-lg: 44px;
+  --control-xl: 48px;
+  --control-stacked: 56px;
+
+  --sidebar-w: 288px;
+  --page-pad-x: 32px;
+  --page-pad-y: 24px;
+  --modal-sm: 480px;
+  --modal-md: 540px;
+  --modal-lg: 780px;
+
+  --z-base: 0;
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+  --z-tooltip: 400;
+  --opacity-disabled: 0.5;
+
+  --duration-fast: 100ms;
+  --duration: 150ms;
+  --duration-slow: 250ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --font-sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .dark {
@@ -61,22 +178,132 @@
   --foreground: #f4f4f5;
   --card: #18181b;
   --card-foreground: #f4f4f5;
+
+  --ink: #f4f4f5;
+  --ink-hover: #e4e4e7;
+  --ink-foreground: #121212;
   --primary: #f4f4f5;
   --primary-foreground: #121212;
+
+  --brand: #107048;
+  --brand-hover: #0d603e;
+  --brand-deep: #048140;
+  --brand-foreground: #ffffff;
+  --brand-soft: rgba(16, 112, 72, 0.16);
+
   --secondary: #27272a;
   --secondary-foreground: #f4f4f5;
   --muted: #27272a;
   --muted-foreground: #a1a1aa;
+  --surface-subtle: #1c1c1f;
+  --surface-muted: #1f1f23;
+
   --accent: #048140;
   --accent-foreground: #ffffff;
+
+  --success: #048140;
+  --success-foreground: #ffffff;
+  --success-soft: rgba(4, 129, 64, 0.16);
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --warning-soft: rgba(217, 119, 6, 0.16);
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
+  --info-soft: rgba(59, 130, 246, 0.16);
   --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: rgba(239, 68, 68, 0.16);
+
   --border: #27272a;
+  --border-subtle: color-mix(in srgb, var(--border) 80%, transparent);
+  --border-muted: color-mix(in srgb, var(--border) 60%, transparent);
   --input: #27272a;
   --ring: #f4f4f5;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-panel: 0 28px 56px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 12px 31px rgba(0, 0, 0, 0.4);
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ——— Typography scale (use these / matching Tailwind sizes) ——— */
+@layer utilities {
+  .text-display {
+    font-size: 28px;
+    line-height: 32px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .text-title {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .text-subtitle {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+  .text-body {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+  }
+  .text-body-sm {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 500;
+  }
+  .text-label {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+  }
+  .text-caption {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 500;
+  }
+  /* Reference / codes — never bold; ink color when not interactive */
+  .text-ref {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  /* Blue only when the code/row opens detail — never on non-clickable refs */
+  .text-ref-link {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--info);
+  }
+  .text-ref-link:hover {
+    text-decoration: underline;
+  }
+  .text-section {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+}
+
+/* Native form controls inherit design chrome when unstyled */
+@layer base {
+  select:not([class*='appearance']) {
+    font-family: inherit;
+  }
 }

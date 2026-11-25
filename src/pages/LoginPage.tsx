@@ -36,7 +36,7 @@ export function LoginPage() {
       {/* Brand Header */}
       <header className="flex items-center">
         <div className="flex items-center gap-2 select-none">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-deep text-brand-foreground text-xs font-bold">
             <svg
               className="h-3 w-3 fill-current"
               viewBox="0 0 24 24"
@@ -107,7 +107,7 @@ export function LoginPage() {
                 type="submit"
                 variant="primary"
                 size="lg"
-                className="w-full h-12 text-sm font-medium rounded-[10px]"
+                className="w-full h-12 text-sm font-medium rounded-md"
                 isLoading={isLoading}
               >
                 Log in

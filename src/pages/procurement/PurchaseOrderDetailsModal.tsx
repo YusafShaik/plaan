@@ -10,6 +10,8 @@ import {
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { useAuth } from '../../hooks/useAuth'
 import type { PurchaseOrder, PurchaseOrderStatus } from '../../types/procurement'
 
@@ -75,22 +77,13 @@ export function PurchaseOrderDetailsModal({
                 {order.poNumber}
               </h2>
               {order.status === 'ISSUED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                  Issued
-                </span>
+                <Badge variant="success">Issued</Badge>
               )}
               {order.status === 'DRAFT' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-muted-foreground border border-border">
-                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
-                  Draft
-                </span>
+                <Badge variant="neutral">Draft</Badge>
               )}
               {order.status === 'CANCELLED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 border border-rose-200">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-600" />
-                  Cancelled
-                </span>
+                <Badge variant="destructive">Cancelled</Badge>
               )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -112,7 +105,7 @@ export function PurchaseOrderDetailsModal({
               disabled={isProcessing}
               className="gap-1.5 text-xs border-border/80 hover:bg-secondary cursor-pointer"
             >
-              <Download className="h-3.5 w-3.5 text-blue-600" />
+              <Download className="h-3.5 w-3.5 text-info" />
               <span>Download PDF</span>
             </Button>
 
@@ -121,7 +114,7 @@ export function PurchaseOrderDetailsModal({
                 size="sm"
                 onClick={() => handleStatus('ISSUED')}
                 disabled={isProcessing}
-                className="gap-1.5 text-xs bg-[#048140] hover:bg-[#036a34] text-white cursor-pointer"
+                className="gap-1.5 text-xs bg-success hover:bg-brand-hover text-white cursor-pointer"
               >
                 <Send className="h-3.5 w-3.5" />
                 <span>Issue Order</span>
@@ -134,7 +127,7 @@ export function PurchaseOrderDetailsModal({
                 size="sm"
                 onClick={() => handleStatus('CANCELLED')}
                 disabled={isProcessing}
-                className="gap-1.5 text-xs text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer"
+                className="gap-1.5 text-xs text-destructive border-destructive/20 hover:bg-destructive/10 cursor-pointer"
               >
                 <Ban className="h-3.5 w-3.5" />
                 <span>Cancel</span>
@@ -155,7 +148,7 @@ export function PurchaseOrderDetailsModal({
         {/* 2-Column Info Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Supplier Info */}
-          <div className="rounded-[12px] border border-border/70 bg-[#f8f9fa] dark:bg-secondary/30 p-3.5">
+          <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/30 p-3.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
               <Building2 className="h-3.5 w-3.5" />
               <span>Supplier</span>
@@ -165,7 +158,7 @@ export function PurchaseOrderDetailsModal({
           </div>
 
           {/* Receiving Warehouse Info */}
-          <div className="rounded-[12px] border border-border/70 bg-[#f8f9fa] dark:bg-secondary/30 p-3.5">
+          <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/30 p-3.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
               <WarehouseIcon className="h-3.5 w-3.5" />
               <span>Receiving Warehouse</span>
@@ -183,69 +176,65 @@ export function PurchaseOrderDetailsModal({
             </span>
           </div>
 
-          <div className="rounded-[14px] border border-border/70 overflow-hidden bg-white dark:bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse table-fixed">
-                <thead>
-                  <tr className="border-b border-border/70 bg-[#fafafa] dark:bg-secondary/40 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    <th className="py-2.5 px-3 w-[8%] text-center">#</th>
-                    <th className="py-2.5 px-3 w-[46%]">Item & Code</th>
-                    <th className="py-2.5 px-2.5 w-[14%] text-center">UOM</th>
-                    <th className="py-2.5 px-2.5 w-[14%] text-right">Qty</th>
-                    <th className="py-2.5 px-2.5 w-[18%] text-right">Rate ({currencySymbol})</th>
-                    <th className="py-2.5 px-3 w-[20%] text-right">Amount</th>
+          <Table className="border-0 rounded-none shadow-none" tableClassName="table-fixed">
+              <THead>
+                <tr>
+                  <TH className="py-2.5 w-[8%] text-center">#</TH>
+                    <TH className="py-2.5 w-[46%]">Item & Code</TH>
+                    <TH className="py-2.5 w-[14%] text-center">UOM</TH>
+                    <TH className="py-2.5 w-[14%] text-right">Qty</TH>
+                    <TH className="py-2.5 w-[18%] text-right">Rate ({currencySymbol})</TH>
+                    <TH className="py-2.5 w-[20%] text-right">Amount</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60 text-sm">
+                </THead>
+                <TBody className="divide-y divide-border/60 text-sm">
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item, idx) => (
-                      <tr key={item.id} className="hover:bg-secondary/40 transition-colors">
-                        <td className="py-2.5 px-3 text-center text-xs text-muted-foreground">
+                      <TR key={item.id} className="hover:bg-secondary/40 transition-colors">
+                        <TD className="py-2.5 px-3 text-center text-xs text-muted-foreground">
                           {idx + 1}
-                        </td>
-                        <td className="py-2.5 px-3">
+                        </TD>
+                        <TD className="py-2.5 px-3">
                           <p className="text-xs font-medium text-foreground">{item.itemName}</p>
-                          <p className="text-[11px] text-muted-foreground">{item.itemCode}</p>
-                        </td>
-                        <td className="py-2.5 px-2.5 text-center">
+                          <p className="text-[11px] text-ref text-muted-foreground">{item.itemCode}</p>
+                        </TD>
+                        <TD className="py-2.5 px-2.5 text-center">
                           <span className="inline-block px-1.5 py-0.5 rounded bg-secondary text-[10px] font-semibold text-muted-foreground uppercase">
                             {item.unitOfMeasure}
                           </span>
-                        </td>
-                        <td className="py-2.5 px-2.5 text-right font-medium text-xs text-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-2.5 text-right font-medium text-xs text-foreground">
                           {item.quantity}
-                        </td>
-                        <td className="py-2.5 px-2.5 text-right font-medium text-xs text-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-2.5 text-right font-medium text-xs text-foreground">
                           {item.unitPrice.toLocaleString('en-IN', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-semibold text-xs text-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right font-semibold text-xs text-foreground">
                           {item.lineAmount.toLocaleString('en-IN', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     ))
                   ) : (
-                    <tr>
-                      <td colSpan={6} className="py-6 text-center text-xs text-muted-foreground">
+                    <TR>
+                      <TD colSpan={6} className="py-6 text-center text-xs text-muted-foreground">
                         {order.itemsCount} line items recorded
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </TBody>
+            </Table>
         </div>
 
         {/* Notes & Order Total */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           {/* Notes */}
-          <div className="rounded-[12px] border border-border/70 bg-[#f8f9fa] dark:bg-secondary/30 p-3.5">
+          <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/30 p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               <FileText className="h-3.5 w-3.5" />
               <span>Notes & Instructions</span>
@@ -256,7 +245,7 @@ export function PurchaseOrderDetailsModal({
           </div>
 
           {/* Total Box */}
-          <div className="rounded-[12px] border border-border/70 bg-[#f8f9fa] dark:bg-secondary/30 p-3.5 flex flex-col justify-between">
+          <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/30 p-3.5 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
               <span>Total Order Amount</span>
               <span>{order.currency}</span>
@@ -279,7 +268,7 @@ export function PurchaseOrderDetailsModal({
             type="button"
             variant="outline"
             onClick={onClose}
-            className="border-border/80 bg-white text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
+            className="border-border/80 bg-card text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
           >
             Close
           </Button>

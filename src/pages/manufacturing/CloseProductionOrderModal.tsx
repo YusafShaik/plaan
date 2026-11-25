@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, CheckCircle2, XCircle, RefreshCw, AlertCircle } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
 import type {
   ProductionOrder,
@@ -103,13 +104,13 @@ export function CloseProductionOrderModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-semibold text-muted-foreground">
+            <span className="font-mono text-sm font-medium text-muted-foreground">
               {order.orderNumber}
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer ml-2"
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer ml-2"
             >
               <X className="h-4 w-4" />
             </button>
@@ -118,14 +119,14 @@ export function CloseProductionOrderModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -146,13 +147,13 @@ export function CloseProductionOrderModal({
               <div className="space-y-1.5 text-xs">
                 <div>
                   <span className="text-muted-foreground">Planned quantity</span>{' '}
-                  <span className="font-semibold text-foreground font-mono ml-2">
+                  <span className="font-medium text-foreground font-mono ml-2">
                     {formatQuantity(validation.plannedQuantity)} {validation.unitOfMeasure}
                   </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Received quantity</span>{' '}
-                  <span className="font-semibold text-foreground font-mono ml-2">
+                  <span className="font-medium text-foreground font-mono ml-2">
                     {formatQuantity(validation.receivedQuantity)} {validation.unitOfMeasure}
                   </span>
                 </div>
@@ -167,42 +168,40 @@ export function CloseProductionOrderModal({
                 Material reconciliation
               </h3>
 
-              <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                      <th className="py-2.5 px-3.5">Material</th>
-                      <th className="py-2.5 px-3 text-right">Issued</th>
-                      <th className="py-2.5 px-3 text-right">Consumed</th>
-                      <th className="py-2.5 px-3 text-right">Returned</th>
-                      <th className="py-2.5 px-3.5 text-right">Remaining</th>
+              <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Material</TH>
+                      <TH className="py-2.5 text-right">Issued</TH>
+                      <TH className="py-2.5 text-right">Consumed</TH>
+                      <TH className="py-2.5 text-right">Returned</TH>
+                      <TH className="py-2.5 text-right">Remaining</TH>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
+                  </THead>
+                  <TBody className="divide-y divide-border/60">
                     {validation.materials.map((mat) => (
-                      <tr key={mat.materialId} className="hover:bg-secondary/30 transition-colors">
-                        <td className="py-3 px-3.5 font-medium text-foreground">
+                      <TR key={mat.materialId} className="hover:bg-secondary/30 transition-colors">
+                        <TD className="py-3 px-3.5 font-medium text-foreground">
                           {mat.materialName}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(mat.issuedQuantity)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(mat.consumedQuantity)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(mat.returnedQuantity)}
-                        </td>
-                        <td className="py-3 px-3.5 text-right font-mono font-bold">
-                          <span className={mat.remainingQuantity > 0 ? 'text-red-500' : 'text-foreground'}>
+                        </TD>
+                        <TD className="py-3 px-3.5 text-right font-mono font-medium">
+                          <span className={mat.remainingQuantity > 0 ? 'text-destructive' : 'text-foreground'}>
                             {formatQuantity(mat.remainingQuantity)}
                           </span>
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </TBody>
+            </Table>
             </div>
 
             <div className="border-t border-border/80 pt-1" />
@@ -216,9 +215,9 @@ export function CloseProductionOrderModal({
               <div className="space-y-2 text-xs">
                 <div className="flex items-center gap-2.5">
                   {validation.productionCompleted ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                   ) : (
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
                   )}
                   <span className={validation.productionCompleted ? 'text-foreground' : 'text-muted-foreground'}>
                     Production completed
@@ -227,9 +226,9 @@ export function CloseProductionOrderModal({
 
                 <div className="flex items-center gap-2.5">
                   {validation.allPlannedQuantitiesReceived ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                   ) : (
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
                   )}
                   <span className={validation.allPlannedQuantitiesReceived ? 'text-foreground' : 'text-muted-foreground'}>
                     All planned quantities received
@@ -238,9 +237,9 @@ export function CloseProductionOrderModal({
 
                 <div className="flex items-center gap-2.5">
                   {validation.allMaterialsReconciled ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                   ) : (
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
                   )}
                   <span className={validation.allMaterialsReconciled ? 'text-foreground' : 'text-muted-foreground'}>
                     All issued materials reconciled
@@ -249,9 +248,9 @@ export function CloseProductionOrderModal({
 
                 <div className="flex items-center gap-2.5">
                   {validation.noPendingDraftTransactions ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                   ) : (
-                    <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
                   )}
                   <span className={validation.noPendingDraftTransactions ? 'text-foreground' : 'text-muted-foreground'}>
                     No pending draft transactions
@@ -260,7 +259,7 @@ export function CloseProductionOrderModal({
               </div>
 
               {!validation.canClose && (
-                <p className="mt-3 text-xs text-red-400 font-medium">
+                <p className="mt-3 text-xs text-destructive font-medium">
                   Resolve outstanding transactions before closing.
                 </p>
               )}
@@ -276,7 +275,7 @@ export function CloseProductionOrderModal({
                 onChange={(e) => setClosureNotes(e.target.value)}
                 placeholder="Optional closure notes..."
                 rows={3}
-                className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+                className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
               />
             </div>
           </div>
@@ -302,8 +301,8 @@ export function CloseProductionOrderModal({
             disabled={!validation?.canClose || isSubmitting}
             className={
               validation?.canClose
-                ? 'bg-[#107048] hover:bg-[#0d603e] text-white font-semibold text-xs px-4 h-9 rounded-[8px] cursor-pointer shadow-xs'
-                : 'bg-secondary/60 text-muted-foreground opacity-60 cursor-not-allowed text-xs px-4 h-9 rounded-[8px]'
+                ? 'bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs px-4 h-9 rounded-md cursor-pointer shadow-xs'
+                : 'bg-secondary/60 text-muted-foreground opacity-60 cursor-not-allowed text-xs px-4 h-9 rounded-md'
             }
           >
             {isSubmitting ? 'Closing Order...' : 'Close Order'}

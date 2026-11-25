@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
 import { masterDataService } from '../../services/masterDataService'
 import type { Item, Warehouse } from '../../types/masterData'
@@ -321,7 +322,7 @@ export function CreateProductionOrderModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -329,21 +330,21 @@ export function CreateProductionOrderModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {bomError && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{bomError}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -361,7 +362,7 @@ export function CreateProductionOrderModal({
                 type="text"
                 disabled
                 value={orderNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
               />
               <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
             </div>
@@ -374,7 +375,7 @@ export function CreateProductionOrderModal({
                 type="date"
                 value={orderDate}
                 onChange={(e) => setOrderDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
               />
             </div>
           </div>
@@ -389,7 +390,7 @@ export function CreateProductionOrderModal({
               <button
                 type="button"
                 onClick={() => setIsProductOpen(!isProductOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
               >
                 <span className={selectedProduct ? 'font-medium truncate' : 'text-muted-foreground'}>
                   {selectedProduct ? `${selectedProduct.name} (${selectedProduct.itemCode})` : 'Select product...'}
@@ -398,7 +399,7 @@ export function CreateProductionOrderModal({
               </button>
 
               {isProductOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                   <div className="relative mb-1.5">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
@@ -406,7 +407,7 @@ export function CreateProductionOrderModal({
                       placeholder="Search product code or name..."
                       value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -429,7 +430,7 @@ export function CreateProductionOrderModal({
                               setIsProductOpen(false)
                               setProductSearch('')
                             }}
-                            className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs cursor-pointer transition-colors ${
+                            className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
                               isSelected
                                 ? 'bg-secondary text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -462,7 +463,7 @@ export function CreateProductionOrderModal({
                 type="text"
                 disabled
                 value={activeBomCode || (selectedProduct ? 'No active BOM found' : '—')}
-                className={`flex h-10 w-full rounded-[10px] border px-3.5 text-xs font-mono cursor-not-allowed ${
+                className={`flex h-10 w-full rounded-md border px-3.5 text-xs font-mono cursor-not-allowed ${
                   activeBomCode
                     ? 'border-border/80 bg-secondary/50 text-foreground font-semibold'
                     : 'border-border/80 bg-secondary/30 text-muted-foreground'
@@ -490,7 +491,7 @@ export function CreateProductionOrderModal({
                   const val = e.target.value
                   setProductionQuantity(val === '' ? '' : Math.max(0, parseFloat(val) || 0))
                 }}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
 
@@ -502,7 +503,7 @@ export function CreateProductionOrderModal({
                 type="text"
                 disabled
                 value={selectedProduct ? selectedProduct.unitOfMeasure : '—'}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
               />
             </div>
           </div>
@@ -517,7 +518,7 @@ export function CreateProductionOrderModal({
                 type="date"
                 value={plannedStartDate}
                 onChange={(e) => setPlannedStartDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
               />
             </div>
 
@@ -529,7 +530,7 @@ export function CreateProductionOrderModal({
                 type="date"
                 value={plannedEndDate}
                 onChange={(e) => setPlannedEndDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
               />
             </div>
           </div>
@@ -544,7 +545,7 @@ export function CreateProductionOrderModal({
               <button
                 type="button"
                 onClick={() => setIsSourceWhOpen(!isSourceWhOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
               >
                 <span className={selectedSourceWarehouse ? 'font-medium truncate' : 'text-muted-foreground'}>
                   {selectedSourceWarehouse ? `${selectedSourceWarehouse.name} (${selectedSourceWarehouse.warehouseCode})` : 'Select raw material warehouse...'}
@@ -553,7 +554,7 @@ export function CreateProductionOrderModal({
               </button>
 
               {isSourceWhOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                   <div className="relative mb-1.5">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
@@ -561,7 +562,7 @@ export function CreateProductionOrderModal({
                       placeholder="Search warehouse..."
                       value={sourceWhSearch}
                       onChange={(e) => setSourceWhSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -579,7 +580,7 @@ export function CreateProductionOrderModal({
                             setIsSourceWhOpen(false)
                             setSourceWhSearch('')
                           }}
-                          className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs cursor-pointer transition-colors ${
+                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
                             isSelected
                               ? 'bg-secondary text-foreground font-semibold'
                               : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -610,7 +611,7 @@ export function CreateProductionOrderModal({
               <button
                 type="button"
                 onClick={() => setIsFgWhOpen(!isFgWhOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
               >
                 <span className={selectedFgWarehouse ? 'font-medium truncate' : 'text-muted-foreground'}>
                   {selectedFgWarehouse ? `${selectedFgWarehouse.name} (${selectedFgWarehouse.warehouseCode})` : 'Select finished goods warehouse...'}
@@ -619,7 +620,7 @@ export function CreateProductionOrderModal({
               </button>
 
               {isFgWhOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                   <div className="relative mb-1.5">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
@@ -627,7 +628,7 @@ export function CreateProductionOrderModal({
                       placeholder="Search warehouse..."
                       value={fgWhSearch}
                       onChange={(e) => setFgWhSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -645,7 +646,7 @@ export function CreateProductionOrderModal({
                             setIsFgWhOpen(false)
                             setFgWhSearch('')
                           }}
-                          className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs cursor-pointer transition-colors ${
+                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
                             isSelected
                               ? 'bg-secondary text-foreground font-semibold'
                               : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -688,47 +689,45 @@ export function CreateProductionOrderModal({
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                    <th className="py-2.5 px-3.5">Material</th>
-                    <th className="py-2.5 px-3 text-right">BOM Qty</th>
-                    <th className="py-2.5 px-3 text-right">Required Qty</th>
-                    <th className="py-2.5 px-3.5">UOM</th>
+            <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Material</TH>
+                    <TH className="py-2.5 text-right">BOM Qty</TH>
+                    <TH className="py-2.5 text-right">Required Qty</TH>
+                    <TH className="py-2.5">UOM</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+                </THead>
+                <TBody className="divide-y divide-border/60">
                   {requiredItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="py-6 text-center text-muted-foreground">
+                    <TR>
+                      <TD colSpan={4} className="py-6 text-center text-muted-foreground">
                         Select a product with an active BOM to see required materials
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   ) : (
                     requiredItems.map((it) => (
-                      <tr key={it.materialId} className="hover:bg-secondary/30 transition-colors">
-                        <td className="py-2.5 px-3.5">
+                      <TR key={it.materialId} className="hover:bg-secondary/30 transition-colors">
+                        <TD className="py-2.5 px-3.5">
                           <p className="font-medium text-foreground">{it.materialName}</p>
                           <p className="text-[10px] text-muted-foreground font-mono">
                             {it.materialCode}
                           </p>
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(it.bomQuantity)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
                           {formatQuantity(it.requiredQuantity)}
-                        </td>
-                        <td className="py-2.5 px-3.5 text-muted-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3.5 text-muted-foreground">
                           {it.unitOfMeasure}
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     ))
                   )}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+            </Table>
           </div>
 
           {/* Notes */}
@@ -741,7 +740,7 @@ export function CreateProductionOrderModal({
               placeholder="Additional production instructions..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
 
@@ -753,7 +752,7 @@ export function CreateProductionOrderModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-[8px] px-3.5"
+              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
               Save Draft
             </Button>
@@ -763,7 +762,7 @@ export function CreateProductionOrderModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-xs rounded-[8px] px-4 flex items-center gap-1.5"
+              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
             >
               <PackageCheck className="h-4 w-4" />
               <span>{isSubmitting ? 'Releasing...' : 'Release Order'}</span>

@@ -5,9 +5,6 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
-  Clock,
-  Ban,
   Eye,
   RotateCcw,
   Pencil,
@@ -15,6 +12,9 @@ import {
   PackageCheck,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { NativeSelect } from '../../components/ui/NativeSelect'
 import { manufacturingService } from '../../services/manufacturingService'
 import { CreateProductionOrderModal } from './CreateProductionOrderModal'
 import { ProductionOrderDetailsModal } from './ProductionOrderDetailsModal'
@@ -141,15 +141,18 @@ export function ProductionOrdersPage() {
               placeholder="Search production orders..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
           {/* Status Filter */}
-          <select
+          <NativeSelect
+            dense
+            className="w-auto min-w-[9.5rem]"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as ProductionOrderStatus | '')}
-            className="flex h-10 items-center rounded-[10px] border border-border/80 bg-secondary px-3 text-xs font-medium text-foreground focus:outline-none focus:border-foreground cursor-pointer"
+            onChange={(e) =>
+              setStatusFilter(e.target.value as ProductionOrderStatus | '')
+            }
           >
             <option value="">All Statuses</option>
             <option value="RELEASED">Released</option>
@@ -158,7 +161,7 @@ export function ProductionOrdersPage() {
             <option value="CLOSED">Closed</option>
             <option value="DRAFT">Draft</option>
             <option value="CANCELLED">Cancelled</option>
-          </select>
+          </NativeSelect>
 
           {(search || statusFilter) && (
             <button
@@ -183,7 +186,7 @@ export function ProductionOrdersPage() {
               setEditingDraft(null)
               setIsCreateModalOpen(true)
             }}
-            className="flex h-10 items-center gap-1.5 rounded-[10px] bg-primary text-primary-foreground px-4 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+            className="flex h-10 items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-4 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" />
             <span>New Production Order</span>
@@ -214,7 +217,7 @@ export function ProductionOrdersPage() {
             </Button>
           </div>
         ) : orders.length === 0 ? (
-          <div className="py-16 text-center rounded-[12px] border border-border/80 bg-card">
+          <div className="py-16 text-center rounded-md border border-border/80 bg-card">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
               <Layers className="h-6 w-6" />
             </div>
@@ -232,101 +235,76 @@ export function ProductionOrdersPage() {
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-[12px] border border-border/80 bg-card">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-xs font-semibold text-muted-foreground">
-                  <th className="py-3 px-4">Order No.</th>
-                  <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-4">Quantity</th>
-                  <th className="py-3 px-4">Source WH</th>
-                  <th className="py-3 px-4">FG WH</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+          <>
+            <Table>
+              <THead>
+                <tr>
+                  <TH>Order no.</TH>
+                  <TH>Product</TH>
+                  <TH>Quantity</TH>
+                  <TH>Source WH</TH>
+                  <TH>FG WH</TH>
+                  <TH>Status</TH>
+                  <TH className="text-right">Actions</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 text-sm">
+              </THead>
+              <TBody>
                 {orders.map((o) => (
-                  <tr key={o.id} className="hover:bg-secondary/40 transition-colors">
-                    {/* Order No */}
-                    <td className="py-3.5 px-4">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenDetails(o)}
-                        className="font-mono font-medium text-xs text-blue-500 hover:text-blue-400 hover:underline cursor-pointer"
-                        title="Click to view order details"
-                      >
-                        {o.orderNumber}
-                      </button>
-                    </td>
+                  <TR
+                    key={o.id}
+                    clickable
+                    onClick={() => handleOpenDetails(o)}
+                  >
+                    <TD>
+                      <span className="text-ref-link">{o.orderNumber}</span>
+                    </TD>
 
-                    {/* Product */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <p className="font-medium text-foreground">{o.productName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
+                    <TD>
+                      <p className="font-medium">{o.productName}</p>
+                      <p className="text-[11px] text-ref text-muted-foreground">
                         {o.productCode} · BOM: {o.bomCode}
                       </p>
-                    </td>
+                    </TD>
 
-                    {/* Quantity */}
-                    <td className="py-3.5 px-4 text-xs font-mono font-medium text-foreground">
+                    <TD className="font-mono font-medium">
                       {formatQuantity(o.productionQuantity)} {o.unitOfMeasure}
-                    </td>
+                    </TD>
 
-                    {/* Source WH */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <p className="font-medium text-foreground">{o.sourceWarehouseName}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono">{o.sourceWarehouseCode}</p>
-                    </td>
+                    <TD>
+                      <p className="font-medium">{o.sourceWarehouseName}</p>
+                      <p className="text-[11px] text-ref text-muted-foreground">{o.sourceWarehouseCode}</p>
+                    </TD>
 
-                    {/* FG WH */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <p className="font-medium text-foreground">{o.finishedGoodsWarehouseName}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono">{o.finishedGoodsWarehouseCode}</p>
-                    </td>
+                    <TD>
+                      <p className="font-medium">{o.finishedGoodsWarehouseName}</p>
+                      <p className="text-[11px] text-ref text-muted-foreground">{o.finishedGoodsWarehouseCode}</p>
+                    </TD>
 
-                    {/* Status Badge */}
-                    <td className="py-3.5 px-4">
+                    <TD>
                       {o.status === 'RELEASED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Released
-                        </span>
+                        <Badge variant="success">Released</Badge>
                       )}
                       {o.status === 'IN_PROGRESS' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-500 border border-blue-500/20">
-                          <Clock className="h-3.5 w-3.5" />
-                          In Progress
-                        </span>
+                        <Badge variant="info">In Progress</Badge>
                       )}
                       {o.status === 'COMPLETED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs font-semibold text-purple-400 border border-purple-500/20">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Completed
-                        </span>
+                        <Badge variant="success">Completed</Badge>
                       )}
                       {o.status === 'CLOSED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-2.5 py-0.5 text-xs font-semibold text-zinc-400 border border-zinc-500/20">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Closed
-                        </span>
+                        <Badge variant="neutral">Closed</Badge>
                       )}
                       {o.status === 'DRAFT' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
-                          <Clock className="h-3.5 w-3.5" />
-                          Draft
-                        </span>
+                        <Badge variant="warning">Draft</Badge>
                       )}
                       {o.status === 'CANCELLED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-500 border border-rose-500/20">
-                          <Ban className="h-3.5 w-3.5" />
-                          Cancelled
-                        </span>
+                        <Badge variant="destructive">Cancelled</Badge>
                       )}
-                    </td>
+                    </TD>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                    <TD
+                      className="text-right space-x-1.5 whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {o.status === 'DRAFT' ? (
                         <>
                           <Button
@@ -341,7 +319,7 @@ export function ProductionOrdersPage() {
                           <Button
                             size="sm"
                             onClick={() => handleReleaseOrder(o.id)}
-                            className="h-8 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer inline-flex items-center gap-1"
+                            className="h-8 px-2.5 text-xs bg-success text-success-foreground hover:opacity-90 cursor-pointer inline-flex items-center gap-1"
                           >
                             <PackageCheck className="h-3 w-3" />
                             <span>Release</span>
@@ -386,15 +364,15 @@ export function ProductionOrdersPage() {
                           <span>View</span>
                         </Button>
                       )}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
 
             {/* Pagination footer */}
             {pageData && pageData.totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-border/80 px-4 py-3 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between border border-t-0 border-border/80 rounded-b-md bg-card px-4 py-3 text-xs text-muted-foreground">
                 <span>
                   Showing {orders.length} of {pageData.totalElements} production orders
                 </span>
@@ -431,7 +409,7 @@ export function ProductionOrdersPage() {
                 </div>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 

@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { X, AlertTriangle, Truck } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Select } from '../../components/ui/Select'
+import { DateField } from '../../components/ui/DateField'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { dispatchService } from '../../services/dispatchService'
 import { salesService } from '../../services/salesService'
 import type { SalesOrder } from '../../types/sales'
@@ -320,7 +323,7 @@ export function CreateDispatchModal({
               Dispatch / Dispatch Orders / {editingDispatch ? editingDispatch.dispatchNumber : 'New'}
             </p>
             <div className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-emerald-400" />
+              <Truck className="h-5 w-5 text-success" />
               <h2 className="text-xl font-bold tracking-tight text-foreground">
                 {editingDispatch ? `Edit Dispatch ${editingDispatch.dispatchNumber}` : 'Create Dispatch'}
               </h2>
@@ -330,7 +333,7 @@ export function CreateDispatchModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -338,7 +341,7 @@ export function CreateDispatchModal({
 
         {/* Error Alert */}
         {error && (
-          <div className="flex items-center gap-2 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -352,37 +355,32 @@ export function CreateDispatchModal({
               type="text"
               value={dispatchNumber}
               disabled
-              className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-secondary/30 text-muted-foreground font-mono text-xs cursor-not-allowed"
+              className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground font-mono text-xs cursor-not-allowed"
             />
           </div>
 
-          <div>
-            <label className="block font-medium text-foreground mb-1.5">Dispatch Date *</label>
-            <input
-              type="date"
-              value={dispatchDate}
-              onChange={(e) => setDispatchDate(e.target.value)}
-              disabled={isSubmitting}
-              className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors"
-            />
-          </div>
+          <DateField
+            label="Dispatch Date *"
+            value={dispatchDate}
+            onChange={(e) => setDispatchDate(e.target.value)}
+            disabled={isSubmitting}
+          />
 
-          <div>
-            <label className="block font-medium text-foreground mb-1.5">Sales Order *</label>
-            <select
-              value={selectedSalesOrderId}
-              onChange={(e) => handleSalesOrderChange(e.target.value)}
-              disabled={isSubmitting || !!editingDispatch || (!!preselectedSalesOrder && salesOrders.length <= 1)}
-              className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors cursor-pointer disabled:opacity-60"
-            >
-              <option value="">Select confirmed Sales Order...</option>
-              {salesOrders.map((so) => (
-                <option key={so.id} value={so.id}>
-                  {so.orderNumber} — {so.customerName} ({so.status === 'PARTIALLY_DISPATCHED' ? 'Partially Dispatched' : 'Confirmed'})
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Sales Order *"
+            value={selectedSalesOrderId}
+            onChange={handleSalesOrderChange}
+            disabled={
+              isSubmitting ||
+              !!editingDispatch ||
+              (!!preselectedSalesOrder && salesOrders.length <= 1)
+            }
+            placeholder="Select confirmed Sales Order..."
+            options={salesOrders.map((so) => ({
+              value: so.id,
+              label: `${so.orderNumber} — ${so.customerName} (${so.status === 'PARTIALLY_DISPATCHED' ? 'Partially Dispatched' : 'Confirmed'})`,
+            }))}
+          />
 
           <div>
             <label className="block font-medium text-foreground mb-1.5">Customer</label>
@@ -390,7 +388,7 @@ export function CreateDispatchModal({
               type="text"
               value={preparedData?.customerName || selectedOrder?.customerName || '—'}
               disabled
-              className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-secondary/30 text-muted-foreground text-xs cursor-not-allowed"
+              className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground text-xs cursor-not-allowed"
             />
           </div>
         </div>
@@ -402,7 +400,7 @@ export function CreateDispatchModal({
             type="text"
             value={preparedData?.dispatchWarehouseName || selectedOrder?.warehouseName || '—'}
             disabled
-            className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-secondary/30 text-muted-foreground text-xs cursor-not-allowed"
+            className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground text-xs cursor-not-allowed"
           />
         </div>
 
@@ -415,7 +413,7 @@ export function CreateDispatchModal({
             onChange={(e) => setShippingAddress(e.target.value)}
             disabled={isSubmitting}
             placeholder="Shipping destination address..."
-            className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors resize-none"
+            className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors resize-none"
           />
         </div>
 
@@ -423,24 +421,23 @@ export function CreateDispatchModal({
         <div className="space-y-2.5">
           <h3 className="text-sm font-semibold text-foreground">Items to dispatch</h3>
 
-          <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                  <th className="py-2.5 px-3.5">Item</th>
-                  <th className="py-2.5 px-3 text-right">Pending</th>
-                  <th className="py-2.5 px-3 text-right">On Hand</th>
-                  <th className="py-2.5 px-3.5 text-right w-36">Dispatch Qty</th>
-                  <th className="py-2.5 px-3">UOM</th>
+          <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Item</TH>
+                  <TH className="py-2.5 text-right">Pending</TH>
+                  <TH className="py-2.5 text-right">On Hand</TH>
+                  <TH className="py-2.5 text-right w-36">Dispatch Qty</TH>
+                  <TH className="py-2.5">UOM</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+              </THead>
+              <TBody className="divide-y divide-border/60">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                  <TR>
+                    <TD colSpan={5} className="py-8 text-center text-muted-foreground">
                       Loading order items and warehouse stock...
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ) : items.length > 0 ? (
                   items.map((line) => {
                     const isExceeded =
@@ -448,18 +445,18 @@ export function CreateDispatchModal({
                       (line.dispatchQuantity > line.pendingQuantity || line.dispatchQuantity > line.onHandQuantity)
 
                     return (
-                      <tr key={line.salesOrderItemId} className="hover:bg-secondary/15 transition-colors">
-                        <td className="py-3 px-3.5 font-medium text-foreground">
+                      <TR key={line.salesOrderItemId} className="hover:bg-secondary/15 transition-colors">
+                        <TD className="py-3 px-3.5 font-medium text-foreground">
                           <p>{line.itemName}</p>
-                          <p className="text-[11px] text-muted-foreground font-mono">{line.itemCode}</p>
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono font-semibold text-foreground">
+                          <p className="text-[11px] text-ref text-muted-foreground">{line.itemCode}</p>
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
                           {formatQuantity(line.pendingQuantity)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(line.onHandQuantity)}
-                        </td>
-                        <td className="py-3 px-3.5 text-right">
+                        </TD>
+                        <TD className="py-3 px-3.5 text-right">
                           <input
                             type="number"
                             min="0"
@@ -469,34 +466,33 @@ export function CreateDispatchModal({
                             onChange={(e) => handleLineQtyChange(line.salesOrderItemId, e.target.value)}
                             disabled={isSubmitting}
                             placeholder="0"
-                            className={`w-28 px-2.5 py-1.5 rounded-[6px] border text-right font-mono text-xs focus:outline-hidden transition-colors ${
+                            className={`w-28 px-2.5 py-1.5 rounded-md border text-right font-mono text-xs focus:outline-hidden transition-colors ${
                               isExceeded
                                 ? 'border-destructive bg-destructive/10 text-destructive'
                                 : 'border-border/80 bg-secondary/20 text-foreground focus:border-foreground'
                             }`}
                           />
-                        </td>
-                        <td className="py-3 px-3 text-muted-foreground">{line.unitOfMeasure}</td>
-                      </tr>
+                        </TD>
+                        <TD className="py-3 px-3 text-muted-foreground">{line.unitOfMeasure}</TD>
+                      </TR>
                     )
                   })
                 ) : (
-                  <tr>
-                    <td colSpan={5} className="py-6 text-center text-muted-foreground">
+                  <TR>
+                    <TD colSpan={5} className="py-6 text-center text-muted-foreground">
                       {selectedSalesOrderId ? 'No pending items found for this order.' : 'Select a Sales Order to load items.'}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </TBody>
+            </Table>
 
           {items.length > 0 && (
             <button
               type="button"
               onClick={handleFillAvailable}
               disabled={isSubmitting}
-              className="w-full py-2 px-4 rounded-[10px] border border-border/80 bg-secondary/30 hover:bg-secondary/60 text-xs font-medium text-foreground transition-colors cursor-pointer disabled:opacity-50"
+              className="w-full py-2 px-4 rounded-md border border-border/80 bg-secondary/30 hover:bg-secondary/60 text-xs font-medium text-foreground transition-colors cursor-pointer disabled:opacity-50"
             >
               Fill available quantities
             </button>
@@ -516,7 +512,7 @@ export function CreateDispatchModal({
                 onChange={(e) => setTransporterName(e.target.value)}
                 disabled={isSubmitting}
                 placeholder="Optional"
-                className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors"
+                className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors"
               />
             </div>
 
@@ -528,7 +524,7 @@ export function CreateDispatchModal({
                 onChange={(e) => setVehicleNumber(e.target.value)}
                 disabled={isSubmitting}
                 placeholder="Optional"
-                className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors font-mono"
+                className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors font-mono"
               />
             </div>
           </div>
@@ -541,7 +537,7 @@ export function CreateDispatchModal({
               onChange={(e) => setTransportReference(e.target.value)}
               disabled={isSubmitting}
               placeholder="Optional"
-              className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors font-mono"
+              className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors font-mono"
             />
           </div>
         </div>
@@ -555,7 +551,7 @@ export function CreateDispatchModal({
             onChange={(e) => setNotes(e.target.value)}
             disabled={isSubmitting}
             placeholder="Additional dispatch instructions..."
-            className="w-full px-3 py-2 rounded-[8px] border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors resize-none"
+            className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors resize-none"
           />
         </div>
 
@@ -585,7 +581,7 @@ export function CreateDispatchModal({
             size="sm"
             onClick={() => handleSubmit(true)}
             disabled={isSubmitting || items.length === 0}
-            className="bg-[#107048] hover:bg-[#0d603e] text-white font-medium text-xs px-4 h-9 rounded-[8px] cursor-pointer shadow-xs"
+            className="bg-brand hover:bg-brand-hover text-brand-foreground font-medium text-xs px-4 h-9 rounded-md cursor-pointer shadow-xs"
           >
             {isSubmitting ? 'Posting...' : 'Post Dispatch'}
           </Button>

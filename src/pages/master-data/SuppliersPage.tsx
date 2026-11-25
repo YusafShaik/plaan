@@ -15,6 +15,8 @@ import {
   Mail,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateSupplierModal } from './CreateSupplierModal'
 import { masterDataService } from '../../services/masterDataService'
 import type {
@@ -189,7 +191,7 @@ export function SuppliersPage({
 
           <Button
             onClick={() => setIsModalOpen(true)}
-            className="gap-2 bg-[#171717] text-white hover:opacity-90 font-medium px-4 py-2 rounded-[10px] cursor-pointer shadow-xs self-start sm:self-auto"
+            className="gap-2 bg-ink text-ink-foreground hover:opacity-90 font-medium px-4 py-2 rounded-md cursor-pointer shadow-xs self-start sm:self-auto"
           >
             <span>Add supplier</span>
           </Button>
@@ -209,7 +211,7 @@ export function SuppliersPage({
 
         <div>
           <p className="text-sm font-medium text-muted-foreground">Active in procurement</p>
-          <p className="text-[24px] font-semibold tracking-tight text-[#048140] mt-1">
+          <p className="text-[24px] font-semibold tracking-tight text-success mt-1">
             {summary?.activeSuppliers ?? suppliers.filter((s) => s.active).length}
           </p>
         </div>
@@ -269,7 +271,7 @@ export function SuppliersPage({
               placeholder="Search name, code, contact..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
@@ -278,21 +280,21 @@ export function SuppliersPage({
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`h-10 w-10 flex items-center justify-center rounded-[10px] border transition-colors cursor-pointer relative ${
+              className={`h-10 w-10 flex items-center justify-center rounded-md border transition-colors cursor-pointer relative ${
                 isFilterOpen || selectedStatusFilter !== 'all'
-                  ? 'border-accent bg-accent/15 text-accent'
+                  ? 'border-accent bg-brand/15 text-brand-deep'
                   : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'
               }`}
               title="Filter by Status"
             >
               <Filter className="h-4 w-4" />
               {selectedStatusFilter !== 'all' && (
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent" />
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-brand-deep" />
               )}
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 top-full mt-2 z-30 w-64 rounded-[10px] border border-border bg-white p-3.5 shadow-panel animate-in fade-in-50 zoom-in-95 duration-150">
+              <div className="absolute right-0 top-full mt-2 z-30 w-64 rounded-md border border-border bg-card p-3.5 shadow-panel animate-in fade-in-50 zoom-in-95 duration-150">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Filter by Status
@@ -325,7 +327,7 @@ export function SuppliersPage({
                         setSelectedStatusFilter(s.value)
                         setIsFilterOpen(false)
                       }}
-                      className={`flex w-full items-center justify-between rounded-[6px] px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
+                      className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
                         selectedStatusFilter === s.value
                           ? 'bg-secondary font-medium text-foreground'
                           : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -333,7 +335,7 @@ export function SuppliersPage({
                     >
                       <span>{s.label}</span>
                       {selectedStatusFilter === s.value && (
-                        <Check className="h-4 w-4 text-accent" />
+                        <Check className="h-4 w-4 text-brand-deep" />
                       )}
                     </button>
                   ))}
@@ -349,7 +351,7 @@ export function SuppliersPage({
             size="sm"
             onClick={handleExport}
             disabled={suppliers.length === 0}
-            className="h-10 px-4 gap-2 rounded-[10px] border-border text-sm font-medium text-foreground hover:bg-secondary cursor-pointer"
+            className="h-10 px-4 gap-2 rounded-md border-border text-sm font-medium text-foreground hover:bg-secondary cursor-pointer"
           >
             <Download className="h-4 w-4" />
             <span>Export</span>
@@ -358,35 +360,34 @@ export function SuppliersPage({
       </div>
 
       {/* 4. Enterprise Data Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-border text-sm font-semibold text-foreground">
-              <th className="py-3.5 px-4 font-semibold">Supplier code</th>
-              <th className="py-3.5 px-4 font-semibold">Supplier name</th>
-              <th className="py-3.5 px-4 font-semibold">Contact person</th>
-              <th className="py-3.5 px-4 font-semibold">Contact info</th>
-              <th className="py-3.5 px-4 font-semibold">GSTIN / Tax ID</th>
-              <th className="py-3.5 px-4 font-semibold">Status</th>
-              <th className="py-3.5 px-4 text-right w-12"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60 text-sm">
+      <Table>
+        <THead>
+          <tr>
+            <TH>Supplier code</TH>
+            <TH>Supplier name</TH>
+            <TH>Contact person</TH>
+            <TH>Contact info</TH>
+            <TH>GSTIN / Tax ID</TH>
+            <TH>Status</TH>
+            <TH className="text-right w-12" />
+          </tr>
+        </THead>
+        <TBody>
             {isLoading ? (
-              <tr>
-                <td colSpan={7} className="py-16 text-center text-sm text-muted-foreground">
+              <TR>
+                <TD colSpan={7} className="py-16 text-center font-normal text-muted-foreground">
                   Loading suppliers...
-                </td>
-              </tr>
+                </TD>
+              </TR>
             ) : error ? (
-              <tr>
-                <td colSpan={7} className="py-16 text-center text-sm text-destructive">
+              <TR>
+                <TD colSpan={7} className="py-16 text-center font-normal text-destructive">
                   {error}
-                </td>
-              </tr>
+                </TD>
+              </TR>
             ) : suppliers.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="py-16 text-center">
+              <TR>
+                <TD colSpan={7} className="py-16 text-center font-normal">
                   <p className="text-base font-semibold text-foreground">
                     No suppliers found
                   </p>
@@ -395,19 +396,20 @@ export function SuppliersPage({
                       ? 'Try clearing your filters or changing your search terms.'
                       : 'Your organization supplier master is empty. Click "+ Add supplier" above to register your first supplier.'}
                   </p>
-                </td>
-              </tr>
+                </TD>
+              </TR>
             ) : (
               suppliers.map((supplier) => (
-                <tr
+                <TR
                   key={supplier.id}
-                  className="group border-b border-border/50 hover:bg-secondary/70 transition-colors duration-150 cursor-pointer"
+                  clickable
+                  className="group"
                 >
-                  <td className="py-4 px-4 font-mono text-sm font-normal text-muted-foreground">
+                  <TD className="text-ref text-foreground">
                     {supplier.supplierCode}
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4">
+                  <TD>
                     <div className="flex items-center gap-3">
                       <Truck className="h-4 w-4 text-muted-foreground/80 shrink-0 group-hover:text-foreground transition-colors" />
                       <div>
@@ -419,13 +421,13 @@ export function SuppliersPage({
                         )}
                       </div>
                     </div>
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4 text-sm font-normal text-foreground">
+                  <TD className="font-normal">
                     {supplier.contactPerson || '—'}
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4 text-xs font-normal text-muted-foreground">
+                  <TD className="font-normal text-muted-foreground">
                     <div className="space-y-0.5">
                       {supplier.phone && (
                         <p className="flex items-center gap-1.5 text-foreground">
@@ -441,34 +443,26 @@ export function SuppliersPage({
                       )}
                       {!supplier.phone && !supplier.email && <span>—</span>}
                     </div>
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4 font-mono text-xs font-normal text-foreground">
+                  <TD className="text-ref text-foreground font-normal">
                     {supplier.taxId || '—'}
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4">
-                    {supplier.active ? (
-                      <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-                        <span className="h-2 w-2 rounded-full bg-[#048140]" />
-                        Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <span className="h-2 w-2 rounded-full bg-muted-foreground/60" />
-                        Inactive
-                      </span>
-                    )}
-                  </td>
+                  <TD>
+                    <Badge variant={supplier.active ? 'success' : 'neutral'}>
+                      {supplier.active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </TD>
 
-                  <td className="py-4 px-4 text-right relative">
+                  <TD className="text-right relative">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
                         setActiveMenuId(activeMenuId === supplier.id ? null : supplier.id)
                       }}
-                      className="p-1 rounded-[6px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
                       title="More actions"
                     >
                       <MoreHorizontal className="h-4 w-4" />
@@ -477,26 +471,25 @@ export function SuppliersPage({
                     {activeMenuId === supplier.id && (
                       <div
                         ref={actionMenuRef}
-                        className="absolute right-4 top-10 z-20 w-44 rounded-[10px] border border-border bg-white p-1 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100"
+                        className="absolute right-4 top-10 z-20 w-44 rounded-md border border-border bg-card p-1 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(supplier)}
-                          className="flex w-full items-center gap-2 rounded-[6px] px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
                         >
                           <Power className="h-3.5 w-3.5 text-muted-foreground" />
                           <span>{supplier.active ? 'Deactivate supplier' : 'Activate supplier'}</span>
                         </button>
                       </div>
                     )}
-                  </td>
-                </tr>
+                  </TD>
+                </TR>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+        </TBody>
+      </Table>
 
       {/* 5. Pagination Bar */}
       {pageData && pageData.totalPages > 1 && (
@@ -523,7 +516,7 @@ export function SuppliersPage({
               size="sm"
               disabled={pageData.first || isLoading}
               onClick={() => loadSuppliers(currentPage - 1)}
-              className="gap-1 rounded-[8px] px-3"
+              className="gap-1 rounded-md px-3"
             >
               <ChevronLeft className="h-4 w-4" />
               <span>Previous</span>
@@ -536,7 +529,7 @@ export function SuppliersPage({
               size="sm"
               disabled={pageData.last || isLoading}
               onClick={() => loadSuppliers(currentPage + 1)}
-              className="gap-1 rounded-[8px] px-3"
+              className="gap-1 rounded-md px-3"
             >
               <span>Next</span>
               <ChevronRight className="h-4 w-4" />

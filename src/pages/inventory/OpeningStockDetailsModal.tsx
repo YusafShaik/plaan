@@ -3,13 +3,13 @@ import {
   Warehouse as WarehouseIcon,
   Calendar,
   PackageCheck,
-  CheckCircle2,
-  Clock,
   Ban,
   FileText,
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import type { OpeningStock } from '../../types/inventory'
 
 export interface OpeningStockDetailsModalProps {
@@ -64,22 +64,13 @@ export function OpeningStockDetailsModal({
                 {openingStock.openingStockNumber}
               </h2>
               {openingStock.status === 'POSTED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Posted (Stock Initialized)
-                </span>
+                <Badge variant="success">Posted (Stock Initialized)</Badge>
               )}
               {openingStock.status === 'DRAFT' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
-                  <Clock className="h-3.5 w-3.5" />
-                  Draft
-                </span>
+                <Badge variant="warning">Draft</Badge>
               )}
               {openingStock.status === 'CANCELLED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-500 border border-rose-500/20">
-                  <Ban className="h-3.5 w-3.5" />
-                  Cancelled
-                </span>
+                <Badge variant="destructive">Cancelled</Badge>
               )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -90,14 +81,14 @@ export function OpeningStockDetailsModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Info Grid */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-[10px] border border-border/80 bg-secondary/40 p-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded-md border border-border/80 bg-secondary/40 p-4">
           <div className="flex items-start gap-2.5">
             <WarehouseIcon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
             <div>
@@ -143,38 +134,38 @@ export function OpeningStockDetailsModal({
             </h3>
           </div>
 
-          <div className="rounded-[10px] border border-border/80 overflow-hidden">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead className="bg-secondary/60 text-muted-foreground font-semibold border-b border-border/80">
+          <div className="rounded-md border border-border/80 overflow-hidden">
+            <Table>
+              <THead>
                 <tr>
-                  <th className="py-2.5 px-3.5">#</th>
-                  <th className="py-2.5 px-3.5">Item</th>
-                  <th className="py-2.5 px-3.5 text-right">Quantity</th>
-                  <th className="py-2.5 px-3.5">UOM</th>
+                  <TH className="py-2.5">#</TH>
+                  <TH className="py-2.5">Item</TH>
+                  <TH className="py-2.5 text-right">Quantity</TH>
+                  <TH className="py-2.5">UOM</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+              </THead>
+              <TBody className="divide-y divide-border/60">
                 {openingStock.items.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="py-2.5 px-3.5 text-muted-foreground font-mono text-[11px]">
+                  <TR key={item.id} className="hover:bg-secondary/30 transition-colors">
+                    <TD className="py-2.5 px-3.5 text-muted-foreground font-mono text-[11px]">
                       {idx + 1}
-                    </td>
-                    <td className="py-2.5 px-3.5">
+                    </TD>
+                    <TD className="py-2.5 px-3.5">
                       <p className="font-medium text-foreground">{item.itemName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
+                      <p className="text-[11px] text-ref text-muted-foreground">
                         {item.itemCode}
                       </p>
-                    </td>
-                    <td className="py-2.5 px-3.5 text-right font-mono font-semibold text-emerald-500">
+                    </TD>
+                    <TD className="py-2.5 px-3.5 text-right font-mono font-medium text-success">
                       +{formatQuantity(item.quantity)}
-                    </td>
-                    <td className="py-2.5 px-3.5 text-muted-foreground">
+                    </TD>
+                    <TD className="py-2.5 px-3.5 text-muted-foreground">
                       {item.unitOfMeasure}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           </div>
         </div>
 
@@ -199,7 +190,7 @@ export function OpeningStockDetailsModal({
               <Button
                 size="sm"
                 onClick={() => onPost(openingStock.id)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
+                className="bg-success text-success-foreground hover:opacity-90 font-medium"
               >
                 <PackageCheck className="mr-1.5 h-3.5 w-3.5" />
                 Post Opening Stock

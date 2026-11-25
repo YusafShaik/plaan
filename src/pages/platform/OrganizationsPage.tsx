@@ -1,7 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Plus, Search, Building2, CheckCircle2, AlertCircle, Power } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
 import { Input } from '../../components/ui/Input'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateOrganizationModal } from './CreateOrganizationModal'
 import { platformService } from '../../services/platformService'
 import type { OrganizationItem, CreateOrganizationPayload } from '../../types/platform'
@@ -106,7 +108,7 @@ export function OrganizationsPage() {
 
         <Button
           onClick={() => setIsModalOpen(true)}
-          className="gap-2 bg-accent text-accent-foreground hover:opacity-90"
+          className="gap-2 bg-brand-deep text-brand-foreground hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
           <span>Create Organization</span>
@@ -115,7 +117,7 @@ export function OrganizationsPage() {
 
       {/* 2. Quick Metrics Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-[12px] border border-border bg-card p-5 shadow-xs">
+        <div className="rounded-md border border-border bg-card p-5 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
               Total Workspaces
@@ -127,19 +129,19 @@ export function OrganizationsPage() {
           </p>
         </div>
 
-        <div className="rounded-[12px] border border-border bg-card p-5 shadow-xs">
+        <div className="rounded-md border border-border bg-card p-5 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
               Active
             </span>
-            <CheckCircle2 className="h-4 w-4 text-accent" />
+            <CheckCircle2 className="h-4 w-4 text-brand-deep" />
           </div>
           <p className="mt-2 text-2xl font-bold text-card-foreground">
             {stats.active}
           </p>
         </div>
 
-        <div className="rounded-[12px] border border-border bg-card p-5 shadow-xs">
+        <div className="rounded-md border border-border bg-card p-5 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
               Suspended
@@ -166,7 +168,7 @@ export function OrganizationsPage() {
       </div>
 
       {/* 4. Organizations Table */}
-      <div className="rounded-[12px] border border-border bg-card shadow-xs overflow-hidden">
+      <div className="rounded-md border border-border bg-card shadow-xs overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
             Loading workspaces...
@@ -189,80 +191,72 @@ export function OrganizationsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border bg-muted/40 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Table className="border-0 rounded-none shadow-none bg-transparent">
+              <THead>
                 <tr>
-                  <th className="px-6 py-3.5">Organization</th>
-                  <th className="px-6 py-3.5">Location & Currency</th>
-                  <th className="px-6 py-3.5">Admin Contact</th>
-                  <th className="px-6 py-3.5">Status</th>
-                  <th className="px-6 py-3.5 text-right">Actions</th>
+                  <TH className="px-6">Organization</TH>
+                  <TH className="px-6">Location & Currency</TH>
+                  <TH className="px-6">Admin Contact</TH>
+                  <TH className="px-6">Status</TH>
+                  <TH className="px-6 text-right">Actions</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
+              </THead>
+              <TBody>
                 {filteredOrgs.map((org) => (
-                  <tr key={org.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4">
+                  <TR key={org.id} clickable>
+                    <TD className="px-6 py-4">
                       <div className="font-medium text-card-foreground">
                         {org.name}
                       </div>
                       <div className="text-xs text-muted-foreground font-mono mt-0.5">
                         slug: {org.slug}
                       </div>
-                    </td>
+                    </TD>
 
-                    <td className="px-6 py-4 text-xs">
+                    <TD className="px-6 py-4 text-xs">
                       <div className="text-card-foreground font-medium">
                         {org.country || 'Global'}
                       </div>
                       <div className="text-muted-foreground mt-0.5">
                         {org.baseCurrency || 'USD'} · {org.timeZone || 'UTC'}
                       </div>
-                    </td>
+                    </TD>
 
-                    <td className="px-6 py-4 text-xs">
+                    <TD className="px-6 py-4 text-xs">
                       <div className="font-medium text-card-foreground">
                         {org.adminName}
                       </div>
                       <div className="text-muted-foreground mt-0.5">
                         {org.adminEmail}
                       </div>
-                    </td>
+                    </TD>
 
-                    <td className="px-6 py-4">
+                    <TD className="px-6 py-4">
                       {org.active ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-medium text-accent">
-                          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                          Active
-                        </span>
+                        <Badge variant="brand">Active</Badge>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/15 px-2.5 py-0.5 text-xs font-medium text-destructive">
-                          <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-                          Suspended
-                        </span>
+                        <Badge variant="destructive">Suspended</Badge>
                       )}
-                    </td>
+                    </TD>
 
-                    <td className="px-6 py-4 text-right">
+                    <TD className="px-6 py-4 text-right">
                       <Button
                         variant={org.active ? 'outline' : 'secondary'}
                         size="sm"
                         disabled={togglingId === org.id}
                         onClick={() => handleToggleStatus(org)}
                         className={`text-xs gap-1.5 ${
-                          org.active ? 'hover:text-destructive' : 'text-accent hover:opacity-90'
+                          org.active ? 'hover:text-destructive' : 'text-brand-deep hover:opacity-90'
                         }`}
                       >
                         <Power className="h-3 w-3" />
                         <span>{org.active ? 'Suspend' : 'Activate'}</span>
                       </Button>
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TBody>
+            </Table>
         )}
       </div>
 

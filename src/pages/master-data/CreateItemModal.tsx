@@ -182,7 +182,7 @@ export function CreateItemModal({
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-[8px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
           title="Close"
         >
           <X className="h-4 w-4" />
@@ -199,7 +199,7 @@ export function CreateItemModal({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Item Code Prefix & Sequence Section */}
-        <div className="rounded-[10px] border border-border bg-secondary/30 p-3.5 space-y-3">
+        <div className="rounded-md border border-border bg-secondary/30 p-3.5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Hash className="h-4 w-4 text-muted-foreground" />
@@ -239,37 +239,30 @@ export function CreateItemModal({
           {/* Existing Prefix Selection vs New Prefix Input */}
           {isNewPrefixMode ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div>
-                <Label htmlFor="newPrefixInput" className="text-xs">
-                  New Prefix (e.g. RAW-, FG-, COMP-)
-                </Label>
-                <Input
-                  id="newPrefixInput"
-                  placeholder="e.g. RAW-"
-                  value={newPrefixString}
-                  onChange={(e) => setNewPrefixString(e.target.value.toUpperCase())}
-                  disabled={isLoading}
-                  autoFocus
-                />
-              </div>
-              <div>
-                <Label htmlFor="newPrefixStart" className="text-xs">
-                  Starting Number (Last Used)
-                </Label>
-                <Input
-                  id="newPrefixStart"
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value={newPrefixInitialNumber}
-                  onChange={(e) => setNewPrefixInitialNumber(Math.max(0, parseInt(e.target.value) || 0))}
-                  disabled={isLoading}
-                />
-              </div>
+              <Input
+                id="newPrefixInput"
+                label="New prefix (e.g. RAW-, FG-, COMP-)"
+                placeholder="e.g. RAW-"
+                value={newPrefixString}
+                onChange={(e) => setNewPrefixString(e.target.value.toUpperCase())}
+                disabled={isLoading}
+                autoFocus
+              />
+              <Input
+                id="newPrefixStart"
+                label="Starting number (last used)"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={newPrefixInitialNumber}
+                onChange={(e) => setNewPrefixInitialNumber(Math.max(0, parseInt(e.target.value) || 0))}
+                disabled={isLoading}
+              />
             </div>
           ) : (
             <div className="space-y-1.5">
               <Select
+                label="Code prefix *"
                 options={prefixOptions}
                 value={selectedPrefixId}
                 onChange={setSelectedPrefixId}
@@ -284,7 +277,7 @@ export function CreateItemModal({
                     <span className="font-semibold text-foreground">{activePrefix.lastNumber}</span>{' '}
                     ({activePrefix.lastNumber > 0 ? formatPrefixCode(activePrefix, activePrefix.lastNumber) : 'None yet'})
                   </span>
-                  <span className="text-accent font-medium flex items-center gap-1">
+                  <span className="text-brand-deep font-medium flex items-center gap-1">
                     <Sparkles className="h-3 w-3" />
                     Next: {activePrefix.nextCode}
                   </span>
@@ -295,16 +288,9 @@ export function CreateItemModal({
 
           {/* Generated or Manually Edited Item Code */}
           <div className="pt-1 border-t border-border/50">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-muted-foreground font-medium">
-                Final Item Code to be assigned:
-              </span>
-              {isManualCodeEdit && (
-                <span className="text-[11px] text-muted-foreground italic">Manual override active</span>
-              )}
-            </div>
             <Input
               id="itemCode"
+              label="Final item code to be assigned"
               placeholder="e.g. ITM-005"
               value={computedItemCode}
               onChange={(e) => {
@@ -312,124 +298,128 @@ export function CreateItemModal({
                 setIsManualCodeEdit(true)
               }}
               disabled={isLoading || (!isManualCodeEdit && !isNewPrefixMode && prefixes.length > 0)}
-              className="font-mono text-sm font-semibold tracking-wider bg-secondary"
+              className="font-mono text-sm font-medium tracking-wider bg-secondary"
+              rightElement={
+                isManualCodeEdit ? (
+                  <span className="text-[11px] text-muted-foreground italic">Manual override</span>
+                ) : undefined
+              }
             />
           </div>
         </div>
 
-        {/* Item Name */}
-        <div>
-          <Label htmlFor="name" required>
-            Item Name
-          </Label>
+        <Input
+          id="name"
+          label="Item name *"
+          placeholder="e.g. Wood, Screws, Paint, Packaging Box"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isLoading}
+        />
+
+        {isCreatingNewType ? (
           <Input
-            id="name"
-            placeholder="e.g. Wood, Screws, Paint, Packaging Box"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            id="newItemTypeName"
+            label="Item type *"
+            placeholder="Enter new type (e.g. Raw Material, Component)"
+            value={newItemTypeName}
+            onChange={(e) => setNewItemTypeName(e.target.value)}
             disabled={isLoading}
+            autoFocus
+            rightElement={
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCreatingNewType(false)
+                  setSelectedTypeId('')
+                }}
+                className="text-xs font-medium text-foreground hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <Plus className="h-3 w-3" />
+                <span>Select existing type</span>
+              </button>
+            }
           />
-        </div>
+        ) : (
+          <Select
+            label="Item type *"
+            options={typeOptions}
+            value={selectedTypeId}
+            onChange={setSelectedTypeId}
+            placeholder={itemTypes.length === 0 ? 'No types yet — click "Add new type"' : 'Select item type...'}
+            disabled={isLoading || itemTypes.length === 0}
+            rightElement={
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCreatingNewType(true)
+                  setSelectedTypeId('')
+                }}
+                className="text-xs font-medium text-foreground hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <Plus className="h-3 w-3" />
+                <span>Add new type</span>
+              </button>
+            }
+          />
+        )}
 
-        {/* Item Type selection with inline creation */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <Label htmlFor="itemType" required className="mb-0">
-              Item Type
-            </Label>
-            <button
-              type="button"
-              onClick={() => {
-                setIsCreatingNewType(!isCreatingNewType)
-                setSelectedTypeId('')
-              }}
-              className="text-xs font-medium text-foreground hover:underline cursor-pointer flex items-center gap-1"
-            >
-              <Plus className="h-3 w-3" />
-              <span>{isCreatingNewType ? 'Select existing type' : 'Add new type'}</span>
-            </button>
-          </div>
-
-          {isCreatingNewType ? (
-            <Input
-              id="newItemTypeName"
-              placeholder="Enter new type (e.g. Raw Material, Component)"
-              value={newItemTypeName}
-              onChange={(e) => setNewItemTypeName(e.target.value)}
-              disabled={isLoading}
-              autoFocus
-            />
-          ) : (
-            <Select
-              options={typeOptions}
-              value={selectedTypeId}
-              onChange={setSelectedTypeId}
-              placeholder={itemTypes.length === 0 ? 'No types yet — click "Add new type"' : 'Select item type...'}
-              disabled={isLoading || itemTypes.length === 0}
-            />
-          )}
-        </div>
-
-        {/* Unit of Measure */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <Label htmlFor="uom" required className="mb-0">
-              Unit of Measure
-            </Label>
-            <button
-              type="button"
-              onClick={() => setIsCustomUom(!isCustomUom)}
-              className="text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              {isCustomUom ? 'Choose standard unit' : 'Custom unit'}
-            </button>
-          </div>
-
-          {isCustomUom ? (
-            <Input
-              id="customUom"
-              placeholder="e.g. bundle, drum, sheet"
-              value={customUom}
-              onChange={(e) => setCustomUom(e.target.value)}
-              disabled={isLoading}
-            />
-          ) : (
-            <Select
-              options={COMMON_UOM_OPTIONS}
-              value={unitOfMeasure}
-              onChange={setUnitOfMeasure}
-              disabled={isLoading}
-            />
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <Label htmlFor="description">
-            Description <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
-          </Label>
+        {isCustomUom ? (
           <Input
-            id="description"
-            placeholder="Additional material specs or notes"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            id="customUom"
+            label="Unit of measure *"
+            placeholder="e.g. bundle, drum, sheet"
+            value={customUom}
+            onChange={(e) => setCustomUom(e.target.value)}
             disabled={isLoading}
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setIsCustomUom(false)}
+                className="text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                Choose standard unit
+              </button>
+            }
           />
-        </div>
+        ) : (
+          <Select
+            label="Unit of measure *"
+            options={COMMON_UOM_OPTIONS}
+            value={unitOfMeasure}
+            onChange={setUnitOfMeasure}
+            disabled={isLoading}
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setIsCustomUom(true)}
+                className="text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                Custom unit
+              </button>
+            }
+          />
+        )}
 
-        {/* Status */}
-        <div className="flex items-center gap-2 pt-1">
-          <input
-            id="itemActive"
-            type="checkbox"
-            checked={active}
-            onChange={(e) => setActive(e.target.checked)}
-            className="h-4 w-4 rounded-[4px] border border-input accent-accent cursor-pointer"
-          />
-          <label htmlFor="itemActive" className="text-sm font-medium text-foreground cursor-pointer">
-            Active in operations
-          </label>
-        </div>
+        <Input
+          id="description"
+          label="Description (optional)"
+          placeholder="Additional material specs or notes"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          disabled={isLoading}
+        />
+
+        <Select
+          label="Status"
+          value={active ? 'active' : 'inactive'}
+          onChange={(v) => setActive(v === 'active')}
+          disabled={isLoading}
+          options={[
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+          ]}
+        />
 
         {/* Actions */}
         <div className="mt-6 pt-4 flex items-center justify-end gap-3 border-t border-border/60">
@@ -437,7 +427,7 @@ export function CreateItemModal({
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="border border-border/80 bg-white dark:bg-transparent text-foreground hover:bg-secondary rounded-[10px] px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50"
+            className="border border-border/80 bg-card dark:bg-transparent text-foreground hover:bg-secondary rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
@@ -445,7 +435,7 @@ export function CreateItemModal({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            className="bg-[#171717] dark:bg-white text-white dark:text-black hover:opacity-90 rounded-[10px] px-5 py-2 text-sm font-medium shadow-sm"
+            className="bg-ink dark:bg-card text-white dark:text-black hover:opacity-90 rounded-md px-5 py-2 text-sm font-medium shadow-sm"
           >
             Save Item
           </Button>

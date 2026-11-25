@@ -1,47 +1,69 @@
 import { type ButtonHTMLAttributes, forwardRef } from 'react'
+import { cn } from '../../lib/cn'
+
+export type ButtonVariant =
+  | 'primary'
+  | 'brand'
+  | 'secondary'
+  | 'outline'
+  | 'ghost'
+  | 'destructive'
+  | 'success'
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'destructive'
-  size?: 'sm' | 'md' | 'lg'
+  variant?: ButtonVariant
+  size?: ButtonSize
   isLoading?: boolean
+}
+
+const variantStyles: Record<ButtonVariant, string> = {
+  primary: 'bg-ink text-ink-foreground hover:bg-ink-hover shadow-xs',
+  brand: 'bg-brand text-brand-foreground hover:bg-brand-hover shadow-xs',
+  secondary: 'bg-secondary text-secondary-foreground hover:bg-muted',
+  outline:
+    'border border-border bg-background text-foreground hover:bg-secondary shadow-none',
+  ghost:
+    'bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground shadow-none',
+  destructive:
+    'bg-destructive text-destructive-foreground hover:opacity-90 shadow-xs',
+  success: 'bg-success text-success-foreground hover:opacity-90 shadow-xs',
+}
+
+const sizeStyles: Record<ButtonSize, string> = {
+  sm: 'h-8 px-3 text-xs gap-1.5',
+  md: 'h-10 px-4 text-xs gap-1.5',
+  lg: 'h-12 px-6 text-sm gap-2',
+  icon: 'h-9 w-9 p-0',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      className = '',
+      className,
       variant = 'primary',
       size = 'md',
       isLoading = false,
       disabled,
       children,
+      type = 'button',
       ...props
     },
     ref
   ) => {
-    const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 cursor-pointer rounded-[10px]'
-
-    const variantStyles = {
-      primary: 'bg-primary text-primary-foreground hover:opacity-90',
-      secondary: 'bg-secondary text-secondary-foreground hover:bg-muted',
-      outline:
-        'border border-border bg-background text-foreground hover:bg-secondary',
-      destructive:
-        'bg-destructive text-primary-foreground hover:opacity-90',
-    }
-
-    const sizeStyles = {
-      sm: 'h-8 px-3 text-xs',
-      md: 'h-10 px-4 py-2 text-sm',
-      lg: 'h-12 px-6 text-base',
-    }
-
     return (
       <button
         ref={ref}
+        type={type}
         disabled={disabled || isLoading}
-        className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+        className={cn(
+          'inline-flex items-center justify-center font-semibold rounded-md transition-colors',
+          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1',
+          'disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+          variantStyles[variant],
+          sizeStyles[size],
+          className
+        )}
         {...props}
       >
         {isLoading ? (
@@ -50,6 +72,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               className="h-4 w-4 animate-spin text-current"
               viewBox="0 0 24 24"
               fill="none"
+              aria-hidden
             >
               <circle
                 className="opacity-25"

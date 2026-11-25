@@ -14,6 +14,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
 import { EnterOpeningStockModal } from './EnterOpeningStockModal'
@@ -181,10 +182,10 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
             </div>
 
             {/* Segmented Tab Control: Stock Overview */}
-            <div className="hidden sm:flex items-center rounded-[8px] bg-secondary p-1 border border-border/80">
+            <div className="hidden sm:flex items-center rounded-md bg-secondary p-1 border border-border/80">
               <button
                 type="button"
-                className="rounded-[6px] px-3.5 py-1.5 text-xs font-semibold bg-[#171717] text-white shadow-xs cursor-default"
+                className="rounded-md px-3.5 py-1.5 text-xs font-semibold bg-ink text-ink-foreground shadow-xs cursor-default"
               >
                 Stock Overview
               </button>
@@ -259,7 +260,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
               placeholder="Search by item name or code..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
@@ -268,7 +269,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex h-10 w-10 items-center justify-center rounded-[10px] border transition-colors cursor-pointer ${
+              className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors cursor-pointer ${
                 selectedWarehouseId !== null || isFilterOpen
                   ? 'border-foreground bg-secondary text-foreground'
                   : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:border-border'
@@ -279,7 +280,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-[12px] border border-border bg-white p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+              <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                 <div className="px-2 py-1.5 border-b border-border/60 mb-1 flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground">Filter by Warehouse</span>
                   {selectedWarehouseId !== null && (
@@ -299,7 +300,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                       setSelectedWarehouseId(null)
                       setIsFilterOpen(false)
                     }}
-                    className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                    className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                       selectedWarehouseId === null
                         ? 'bg-secondary text-foreground font-semibold'
                         : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -321,7 +322,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                           setSelectedWarehouseId(wh.id)
                           setIsFilterOpen(false)
                         }}
-                        className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                           isSelected
                             ? 'bg-secondary text-foreground font-semibold'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -345,7 +346,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
             type="button"
             onClick={handleExportCsv}
             disabled={stockItems.length === 0}
-            className="flex h-10 items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="flex h-10 items-center gap-1.5 rounded-md border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             title="Export stock overview as CSV"
           >
             <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -355,12 +356,12 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
           {/* Opening Stock button */}
           <Button
             type="button"
+            variant="primary"
             onClick={() => setIsOpeningStockModalOpen(true)}
-            className="flex h-10 items-center gap-1.5 rounded-[10px] bg-primary text-primary-foreground px-3.5 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             title="Initialize materials before ERP setup"
           >
             <Plus className="h-4 w-4" />
-            <span>Opening Stock</span>
+            Opening stock
           </Button>
         </div>
       </div>
@@ -398,60 +399,53 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-sm font-semibold text-foreground">
-                  <th className="py-3.5 px-4 font-semibold">Item Code</th>
-                  <th className="py-3.5 px-4 font-semibold">Item Name</th>
-                  <th className="py-3.5 px-4 font-semibold">Warehouse</th>
-                  <th className="py-3.5 px-4 font-semibold text-right">On Hand</th>
-                  <th className="py-3.5 px-4 font-semibold">UOM</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 text-sm">
+          <Table>
+            <THead>
+              <tr>
+                <TH>Item code</TH>
+                <TH>Item name</TH>
+                <TH>Warehouse</TH>
+                <TH className="text-right">On hand</TH>
+                <TH>UOM</TH>
+              </tr>
+            </THead>
+            <TBody>
                 {stockItems.map((row) => (
-                  <tr
+                  <TR
                     key={`${row.itemId}-${row.warehouseId}`}
-                    className="group border-b border-border/50 hover:bg-secondary/70 transition-colors duration-150"
+                    className="group"
                   >
-                    {/* Item Code */}
-                    <td className="py-4 px-4 font-mono text-sm font-semibold text-foreground tracking-tight">
+                    <TD className="text-ref text-foreground">
                       {row.itemCode}
-                    </td>
+                    </TD>
 
-                    {/* Item Name */}
-                    <td className="py-4 px-4 font-medium text-foreground">
+                    <TD className="font-medium">
                       {row.itemName}
-                    </td>
+                    </TD>
 
-                    {/* Warehouse */}
-                    <td className="py-4 px-4">
+                    <TD>
                       <div className="flex items-center gap-2">
                         <WarehouseIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <div>
                           <span className="font-medium text-foreground">{row.warehouseName}</span>
-                          <span className="ml-2 font-mono text-xs text-muted-foreground font-normal">
+                          <span className="ml-2 text-[11px] text-ref text-muted-foreground">
                             {row.warehouseCode}
                           </span>
                         </div>
                       </div>
-                    </td>
+                    </TD>
 
-                    {/* On Hand Quantity */}
-                    <td className="py-4 px-4 text-right font-mono text-sm font-semibold text-foreground">
+                    <TD className="text-right font-mono font-medium">
                       {formatQuantity(row.onHandQuantity)}
-                    </td>
+                    </TD>
 
-                    {/* UOM */}
-                    <td className="py-4 px-4 text-xs font-mono text-muted-foreground">
+                    <TD className="font-normal text-muted-foreground">
                       {row.unitOfMeasure}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
-          </div>
+            </TBody>
+          </Table>
         )}
 
         {/* Pagination Controls */}
@@ -490,7 +484,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
       </div>
 
       {/* Helpful footnote banner matching prototype */}
-      <div className="flex items-center gap-2 rounded-[10px] bg-secondary/60 border border-border/70 p-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-2 rounded-md bg-secondary/60 border border-border/70 p-3 text-xs text-muted-foreground">
         <Info className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span>
           Interactive UI prototype. Try searching for an item or filtering by warehouse. Stock is automatically aggregated from posted Goods Receipts (GRN) and Opening Stock entries.

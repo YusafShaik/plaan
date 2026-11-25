@@ -1,18 +1,19 @@
 import { useState, useEffect, useMemo, type FormEvent } from 'react'
 import {
   Sparkles,
-  ChevronDown,
   X,
   Building2,
   Warehouse as WarehouseIcon,
   PackageCheck,
-  CheckCircle2,
-  Clock,
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
+import { DateField } from '../../components/ui/DateField'
 import { Alert } from '../../components/ui/Alert'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { procurementService } from '../../services/procurementService'
 import type {
   PoEligibleForGrn,
@@ -262,52 +263,32 @@ export function CreateGoodsReceiptModal({
               disabled={isLoading}
               className="font-semibold"
               rightElement={
-                <span className="text-[11px] font-sans font-medium text-accent flex items-center gap-1">
+                <span className="text-[11px] font-sans font-medium text-brand-deep flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               }
               hint="Unique receipt document reference. Auto-generated."
             />
 
-            {/* Field 2: Receipt Date */}
-            <div>
-              <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 transition-all focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
-                  Receipt Date *
-                </span>
-                <input
-                  type="date"
-                  value={receiptDate}
-                  onChange={(e) => setReceiptDate(e.target.value)}
-                  disabled={isLoading}
-                  className="mt-1 w-full border-0 bg-transparent p-0 text-sm font-medium text-foreground focus:outline-none focus:ring-0 cursor-pointer"
-                />
-              </div>
-            </div>
+            <DateField
+              label="Receipt Date *"
+              value={receiptDate}
+              onChange={(e) => setReceiptDate(e.target.value)}
+              disabled={isLoading}
+            />
 
-            {/* Field 3: Purchase Order Selector */}
             <div className="sm:col-span-2">
-              <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 transition-all focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
-                  Purchase Order *
-                </span>
-                <div className="mt-1 relative flex items-center">
-                  <select
-                    value={selectedPoId}
-                    onChange={(e) => handlePoChange(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full border-0 bg-transparent p-0 pr-6 text-sm font-semibold text-foreground focus:outline-none focus:ring-0 cursor-pointer appearance-none"
-                  >
-                    <option value="" disabled>Select an issued or partially received PO...</option>
-                    {eligiblePos.map((po) => (
-                      <option key={po.id} value={po.id}>
-                        {po.poNumber} — {po.supplierName} ({po.status.replace('_', ' ')}) • Ordered on {po.orderDate}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                </div>
-              </div>
+              <Select
+                label="Purchase Order *"
+                value={selectedPoId}
+                onChange={handlePoChange}
+                disabled={isLoading}
+                placeholder="Select an issued or partially received PO..."
+                options={eligiblePos.map((po) => ({
+                  value: po.id,
+                  label: `${po.poNumber} — ${po.supplierName} (${po.status.replace('_', ' ')}) • Ordered on ${po.orderDate}`,
+                }))}
+              />
               {eligiblePos.length === 0 && (
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   No pending purchase orders available for receiving. Issue a new purchase order first.
@@ -316,7 +297,7 @@ export function CreateGoodsReceiptModal({
             </div>
 
             {/* Field 4: Supplier (Auto-populated from PO) */}
-            <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 select-none">
+            <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2 select-none">
               <span className="text-[11px] font-medium text-muted-foreground leading-none">
                 Supplier
               </span>
@@ -329,7 +310,7 @@ export function CreateGoodsReceiptModal({
             </div>
 
             {/* Field 5: Receiving Warehouse (Auto-populated from PO) */}
-            <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 select-none">
+            <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2 select-none">
               <span className="text-[11px] font-medium text-muted-foreground leading-none">
                 Receiving Warehouse
               </span>
@@ -365,52 +346,50 @@ export function CreateGoodsReceiptModal({
             </span>
           </div>
 
-          <div className="rounded-[14px] border border-border/70 overflow-hidden bg-white dark:bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse table-fixed">
-                <thead>
-                  <tr className="border-b border-border/70 bg-[#fafafa] dark:bg-secondary/40 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    <th className="py-2.5 px-3 w-[36%]">Item</th>
-                    <th className="py-2.5 px-2 w-[14%] text-right">Ordered</th>
-                    <th className="py-2.5 px-2 w-[16%] text-right">Prev. Received</th>
-                    <th className="py-2.5 px-2.5 w-[20%] text-center">Receiving Now</th>
-                    <th className="py-2.5 px-3 w-[14%] text-right">Remaining</th>
+          <Table className="border-0 rounded-none shadow-none" tableClassName="table-fixed">
+              <THead>
+                <tr>
+                  <TH className="py-2.5 w-[36%]">Item</TH>
+                    <TH className="py-2.5 w-[14%] text-right">Ordered</TH>
+                    <TH className="py-2.5 w-[16%] text-right">Prev. Received</TH>
+                    <TH className="py-2.5 w-[20%] text-center">Receiving Now</TH>
+                    <TH className="py-2.5 w-[14%] text-right">Remaining</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60 text-sm">
+                </THead>
+                <TBody className="divide-y divide-border/60 text-sm">
                   {receiptItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-xs text-muted-foreground">
+                    <TR>
+                      <TD colSpan={5} className="py-8 text-center text-xs text-muted-foreground">
                         Select a purchase order above to view line items available for receipt.
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   ) : (
                     receiptItems.map((row) => {
                       const receivingVal = typeof row.receivingNow === 'number' ? row.receivingNow : 0
                       const remainingAfter = Math.max(0, row.remainingQuantity - receivingVal)
 
                       return (
-                        <tr key={row.purchaseOrderItemId} className="hover:bg-secondary/30 transition-colors">
+                        <TR key={row.purchaseOrderItemId} className="hover:bg-secondary/30 transition-colors">
                           {/* Item Column */}
-                          <td className="py-2.5 px-3">
+                          <TD className="py-2.5 px-3">
                             <p className="text-xs font-semibold text-foreground truncate">{row.itemName}</p>
                             <span className="inline-block px-1.5 py-0.5 rounded bg-secondary text-[10px] font-semibold text-muted-foreground uppercase mt-0.5">
                               {row.unitOfMeasure}
                             </span>
-                          </td>
+                          </TD>
 
                           {/* Ordered Column */}
-                          <td className="py-2.5 px-2 text-right text-xs font-medium text-muted-foreground">
+                          <TD className="py-2.5 px-2 text-right text-xs font-medium text-muted-foreground">
                             {row.orderedQuantity}
-                          </td>
+                          </TD>
 
                           {/* Previously Received Column */}
-                          <td className="py-2.5 px-2 text-right text-xs font-medium text-muted-foreground">
+                          <TD className="py-2.5 px-2 text-right text-xs font-medium text-muted-foreground">
                             {row.previouslyReceivedQuantity}
-                          </td>
+                          </TD>
 
                           {/* Receiving Now Input */}
-                          <td className="py-2.5 px-2.5">
+                          <TD className="py-2.5 px-2.5">
                             <input
                               type="number"
                               min="0"
@@ -420,50 +399,42 @@ export function CreateGoodsReceiptModal({
                               value={row.receivingNow}
                               onChange={(e) => handleReceivingChange(row.purchaseOrderItemId, e.target.value)}
                               disabled={isLoading || row.remainingQuantity <= 0}
-                              className="h-9 w-full rounded-[8px] border border-border/70 bg-[#f4f4f5] dark:bg-secondary px-2.5 py-1 text-xs font-semibold text-foreground text-center focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground disabled:opacity-50"
+                              className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs font-semibold text-foreground text-center focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground disabled:opacity-50"
                             />
-                          </td>
+                          </TD>
 
                           {/* Remaining Column */}
-                          <td className="py-2.5 px-3 text-right text-xs font-semibold">
+                          <TD className="py-2.5 px-3 text-right text-xs font-semibold">
                             <span
                               className={
                                 remainingAfter === 0
-                                  ? 'text-emerald-600 font-bold'
+                                  ? 'text-success font-bold'
                                   : 'text-foreground'
                               }
                             >
                               {remainingAfter}
                             </span>
-                          </td>
-                        </tr>
+                          </TD>
+                        </TR>
                       )
                     })
                   )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </TBody>
+            </Table>
         </div>
 
         {/* Section 3: Live Post-Status & Inventory Movements Preview Card */}
         {currentPo && receiptItems.length > 0 && (
-          <div className="rounded-[14px] border border-border/70 bg-[#f8f9fa] dark:bg-secondary/30 p-4 space-y-3">
+          <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/30 p-4 space-y-3">
             <div>
               <span className="text-[11px] font-medium text-muted-foreground select-none block">
                 Purchase Order status after posting
               </span>
               <div className="mt-1 flex items-center gap-2">
                 {expectedPoStatus === 'Completed' ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                    Completed (All items fulfilled)
-                  </span>
+                  <Badge variant="success">Completed (All items fulfilled)</Badge>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 border border-amber-200">
-                    <Clock className="h-3.5 w-3.5 text-amber-600" />
-                    Partially Received (Items remaining to receive)
-                  </span>
+                  <Badge variant="warning">Partially Received (Items remaining to receive)</Badge>
                 )}
               </div>
             </div>
@@ -477,11 +448,11 @@ export function CreateGoodsReceiptModal({
                   {activeMovements.map((m, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1.5 rounded-[8px] bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800 border border-emerald-200"
+                      className="inline-flex items-center gap-1.5 rounded-md bg-success/10 px-2.5 py-1 text-xs font-medium text-success border border-success/20"
                     >
-                      <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
+                      <PackageCheck className="h-3.5 w-3.5 text-success" />
                       <span>{m.itemName}:</span>
-                      <strong className="font-semibold font-mono">+{m.qty} {m.uom}</strong>
+                      <strong className="font-medium font-mono">+{m.qty} {m.uom}</strong>
                     </span>
                   ))}
                 </div>
@@ -501,7 +472,7 @@ export function CreateGoodsReceiptModal({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             disabled={isLoading}
-            className="w-full rounded-[10px] border border-border/70 bg-[#f4f4f5] dark:bg-secondary p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+            className="w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
           />
         </div>
 
@@ -512,7 +483,7 @@ export function CreateGoodsReceiptModal({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-            className="border-border/80 bg-white text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
+            className="border-border/80 bg-card text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
           >
             Cancel
           </Button>
@@ -521,7 +492,7 @@ export function CreateGoodsReceiptModal({
             variant="outline"
             disabled={isLoading || !selectedPoId}
             onClick={(e) => handleSubmit(e, 'DRAFT')}
-            className="border-border/80 bg-white text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
+            className="border-border/80 bg-card text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
           >
             Save Draft
           </Button>
@@ -529,7 +500,7 @@ export function CreateGoodsReceiptModal({
             type="button"
             disabled={isLoading || !selectedPoId}
             onClick={(e) => handleSubmit(e, 'POSTED')}
-            className="bg-[#171717] hover:bg-black text-white font-medium px-5 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
+            className="bg-ink hover:bg-ink-hover text-ink-foreground font-medium px-5 py-2 rounded-md text-sm cursor-pointer shadow-xs"
           >
             Post Goods Receipt
           </Button>

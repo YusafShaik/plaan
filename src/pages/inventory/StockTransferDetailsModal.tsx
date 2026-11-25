@@ -2,14 +2,14 @@ import {
   X,
   Warehouse as WarehouseIcon,
   Calendar,
-  CheckCircle2,
-  Clock,
-  Ban,
   FileText,
   PackageCheck,
+  Ban,
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import type { StockTransfer } from '../../types/inventory'
 
 export interface StockTransferDetailsModalProps {
@@ -64,22 +64,13 @@ export function StockTransferDetailsModal({
                 {transfer.transferNumber}
               </h2>
               {transfer.status === 'POSTED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Posted (Transferred)
-                </span>
+                <Badge variant="success">Posted (Transferred)</Badge>
               )}
               {transfer.status === 'DRAFT' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
-                  <Clock className="h-3.5 w-3.5" />
-                  Draft
-                </span>
+                <Badge variant="warning">Draft</Badge>
               )}
               {transfer.status === 'CANCELLED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-500 border border-rose-500/20">
-                  <Ban className="h-3.5 w-3.5" />
-                  Cancelled
-                </span>
+                <Badge variant="destructive">Cancelled</Badge>
               )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -90,37 +81,37 @@ export function StockTransferDetailsModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Transfer Visual Strip (Matching design screenshot) */}
-        <div className="rounded-[12px] border border-border/80 bg-secondary/30 p-4 space-y-3">
+        <div className="rounded-md border border-border/80 bg-secondary/30 p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Source Warehouse */}
-            <div className="rounded-[10px] border border-border/60 bg-card p-3 text-center sm:text-left">
+            <div className="rounded-md border border-border/60 bg-card p-3 text-center sm:text-left">
               <div className="flex items-center gap-2 mb-1">
                 <WarehouseIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-[11px] font-medium text-muted-foreground">Source Warehouse</span>
               </div>
               <p className="text-sm font-semibold text-foreground">{transfer.fromWarehouseName}</p>
               <p className="text-[11px] font-mono text-muted-foreground">{transfer.fromWarehouseCode}</p>
-              <p className="mt-2 text-xs font-semibold text-rose-500 font-mono">
+              <p className="mt-2 text-xs font-medium text-destructive font-mono">
                 −{formatQuantity(transfer.totalQuantity)} Total Out
               </p>
             </div>
 
             {/* Destination Warehouse */}
-            <div className="rounded-[10px] border border-border/60 bg-card p-3 text-center sm:text-left">
+            <div className="rounded-md border border-border/60 bg-card p-3 text-center sm:text-left">
               <div className="flex items-center gap-2 mb-1">
                 <WarehouseIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-[11px] font-medium text-muted-foreground">Destination Warehouse</span>
               </div>
               <p className="text-sm font-semibold text-foreground">{transfer.toWarehouseName}</p>
               <p className="text-[11px] font-mono text-muted-foreground">{transfer.toWarehouseCode}</p>
-              <p className="mt-2 text-xs font-semibold text-emerald-500 font-mono">
+              <p className="mt-2 text-xs font-medium text-success font-mono">
                 +{formatQuantity(transfer.totalQuantity)} Total In
               </p>
             </div>
@@ -132,7 +123,7 @@ export function StockTransferDetailsModal({
               <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
               Transfer Date: <strong className="text-foreground">{formatDate(transfer.transferDate)}</strong>
             </span>
-            <span className="font-medium text-emerald-500">Total organization stock remains unchanged</span>
+            <span className="font-medium text-success">Total organization stock remains unchanged</span>
           </div>
 
           {transfer.notes && (
@@ -154,38 +145,38 @@ export function StockTransferDetailsModal({
             </h3>
           </div>
 
-          <div className="rounded-[10px] border border-border/80 overflow-hidden">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead className="bg-secondary/60 text-muted-foreground font-semibold border-b border-border/80">
+          <div className="rounded-md border border-border/80 overflow-hidden">
+            <Table>
+              <THead>
                 <tr>
-                  <th className="py-2.5 px-3.5">#</th>
-                  <th className="py-2.5 px-3.5">Item</th>
-                  <th className="py-2.5 px-3.5 text-right">Transfer Qty</th>
-                  <th className="py-2.5 px-3.5">UOM</th>
+                  <TH className="py-2.5">#</TH>
+                  <TH className="py-2.5">Item</TH>
+                  <TH className="py-2.5 text-right">Transfer Qty</TH>
+                  <TH className="py-2.5">UOM</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+              </THead>
+              <TBody className="divide-y divide-border/60">
                 {transfer.items.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="py-2.5 px-3.5 text-muted-foreground font-mono text-[11px]">
+                  <TR key={item.id} className="hover:bg-secondary/30 transition-colors">
+                    <TD className="py-2.5 px-3.5 text-muted-foreground font-mono text-[11px]">
                       {idx + 1}
-                    </td>
-                    <td className="py-2.5 px-3.5">
+                    </TD>
+                    <TD className="py-2.5 px-3.5">
                       <p className="font-medium text-foreground">{item.itemName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
+                      <p className="text-[11px] text-ref text-muted-foreground">
                         {item.itemCode}
                       </p>
-                    </td>
-                    <td className="py-2.5 px-3.5 text-right font-mono font-semibold text-foreground">
+                    </TD>
+                    <TD className="py-2.5 px-3.5 text-right font-mono font-medium text-foreground">
                       {formatQuantity(item.transferQuantity)}
-                    </td>
-                    <td className="py-2.5 px-3.5 text-muted-foreground">
+                    </TD>
+                    <TD className="py-2.5 px-3.5 text-muted-foreground">
                       {item.unitOfMeasure}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
           </div>
         </div>
 
@@ -210,7 +201,7 @@ export function StockTransferDetailsModal({
               <Button
                 size="sm"
                 onClick={() => onPost(transfer.id)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
+                className="bg-success text-success-foreground hover:opacity-90 font-medium"
               >
                 <PackageCheck className="mr-1.5 h-3.5 w-3.5" />
                 Post Transfer

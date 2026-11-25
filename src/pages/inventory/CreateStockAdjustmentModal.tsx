@@ -10,8 +10,17 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react'
+import { cn } from '../../lib/cn'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
+import { DateField } from '../../components/ui/DateField'
+import {
+  fieldChrome,
+  fieldChromeFocus,
+  fieldChromeIdle,
+} from '../../components/ui/fieldStyles'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
 import type { Warehouse, Item } from '../../types/masterData'
@@ -421,7 +430,7 @@ export function CreateStockAdjustmentModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -429,14 +438,14 @@ export function CreateStockAdjustmentModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -446,54 +455,54 @@ export function CreateStockAdjustmentModal({
         <div className="space-y-4">
           {/* Row 1: Adjustment Number (left 50%) and Adjustment Date * (right 50%) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Adjustment Number */}
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Adjustment Number
-              </label>
-              <input
-                type="text"
-                disabled
-                value={adjustmentNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
-              />
-              <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
-            </div>
+            <Input
+              label="Adjustment Number"
+              value={adjustmentNumber}
+              disabled
+              hint="Auto-generated"
+              className="[&_input]:font-mono [&_input]:text-muted-foreground"
+            />
 
-            {/* Adjustment Date * */}
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Adjustment Date <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="date"
-                value={adjustmentDate}
-                onChange={(e) => setAdjustmentDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
-            </div>
+            <DateField
+              label="Adjustment Date *"
+              value={adjustmentDate}
+              onChange={(e) => setAdjustmentDate(e.target.value)}
+            />
           </div>
 
           {/* Row 2: Warehouse * (50%) and Reason * (50%) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Warehouse * */}
             <div className="relative" ref={warehouseRef}>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Warehouse <span className="text-destructive">*</span>
-              </label>
               <button
                 type="button"
                 onClick={() => setIsWarehouseOpen(!isWarehouseOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                className={cn(
+                  'flex min-h-14 w-full flex-col justify-center px-3.5 py-2 text-left cursor-pointer transition-all duration-150',
+                  fieldChrome,
+                  isWarehouseOpen ? fieldChromeFocus : fieldChromeIdle
+                )}
               >
-                <span className={selectedWarehouse ? 'font-medium truncate' : 'text-muted-foreground'}>
-                  {selectedWarehouse ? `${selectedWarehouse.name} (${selectedWarehouse.warehouseCode})` : 'Select warehouse...'}
+                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                  Warehouse <span className="text-destructive">*</span>
                 </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="mt-1 flex w-full items-center justify-between gap-2 text-sm font-medium min-w-0">
+                  <span
+                    className={cn(
+                      'truncate',
+                      selectedWarehouse ? 'text-foreground' : 'text-muted-foreground/60'
+                    )}
+                  >
+                    {selectedWarehouse
+                      ? `${selectedWarehouse.name} (${selectedWarehouse.warehouseCode})`
+                      : 'Select warehouse...'}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                </span>
               </button>
 
               {isWarehouseOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                   <div className="relative mb-1.5">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <input
@@ -501,7 +510,7 @@ export function CreateStockAdjustmentModal({
                       placeholder="Search warehouse..."
                       value={warehouseSearch}
                       onChange={(e) => setWarehouseSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -524,7 +533,7 @@ export function CreateStockAdjustmentModal({
                               setIsWarehouseOpen(false)
                               setWarehouseSearch('')
                             }}
-                            className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs cursor-pointer transition-colors ${
+                            className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
                               isSelected
                                 ? 'bg-secondary text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -548,23 +557,13 @@ export function CreateStockAdjustmentModal({
               )}
             </div>
 
-            {/* Reason * */}
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Reason <span className="text-destructive">*</span>
-              </label>
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              >
-                {COMMON_REASONS.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Reason *"
+              value={reason}
+              onChange={setReason}
+              placeholder="Select reason..."
+              options={COMMON_REASONS.map((r) => ({ value: r, label: r }))}
+            />
           </div>
 
           {/* Adjustment items Section */}
@@ -574,7 +573,7 @@ export function CreateStockAdjustmentModal({
                 Adjustment items
               </h3>
               {!warehouseId && (
-                <span className="text-[11px] text-amber-500 font-medium">
+                <span className="text-[11px] text-warning font-medium">
                   Select a warehouse to see system stock
                 </span>
               )}
@@ -614,7 +613,7 @@ export function CreateStockAdjustmentModal({
                       <button
                         type="button"
                         onClick={() => handleToggleRowDropdown(row.id, !row.isDropdownOpen)}
-                        className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
                       >
                         <span className={itemObj ? 'font-medium truncate' : 'text-muted-foreground'}>
                           {itemObj ? `${itemObj.name} (${itemObj.itemCode})` : 'Select item...'}
@@ -623,7 +622,7 @@ export function CreateStockAdjustmentModal({
                       </button>
 
                       {row.isDropdownOpen && (
-                        <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[280px] rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                        <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[280px] rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                           <div className="relative mb-1.5">
                             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                             <input
@@ -631,7 +630,7 @@ export function CreateStockAdjustmentModal({
                               placeholder="Search item code or name..."
                               value={row.searchQuery}
                               onChange={(e) => handleRowSearchChange(row.id, e.target.value)}
-                              className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                              className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                               autoFocus
                               onClick={(e) => e.stopPropagation()}
                             />
@@ -653,7 +652,7 @@ export function CreateStockAdjustmentModal({
                                       e.stopPropagation()
                                       handleSelectItem(row.id, it)
                                     }}
-                                    className={`flex w-full items-center justify-between rounded-[8px] p-2 text-xs cursor-pointer transition-colors ${
+                                    className={`flex w-full items-center justify-between rounded-md p-2 text-xs cursor-pointer transition-colors ${
                                       isSelected
                                         ? 'bg-secondary text-foreground font-semibold'
                                         : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -664,7 +663,7 @@ export function CreateStockAdjustmentModal({
                                       <p className="text-[10px] text-muted-foreground font-mono">
                                         {it.itemCode}
                                         {itemStock !== null && (
-                                          <span className="ml-1 text-emerald-500 font-medium">
+                                          <span className="ml-1 text-success font-medium">
                                             · Stock: {itemStock} {it.unitOfMeasure}
                                           </span>
                                         )}
@@ -691,25 +690,26 @@ export function CreateStockAdjustmentModal({
 
                     {/* Physical Qty Input */}
                     <div className="w-32 sm:w-36 shrink-0">
-                      <input
+                      <Input
+                        dense
                         type="number"
                         min="0"
                         step="any"
                         placeholder="0"
                         value={row.physicalQuantity}
                         onChange={(e) => handlePhysicalQtyChange(row.id, e.target.value)}
-                        className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3 text-center text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:border-foreground focus:ring-foreground"
+                        className="[&_input]:font-mono [&_input]:text-center"
                       />
                     </div>
 
                     {/* Difference Column */}
-                    <div className="w-20 shrink-0 text-center font-mono text-xs font-bold">
+                    <div className="w-20 shrink-0 text-center font-mono text-xs font-medium">
                       {diff === null ? (
                         <span className="text-muted-foreground">—</span>
                       ) : diff > 0 ? (
-                        <span className="text-emerald-500">+{diff}</span>
+                        <span className="text-success">+{diff}</span>
                       ) : diff < 0 ? (
-                        <span className="text-rose-500">{diff}</span>
+                        <span className="text-destructive">{diff}</span>
                       ) : (
                         <span className="text-muted-foreground">0</span>
                       )}
@@ -720,7 +720,7 @@ export function CreateStockAdjustmentModal({
                       <button
                         type="button"
                         onClick={() => handleRemoveRow(row.id)}
-                        className="rounded-[8px] p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                        className="rounded-md p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                         title="Remove line item"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -736,7 +736,7 @@ export function CreateStockAdjustmentModal({
               <button
                 type="button"
                 onClick={handleAddRow}
-                className="inline-flex items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Item</span>
@@ -745,16 +745,27 @@ export function CreateStockAdjustmentModal({
           </div>
 
           {/* Notes */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
-              Notes {reason === 'Other' ? <span className="text-destructive">*</span> : <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>}
-            </label>
+          <div
+            className={cn(
+              'group relative flex min-h-14 w-full flex-col rounded-md px-3.5 py-2',
+              fieldChrome,
+              fieldChromeIdle
+            )}
+          >
+            <span className="text-[11px] font-medium text-muted-foreground leading-none">
+              Notes{' '}
+              {reason === 'Other' ? (
+                <span className="text-destructive">*</span>
+              ) : (
+                <span className="font-normal">(Optional)</span>
+              )}
+            </span>
             <textarea
               rows={2}
               placeholder="Explain the reason for the stock difference..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
             />
           </div>
 
@@ -766,7 +777,7 @@ export function CreateStockAdjustmentModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-[8px] px-3.5"
+              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
               Save Draft
             </Button>
@@ -776,7 +787,7 @@ export function CreateStockAdjustmentModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-xs rounded-[8px] px-4 flex items-center gap-1.5"
+              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
             >
               <PackageCheck className="h-4 w-4" />
               <span>{isSubmitting ? 'Posting...' : 'Post Adjustment'}</span>

@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Search, Truck, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { UnderlineTabs } from '../../components/ui/Tabs'
 import { dispatchService } from '../../services/dispatchService'
 import { CreateDispatchModal } from './CreateDispatchModal'
 import { DispatchDetailsModal } from './DispatchDetailsModal'
@@ -70,33 +73,23 @@ export function DispatchPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header matching Screenshot 1 */}
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dispatch</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage outgoing goods and customer shipments.
-        </p>
+        <div className="pb-3">
+          <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
+            Dispatch
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage outgoing goods and customer shipments.
+          </p>
+        </div>
+        <UnderlineTabs
+          items={[{ id: 'orders', label: 'Dispatch Orders' }]}
+          value={activeSubTab}
+          onChange={() => {}}
+        />
       </div>
 
-      {/* Tabs matching Screenshot 1 */}
-      <div className="flex items-center gap-6 border-b border-border text-sm font-medium">
-        <button
-          type="button"
-          className={`pb-3 text-sm font-semibold transition-colors relative cursor-pointer ${
-            activeSubTab === 'orders'
-              ? 'text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Dispatch Orders
-          {activeSubTab === 'orders' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full" />
-          )}
-        </button>
-      </div>
-
-      {/* Controls Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -105,80 +98,80 @@ export function DispatchPage() {
             placeholder="Search dispatch orders..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm rounded-[10px] border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-foreground transition-colors"
+            className="w-full h-10 pl-10 pr-4 text-sm rounded-md border border-border/80 bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground transition-colors"
           />
         </div>
 
         <Button
+          variant="primary"
           onClick={() => {
             setEditingDispatch(null)
             setIsCreateModalOpen(true)
           }}
-          className="bg-[#107048] hover:bg-[#0d603e] text-white font-medium text-xs sm:text-sm px-4 h-10 rounded-[10px] cursor-pointer shadow-xs flex items-center justify-center gap-2 shrink-0"
         >
           <Plus className="h-4 w-4" />
-          <span>New Dispatch</span>
+          New dispatch
         </Button>
       </div>
 
       {/* Table matching Screenshot 1 */}
-      <div className="overflow-hidden rounded-[12px] border border-border bg-card shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-border bg-secondary/30 font-semibold text-muted-foreground">
-                <th className="py-3 px-4">Dispatch No.</th>
-                <th className="py-3 px-4">Sales Order</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60">
+      <div className="overflow-hidden rounded-md border border-border bg-card shadow-xs">
+        <Table className="border-0 rounded-none shadow-none bg-transparent">
+          <THead>
+            <tr>
+              <TH>Dispatch no.</TH>
+              <TH>Sales order</TH>
+              <TH>Customer</TH>
+              <TH className="text-right">Status</TH>
+            </tr>
+          </THead>
+          <TBody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={4} className="py-12 text-center text-muted-foreground">
+                <TR>
+                  <TD colSpan={4} className="py-12 text-center font-normal text-muted-foreground">
                     Loading dispatch orders...
-                  </td>
-                </tr>
+                  </TD>
+                </TR>
               ) : dispatches.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-12 text-center">
+                <TR>
+                  <TD colSpan={4} className="py-12 text-center font-normal">
                     <Truck className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
                     <p className="text-sm font-medium text-foreground">No dispatch orders found</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {search ? 'Try clearing your search query.' : 'Create a dispatch against a confirmed Sales Order to get started.'}
                     </p>
-                  </td>
-                </tr>
+                  </TD>
+                </TR>
               ) : (
                 dispatches.map((d) => (
-                  <tr
+                  <TR
                     key={d.id}
                     onClick={() => handleRowClick(d)}
-                    className="hover:bg-secondary/25 transition-colors cursor-pointer"
+                    clickable
                   >
-                    <td className="py-3.5 px-4 font-mono font-medium text-foreground">
-                      {d.dispatchNumber}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-muted-foreground">
+                    <TD>
+                      <span className="text-ref-link">
+                        {d.dispatchNumber}
+                      </span>
+                    </TD>
+                    <TD className="text-ref text-muted-foreground">
                       {d.salesOrderNumber}
-                    </td>
-                    <td className="py-3.5 px-4 font-medium text-foreground">
+                    </TD>
+                    <TD className="font-medium">
                       {d.customerName}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
+                    </TD>
+                    <TD className="text-right">
                       {d.status === 'POSTED' ? (
-                        <span className="font-semibold text-emerald-400">Posted</span>
+                        <Badge variant="success">Posted</Badge>
                       ) : (
-                        <span className="font-medium text-muted-foreground">Draft</span>
+                        <Badge variant="neutral">Draft</Badge>
                       )}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+          </TBody>
+        </Table>
 
         {/* Pagination */}
         {totalPages > 1 && (

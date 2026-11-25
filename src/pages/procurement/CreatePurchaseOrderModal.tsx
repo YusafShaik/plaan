@@ -3,13 +3,16 @@ import {
   Sparkles,
   Plus,
   Trash2,
-  ChevronDown,
   X,
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
+import { NativeSelect } from '../../components/ui/NativeSelect'
+import { DateField } from '../../components/ui/DateField'
 import { Alert } from '../../components/ui/Alert'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateItemModal } from '../master-data/CreateItemModal'
 import { masterDataService } from '../../services/masterDataService'
 import { procurementService } from '../../services/procurementService'
@@ -299,116 +302,67 @@ export function CreatePurchaseOrderModal({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Field 1: PO Number (Matching Supplier and Warehouse code structure) */}
             <Input
               label="PO number *"
               placeholder="e.g. PO-001"
               value={poNumber}
               onChange={(e) => setPoNumber(e.target.value.toUpperCase())}
               disabled={isLoading}
-              className="font-semibold"
               rightElement={
-                <span className="text-[11px] font-sans font-medium text-accent flex items-center gap-1">
+                <span className="text-[11px] font-medium text-brand flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               }
               hint="Unique within the organization. Can be auto-generated."
             />
 
-            {/* Field 2: Order Date (Single native date picker, no duplicate calendar icon) */}
-            <div>
-              <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 transition-all focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
-                  Order date *
-                </span>
-                <input
-                  type="date"
-                  value={orderDate}
-                  onChange={(e) => setOrderDate(e.target.value)}
-                  disabled={isLoading}
-                  className="mt-1 w-full border-0 bg-transparent p-0 text-sm font-medium text-foreground focus:outline-none focus:ring-0 cursor-pointer"
-                />
-              </div>
-            </div>
+            <DateField
+              label="Order date *"
+              value={orderDate}
+              onChange={(e) => setOrderDate(e.target.value)}
+              disabled={isLoading}
+            />
 
-            {/* Field 3: Supplier */}
-            <div>
-              <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 transition-all focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
-                  Supplier *
-                </span>
-                <div className="mt-1 relative flex items-center">
-                  <select
-                    value={supplierId}
-                    onChange={(e) => setSupplierId(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full border-0 bg-transparent p-0 pr-6 text-sm font-medium text-foreground focus:outline-none focus:ring-0 cursor-pointer appearance-none"
-                  >
-                    <option value="" disabled>Select supplier...</option>
-                    {suppliers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.supplierCode})
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                </div>
-              </div>
-            </div>
+            <Select
+              label="Supplier *"
+              value={supplierId}
+              onChange={setSupplierId}
+              disabled={isLoading}
+              placeholder="Select supplier..."
+              options={suppliers.map((s) => ({
+                value: s.id,
+                label: `${s.name} (${s.supplierCode})`,
+              }))}
+            />
 
-            {/* Field 4: Receiving Warehouse */}
-            <div>
-              <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 transition-all focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
-                  Receiving warehouse *
-                </span>
-                <div className="mt-1 relative flex items-center">
-                  <select
-                    value={warehouseId}
-                    onChange={(e) => setWarehouseId(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full border-0 bg-transparent p-0 pr-6 text-sm font-medium text-foreground focus:outline-none focus:ring-0 cursor-pointer appearance-none"
-                  >
-                    <option value="" disabled>Select receiving warehouse...</option>
-                    {warehouses.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.name} ({w.warehouseCode})
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                </div>
-              </div>
-            </div>
+            <Select
+              label="Receiving warehouse *"
+              value={warehouseId}
+              onChange={setWarehouseId}
+              disabled={isLoading}
+              placeholder="Select receiving warehouse..."
+              options={warehouses.map((w) => ({
+                value: w.id,
+                label: `${w.name} (${w.warehouseCode})`,
+              }))}
+            />
 
-            {/* Field 5: Expected delivery date (Single native date picker, no duplicate calendar icon) */}
-            <div>
-              <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 transition-all focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
-                  Expected delivery date
-                </span>
-                <input
-                  type="date"
-                  value={expectedDeliveryDate}
-                  onChange={(e) => setExpectedDeliveryDate(e.target.value)}
-                  disabled={isLoading}
-                  className="mt-1 w-full border-0 bg-transparent p-0 text-sm font-medium text-foreground focus:outline-none focus:ring-0 cursor-pointer"
-                />
-              </div>
-            </div>
+            <DateField
+              label="Expected delivery date"
+              value={expectedDeliveryDate}
+              onChange={(e) => setExpectedDeliveryDate(e.target.value)}
+              disabled={isLoading}
+            />
 
-            {/* Field 6: Base Currency Context */}
-            <div>
-              <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2 select-none">
-                <span className="text-[11px] font-medium text-muted-foreground leading-none">
-                  Currency
+            <div className="group relative flex min-h-14 w-full flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-[11px] font-medium text-muted-foreground leading-none">
+                Currency
+              </span>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {organization?.baseCurrency || 'INR'} ({currencySymbol})
                 </span>
-                <div className="mt-1 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">
-                    {organization?.baseCurrency || 'INR'} ({currencySymbol})
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">Org default</span>
-                </div>
+                <span className="text-[10px] text-muted-foreground">Org default</span>
               </div>
             </div>
           </div>
@@ -423,26 +377,25 @@ export function CreatePurchaseOrderModal({
             <button
               type="button"
               onClick={() => setIsItemModalOpen(true)}
-              className="text-xs font-semibold text-foreground hover:underline cursor-pointer flex items-center gap-1 py-1 px-2 rounded-[6px] hover:bg-secondary transition-colors"
+              className="text-xs font-semibold text-foreground hover:underline cursor-pointer flex items-center gap-1 py-1 px-2 rounded-md hover:bg-secondary transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Create new item in Master</span>
             </button>
           </div>
 
-          <div className="rounded-[14px] border border-border/70 overflow-hidden bg-white dark:bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse table-fixed">
-                <thead>
-                  <tr className="border-b border-border/70 bg-[#fafafa] dark:bg-secondary/40 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    <th className="py-2.5 px-3 w-[42%]">Item</th>
-                    <th className="py-2.5 px-2.5 w-[18%]">Qty</th>
-                    <th className="py-2.5 px-2.5 w-[18%]">Rate ({currencySymbol})</th>
-                    <th className="py-2.5 px-3 w-[16%] text-right">Amount</th>
-                    <th className="py-2.5 px-1.5 w-[6%] text-center"></th>
+          <div className="rounded-md border border-border/70 overflow-hidden bg-card">
+            <Table tableClassName="table-fixed">
+              <THead>
+                <tr>
+                  <TH className="py-2.5 w-[42%]">Item</TH>
+                    <TH className="py-2.5 w-[18%]">Qty</TH>
+                    <TH className="py-2.5 w-[18%]">Rate ({currencySymbol})</TH>
+                    <TH className="py-2.5 w-[16%] text-right">Amount</TH>
+                    <TH className="py-2.5 w-[6%] text-center"></TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60 text-sm">
+                </THead>
+                <TBody className="divide-y divide-border/60 text-sm">
                   {orderItems.map((row) => {
                     const selectedItem = row.itemId ? itemsMap.get(Number(row.itemId)) : null
                     const qty = typeof row.quantity === 'number' ? row.quantity : 0
@@ -450,43 +403,54 @@ export function CreatePurchaseOrderModal({
                     const amount = qty * price
 
                     return (
-                      <tr key={row.rowId} className="group">
+                      <TR key={row.rowId} className="group">
                         {/* Item Column */}
-                        <td className="py-2.5 px-3">
+                        <TD className="py-2.5 px-3">
                           <div className="flex items-center gap-1.5">
-                            <div className="relative flex-1">
-                              <select
+                            <div className="flex-1 min-w-0">
+                              <NativeSelect
+                                dense
                                 value={row.itemId}
-                                onChange={(e) => handleRowChange(row.rowId, 'itemId', e.target.value)}
+                                onChange={(e) =>
+                                  handleRowChange(row.rowId, 'itemId', e.target.value)
+                                }
                                 disabled={isLoading}
-                                className="h-9 w-full rounded-[8px] border border-border/70 bg-[#f4f4f5] dark:bg-secondary px-2.5 py-1 text-xs font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer appearance-none pr-6"
                               >
-                                <option value="" disabled>Select item...</option>
+                                <option value="" disabled>
+                                  Select item...
+                                </option>
                                 {items.map((i) => {
                                   const isSelectedInOtherRow =
-                                    selectedItemIds.has(String(i.id)) && String(i.id) !== row.itemId
+                                    selectedItemIds.has(String(i.id)) &&
+                                    String(i.id) !== row.itemId
                                   return (
-                                    <option key={i.id} value={i.id} disabled={isSelectedInOtherRow}>
-                                      {i.name} ({i.itemCode}) {isSelectedInOtherRow ? '— (Already added)' : ''}
+                                    <option
+                                      key={i.id}
+                                      value={i.id}
+                                      disabled={isSelectedInOtherRow}
+                                    >
+                                      {i.name} ({i.itemCode})
+                                      {isSelectedInOtherRow
+                                        ? ' — (Already added)'
+                                        : ''}
                                     </option>
                                   )
                                 })}
-                              </select>
-                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                              </NativeSelect>
                             </div>
                             {selectedItem && (
                               <span
-                                className="shrink-0 px-2 py-1 rounded-[6px] bg-secondary text-[10px] font-semibold text-muted-foreground uppercase tracking-wider"
+                                className="shrink-0 px-2 py-1 rounded-md bg-secondary text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
                                 title={`Unit of Measure: ${selectedItem.unitOfMeasure}`}
                               >
                                 {selectedItem.unitOfMeasure}
                               </span>
                             )}
                           </div>
-                        </td>
+                        </TD>
 
                         {/* Qty Column */}
-                        <td className="py-2.5 px-2.5">
+                        <TD className="py-2.5 px-2.5">
                           <input
                             type="number"
                             min="0.001"
@@ -495,12 +459,12 @@ export function CreatePurchaseOrderModal({
                             value={row.quantity}
                             onChange={(e) => handleRowChange(row.rowId, 'quantity', e.target.value)}
                             disabled={isLoading}
-                            className="h-9 w-full rounded-[8px] border border-border/70 bg-[#f4f4f5] dark:bg-secondary px-2.5 py-1 text-xs font-mono font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs font-mono font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                           />
-                        </td>
+                        </TD>
 
                         {/* Rate Column */}
-                        <td className="py-2.5 px-2.5">
+                        <TD className="py-2.5 px-2.5">
                           <input
                             type="number"
                             min="0"
@@ -509,51 +473,53 @@ export function CreatePurchaseOrderModal({
                             value={row.unitPrice}
                             onChange={(e) => handleRowChange(row.rowId, 'unitPrice', e.target.value)}
                             disabled={isLoading}
-                            className="h-9 w-full rounded-[8px] border border-border/70 bg-[#f4f4f5] dark:bg-secondary px-2.5 py-1 text-xs font-mono font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs font-mono font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                           />
-                        </td>
+                        </TD>
 
                         {/* Amount Column */}
-                        <td className="py-2.5 px-3 text-right">
-                          <div className="h-9 flex items-center justify-end font-mono text-xs font-semibold text-foreground">
+                        <TD className="py-2.5 px-3 text-right">
+                          <div className="h-9 flex items-center justify-end font-mono text-xs font-medium text-foreground">
                             {amount.toLocaleString('en-IN', {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
                           </div>
-                        </td>
+                        </TD>
 
                         {/* Delete action */}
-                        <td className="py-2.5 px-1.5 text-center">
+                        <TD className="py-2.5 px-1.5 text-center">
                           <button
                             type="button"
                             onClick={() => handleRemoveItemRow(row.rowId)}
                             disabled={orderItems.length <= 1}
-                            className="h-8 w-8 inline-flex items-center justify-center rounded-[6px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-colors"
+                            className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-colors"
                             title="Remove row"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     )
                   })}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+            </Table>
 
-            <div className="p-2.5 border-t border-border/60 bg-[#fafafa]/50 dark:bg-secondary/20 flex items-center justify-between">
+            <div className="p-2.5 border-t border-border/60 bg-surface-muted/50 dark:bg-secondary/20 flex items-center justify-between">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleAddItemRow}
                 disabled={!canAddMoreItems}
-                className="gap-1.5 text-xs font-medium border-border/70 bg-white hover:bg-secondary text-foreground px-3 py-1.5 rounded-[8px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                title={!canAddMoreItems ? 'All available items are already added to this order' : 'Add Item'}
+                title={
+                  !canAddMoreItems
+                    ? 'All available items are already added to this order'
+                    : 'Add Item'
+                }
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Add Item</span>
+                Add Item
               </Button>
               <span className="text-[11px] text-muted-foreground">
                 {orderItems.length} {orderItems.length === 1 ? 'line item' : 'line items'}
@@ -565,28 +531,28 @@ export function CreatePurchaseOrderModal({
         {/* Section 3: Notes & Total */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           {/* Notes */}
-          <div>
-            <label className="block text-[11px] font-medium text-muted-foreground mb-1">
+          <div className="group relative flex min-h-14 w-full flex-col rounded-md border border-border/80 bg-secondary px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground leading-none">
               Notes & Instructions
-            </label>
+            </span>
             <textarea
               rows={2}
               placeholder="Additional delivery or supplier instructions..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={isLoading}
-              className="w-full rounded-[10px] border border-border/70 bg-[#f4f4f5] dark:bg-secondary p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
             />
           </div>
 
           {/* Order Total Box */}
-          <div className="rounded-[12px] border border-border/70 bg-[#f8f9fa] dark:bg-secondary/40 p-3.5 flex flex-col justify-between">
+          <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/40 p-3.5 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
               <span>Order Total</span>
               <span>{orderItems.filter((r) => r.itemId).length} items</span>
             </div>
             <div className="text-right mt-1">
-              <span className="text-2xl font-bold font-mono tracking-tight text-foreground">
+              <span className="text-2xl font-medium font-mono tracking-tight text-foreground">
                 {currencySymbol}
                 {orderTotal.toLocaleString('en-IN', {
                   minimumFractionDigits: 2,
@@ -599,13 +565,7 @@ export function CreatePurchaseOrderModal({
 
         {/* Bottom Actions */}
         <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/70">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-            className="border-border/80 bg-white text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
-          >
+          <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
           <Button
@@ -613,15 +573,14 @@ export function CreatePurchaseOrderModal({
             variant="outline"
             disabled={isLoading}
             onClick={(e) => handleSubmit(e, 'DRAFT')}
-            className="border-border/80 bg-white text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
           >
             Save Draft
           </Button>
           <Button
             type="button"
+            variant="primary"
             disabled={isLoading}
             onClick={(e) => handleSubmit(e, 'ISSUED')}
-            className="bg-[#171717] hover:bg-black text-white font-medium px-5 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
           >
             Issue Purchase Order
           </Button>

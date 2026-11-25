@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   X,
   CheckCircle2,
-  Clock,
   Ban,
   Pencil,
   Trash2,
@@ -15,6 +14,8 @@ import {
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
 import { CreateMaterialIssueModal } from './CreateMaterialIssueModal'
 import { RecordMaterialConsumptionModal } from './RecordMaterialConsumptionModal'
@@ -281,44 +282,26 @@ export function ProductionOrderDetailsModal({
                 Manufacturing / Production Orders / {effectiveOrder.orderNumber}
               </p>
               <div className="flex items-center gap-2.5">
-                <span className="font-mono text-xl font-bold tracking-tight text-foreground">
+                <span className="font-mono text-xl font-medium tracking-tight text-foreground">
                   {effectiveOrder.orderNumber}
                 </span>
                 {effectiveOrder.status === 'RELEASED' && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Released
-                  </span>
+                  <Badge variant="success">Released</Badge>
                 )}
                 {effectiveOrder.status === 'IN_PROGRESS' && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-400 border border-blue-500/20">
-                    <Clock className="h-3.5 w-3.5" />
-                    In Progress
-                  </span>
+                  <Badge variant="info">In Progress</Badge>
                 )}
                 {effectiveOrder.status === 'COMPLETED' && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs font-semibold text-purple-400 border border-purple-500/20">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Completed
-                  </span>
+                  <Badge variant="success">Completed</Badge>
                 )}
                 {effectiveOrder.status === 'CLOSED' && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-2.5 py-0.5 text-xs font-semibold text-zinc-400 border border-zinc-500/20">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Closed
-                  </span>
+                  <Badge variant="neutral">Closed</Badge>
                 )}
                 {effectiveOrder.status === 'DRAFT' && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
-                    <Clock className="h-3.5 w-3.5" />
-                    Draft
-                  </span>
+                  <Badge variant="warning">Draft</Badge>
                 )}
                 {effectiveOrder.status === 'CANCELLED' && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-500 border border-rose-500/20">
-                    <Ban className="h-3.5 w-3.5" />
-                    Cancelled
-                  </span>
+                  <Badge variant="destructive">Cancelled</Badge>
                 )}
               </div>
 
@@ -331,7 +314,7 @@ export function ProductionOrderDetailsModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -339,7 +322,7 @@ export function ProductionOrderDetailsModal({
 
           {/* Action error banner */}
           {actionError && (
-            <div className="flex items-center gap-2 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+            <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               <span>{actionError}</span>
             </div>
@@ -347,25 +330,25 @@ export function ProductionOrderDetailsModal({
 
           {/* Summary Cards matching Screenshot 1: Ordered | Received | Pending */}
           <div className="grid grid-cols-3 gap-3.5 pt-1">
-            <div className="rounded-[10px] border border-border/80 bg-secondary/30 p-4">
+            <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
               <p className="text-xs text-muted-foreground font-normal">Ordered</p>
-              <p className="mt-2 text-2xl font-bold text-foreground font-mono">
+              <p className="mt-2 text-2xl font-medium text-foreground font-mono">
                 {formatQuantity(orderedQty)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{effectiveOrder.unitOfMeasure}</p>
             </div>
 
-            <div className="rounded-[10px] border border-border/80 bg-secondary/30 p-4">
+            <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
               <p className="text-xs text-muted-foreground font-normal">Received</p>
-              <p className="mt-2 text-2xl font-bold text-emerald-500 font-mono">
+              <p className="mt-2 text-2xl font-medium text-success font-mono">
                 {formatQuantity(receivedQty)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{effectiveOrder.unitOfMeasure}</p>
             </div>
 
-            <div className="rounded-[10px] border border-border/80 bg-secondary/30 p-4">
+            <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
               <p className="text-xs text-muted-foreground font-normal">Pending</p>
-              <p className="mt-2 text-2xl font-bold text-foreground font-mono">
+              <p className="mt-2 text-2xl font-medium text-foreground font-mono">
                 {formatQuantity(pendingQty)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{effectiveOrder.unitOfMeasure}</p>
@@ -376,11 +359,11 @@ export function ProductionOrderDetailsModal({
           <div className="space-y-1.5 py-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground font-normal">Production progress</span>
-              <span className="font-semibold text-foreground font-mono">{Math.round(progressPercent)}%</span>
+              <span className="font-medium text-foreground font-mono">{Math.round(progressPercent)}%</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                className="h-full bg-success rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
               />
             </div>
@@ -388,8 +371,8 @@ export function ProductionOrderDetailsModal({
 
           {/* All planned products received - Complete Production banner */}
           {effectiveOrder.status === 'IN_PROGRESS' && pendingQty <= 0 && (
-            <div className="flex items-center justify-between p-3.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10">
-              <div className="flex items-center gap-2 text-emerald-500">
+            <div className="flex items-center justify-between p-3.5 rounded-md border border-success/30 bg-success/10">
+              <div className="flex items-center gap-2 text-success">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
                 <span className="text-xs font-semibold">All planned products received</span>
               </div>
@@ -398,7 +381,7 @@ export function ProductionOrderDetailsModal({
                 size="sm"
                 disabled={isSubmittingAction}
                 onClick={handleCompleteProduction}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs h-8 px-3.5 rounded-[8px] cursor-pointer shadow-xs disabled:opacity-50"
+                className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs h-8 px-3.5 rounded-md cursor-pointer shadow-xs disabled:opacity-50"
               >
                 {isSubmittingAction ? 'Completing...' : 'Complete Production'}
               </Button>
@@ -407,7 +390,7 @@ export function ProductionOrderDetailsModal({
 
           {/* Completed banner - Close Order button */}
           {effectiveOrder.status === 'COMPLETED' && (
-            <div className="flex items-center justify-between p-3.5 rounded-[10px] border border-purple-500/30 bg-purple-500/10">
+            <div className="flex items-center justify-between p-3.5 rounded-md border border-purple-500/30 bg-purple-500/10">
               <div className="flex items-center gap-2.5 text-purple-300">
                 <CheckCircle2 className="h-4 w-4 text-purple-400 shrink-0" />
                 <div>
@@ -421,7 +404,7 @@ export function ProductionOrderDetailsModal({
                 type="button"
                 size="sm"
                 onClick={() => setIsCloseModalOpen(true)}
-                className="bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs h-8 px-3.5 rounded-[8px] cursor-pointer shadow-xs"
+                className="bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs h-8 px-3.5 rounded-md cursor-pointer shadow-xs"
               >
                 <span>Close Order</span>
               </Button>
@@ -430,7 +413,7 @@ export function ProductionOrderDetailsModal({
 
           {/* Closed card */}
           {effectiveOrder.status === 'CLOSED' && (
-            <div className="p-3.5 rounded-[10px] border border-zinc-700 bg-secondary/30 space-y-1">
+            <div className="p-3.5 rounded-md border border-zinc-700 bg-secondary/30 space-y-1">
               <div className="flex items-center gap-2 text-foreground font-semibold text-xs">
                 <CheckCircle2 className="h-4 w-4 text-zinc-400" />
                 <span>Order Finalized & Closed</span>
@@ -462,7 +445,7 @@ export function ProductionOrderDetailsModal({
                     setEditingDraftReceipt(null)
                     setIsReceiptModalOpen(true)
                   }}
-                  className="bg-[#107048] hover:bg-[#0d603e] text-white font-semibold text-xs px-3.5 h-8 rounded-[8px] cursor-pointer shadow-xs disabled:opacity-50"
+                  className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs px-3.5 h-8 rounded-md cursor-pointer shadow-xs disabled:opacity-50"
                   title={
                     !hasPostedConsumption
                       ? 'Cannot record production receipt before raw materials have been consumed.'
@@ -477,33 +460,32 @@ export function ProductionOrderDetailsModal({
             </div>
 
             {/* Receipts Table: Reference | Quantity | Warehouse | Status */}
-            <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                    <th className="py-2.5 px-3.5">Reference</th>
-                    <th className="py-2.5 px-3">Quantity</th>
-                    <th className="py-2.5 px-3">Warehouse</th>
-                    <th className="py-2.5 px-3.5 text-right">Status</th>
+            <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Reference</TH>
+                    <TH className="py-2.5">Quantity</TH>
+                    <TH className="py-2.5">Warehouse</TH>
+                    <TH className="py-2.5 text-right">Status</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+                </THead>
+                <TBody className="divide-y divide-border/60">
                   {isLoadingReceipts ? (
-                    <tr>
-                      <td colSpan={4} className="py-6 text-center text-muted-foreground">
+                    <TR>
+                      <TD colSpan={4} className="py-6 text-center text-muted-foreground">
                         <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-1 text-foreground" />
                         Loading production receipts...
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   ) : receipts.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="py-6 text-center text-muted-foreground">
+                    <TR>
+                      <TD colSpan={4} className="py-6 text-center text-muted-foreground">
                         No production receipts recorded yet.
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   ) : (
                     receipts.map((pr) => (
-                      <tr
+                      <TR
                         key={pr.id}
                         onClick={() => {
                           if (pr.status === 'DRAFT') {
@@ -515,28 +497,31 @@ export function ProductionOrderDetailsModal({
                           pr.status === 'DRAFT' ? 'cursor-pointer' : ''
                         }`}
                       >
-                        <td className="py-3 px-3.5 font-mono font-medium text-foreground">
+                        <TD className="py-3 px-3.5 font-mono font-medium text-foreground">
                           {pr.receiptNumber}
-                        </td>
-                        <td className="py-3 px-3 font-mono font-semibold text-foreground">
+                        </TD>
+                        <TD className="py-3 px-3 font-mono font-medium text-foreground">
                           {formatQuantity(pr.receiptQuantity)} {pr.unitOfMeasure}
-                        </td>
-                        <td className="py-3 px-3 text-muted-foreground font-medium">
+                        </TD>
+                        <TD className="py-3 px-3 text-muted-foreground font-medium">
                           {pr.receivingWarehouseName}
-                        </td>
-                        <td className="py-3 px-3.5 text-right font-medium">
+                        </TD>
+                        <TD className="py-3 px-3.5 text-right">
                           {pr.status === 'POSTED' ? (
-                            <span className="text-emerald-500 font-semibold">Posted</span>
+                            <Badge variant="success" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                              Posted
+                            </Badge>
                           ) : (
-                            <span className="text-amber-500 font-semibold">Draft</span>
+                            <Badge variant="neutral" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                              Draft
+                            </Badge>
                           )}
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     ))
                   )}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+            </Table>
           </div>
 
           {/* Warehouses Info */}
@@ -603,7 +588,7 @@ export function ProductionOrderDetailsModal({
                       setEditingDraftConsumption(null)
                       setIsConsumptionModalOpen(true)
                     }}
-                    className="bg-[#107048] hover:bg-[#0d603e] text-white font-semibold text-xs px-3.5 h-8 rounded-[8px] cursor-pointer shadow-xs disabled:opacity-50"
+                    className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs px-3.5 h-8 rounded-md cursor-pointer shadow-xs disabled:opacity-50"
                     title={hasRemainingMaterials ? 'Record consumed materials in manufacturing' : 'No materials remaining in production'}
                   >
                     <span>Record Consumption</span>
@@ -613,54 +598,52 @@ export function ProductionOrderDetailsModal({
             </div>
 
             {/* Materials Table matching Screenshot 1: Material | Required | Issued | Consumed | Returned | Remaining */}
-            <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                    <th className="py-2.5 px-3.5">Material</th>
-                    <th className="py-2.5 px-3 text-right">Required</th>
-                    <th className="py-2.5 px-3 text-right">Issued</th>
-                    <th className="py-2.5 px-3 text-right">Consumed</th>
-                    <th className="py-2.5 px-3 text-right">Returned</th>
-                    <th className="py-2.5 px-3.5 text-right">Remaining</th>
+            <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Material</TH>
+                    <TH className="py-2.5 text-right">Required</TH>
+                    <TH className="py-2.5 text-right">Issued</TH>
+                    <TH className="py-2.5 text-right">Consumed</TH>
+                    <TH className="py-2.5 text-right">Returned</TH>
+                    <TH className="py-2.5 text-right">Remaining</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+                </THead>
+                <TBody className="divide-y divide-border/60">
                   {displayItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                    <TR>
+                      <TD colSpan={6} className="py-6 text-center text-muted-foreground">
                         No materials required for this production order
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   ) : (
                     displayItems.map((it) => (
-                      <tr key={it.materialId} className="hover:bg-secondary/30 transition-colors">
-                        <td className="py-3 px-3.5 font-medium text-foreground">
+                      <TR key={it.materialId} className="hover:bg-secondary/30 transition-colors">
+                        <TD className="py-3 px-3.5 font-medium text-foreground">
                           {it.materialName}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(it.requiredQuantity)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-foreground font-semibold">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-foreground font-medium">
                           {formatQuantity(it.issuedQuantity)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-foreground font-medium">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-foreground font-medium">
                           {formatQuantity(it.consumedQuantity)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(it.returnedQuantity)}
-                        </td>
-                        <td className="py-3 px-3.5 text-right font-mono font-bold">
-                          <span className={it.remainingQuantity > 0 ? 'text-amber-500' : 'text-foreground'}>
+                        </TD>
+                        <TD className="py-3 px-3.5 text-right font-mono font-medium">
+                          <span className={it.remainingQuantity > 0 ? 'text-warning' : 'text-foreground'}>
                             {formatQuantity(it.remainingQuantity)}
                           </span>
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     ))
                   )}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+            </Table>
           </div>
 
           {/* Section: Material Transaction History matching Screenshot 1 */}
@@ -683,7 +666,7 @@ export function ProductionOrderDetailsModal({
               </div>
             ) : transactions.length === 0 ? (
               /* Empty state matching Screenshot 0 style */
-              <div className="flex flex-col items-center justify-center py-8 rounded-[12px] border border-border/80 bg-secondary/20 text-center">
+              <div className="flex flex-col items-center justify-center py-8 rounded-md border border-border/80 bg-secondary/20 text-center">
                 <Package className="h-8 w-8 text-muted-foreground/60 mb-2 stroke-[1.5]" />
                 <p className="text-xs text-muted-foreground">No material transactions recorded yet.</p>
               </div>
@@ -694,14 +677,14 @@ export function ProductionOrderDetailsModal({
                   <div
                     key={`${tx.transactionType}-${tx.id}`}
                     onClick={() => handleTransactionClick(tx)}
-                    className="flex items-center justify-between p-3.5 rounded-[10px] border border-border/80 bg-secondary/20 hover:bg-secondary/40 transition-colors cursor-pointer"
+                    className="flex items-center justify-between p-3.5 rounded-md border border-border/80 bg-secondary/20 hover:bg-secondary/40 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3.5">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-secondary border border-border/80 text-muted-foreground">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary border border-border/80 text-muted-foreground">
                         <FileText className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="font-mono text-sm font-bold text-foreground">
+                        <p className="font-mono text-sm font-medium text-foreground">
                           {tx.referenceNumber}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -712,11 +695,11 @@ export function ProductionOrderDetailsModal({
 
                     <div className="flex items-center gap-2.5">
                       {tx.status === 'POSTED' ? (
-                        <span className="text-xs font-semibold text-emerald-500">
+                        <span className="text-xs font-semibold text-success">
                           Posted
                         </span>
                       ) : (
-                        <span className="text-xs font-semibold text-amber-500">
+                        <span className="text-xs font-semibold text-warning">
                           Draft
                         </span>
                       )}
@@ -778,7 +761,7 @@ export function ProductionOrderDetailsModal({
                 <Button
                   size="sm"
                   onClick={() => onRelease(effectiveOrder.id)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
                   <PackageCheck className="h-4 w-4" />
                   <span>Release Order</span>

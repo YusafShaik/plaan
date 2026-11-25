@@ -4,22 +4,32 @@ import {
   forwardRef,
   useState,
 } from 'react'
+import { cn } from '../../lib/cn'
+import {
+  fieldChrome,
+  fieldChromeError,
+  fieldChromeFocus,
+  fieldChromeIdle,
+} from './fieldStyles'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   rightElement?: ReactNode
   hint?: string
+  /** Dense table-row control (h-9), label rendered outside if provided */
+  dense?: boolean
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
-      className = '',
+      className,
       label,
       error,
       rightElement,
       hint,
+      dense = false,
       type = 'text',
       onFocus,
       onBlur,
@@ -32,18 +42,52 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const [isFocused, setIsFocused] = useState(false)
 
-    // Stacked/embedded label inside grayish box matching reference
+    if (dense) {
+      return (
+        <div className="w-full">
+          {label && (
+            <span className="mb-1 block text-[11px] font-medium text-muted-foreground">
+              {label}
+            </span>
+          )}
+          <input
+            ref={ref}
+            type={type}
+            value={value}
+            defaultValue={defaultValue}
+            disabled={disabled}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            className={cn(
+              'flex h-9 w-full rounded-md border border-border/80 bg-secondary px-2.5 text-xs font-medium text-foreground',
+              'placeholder:text-muted-foreground/60 focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground',
+              'disabled:cursor-not-allowed disabled:opacity-60',
+              error && 'border-destructive ring-1 ring-destructive',
+              className
+            )}
+            {...props}
+          />
+          {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+        </div>
+      )
+    }
+
+    // Stacked label — design-system default
     if (label) {
       return (
         <div className="w-full">
           <div
-            className={`group relative flex min-h-[56px] w-full flex-col justify-center rounded-[10px] border bg-secondary px-3.5 py-2 transition-all duration-150 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground ${
+            className={cn(
+              'group relative flex min-h-14 w-full flex-col justify-center px-3.5 py-2',
+              fieldChrome,
               error
-                ? 'border-destructive ring-1 ring-destructive'
+                ? fieldChromeError
                 : isFocused
-                ? 'border-foreground ring-1 ring-foreground'
-                : 'border-border/80 hover:border-border'
-            } ${disabled ? 'opacity-60 cursor-not-allowed' : ''} ${className}`}
+                  ? fieldChromeFocus
+                  : fieldChromeIdle,
+              disabled && 'opacity-60 cursor-not-allowed',
+              className
+            )}
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
@@ -71,13 +115,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               {...props}
             />
           </div>
-          {hint && !error && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
+          {hint && !error && (
+            <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+          )}
           {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
         </div>
       )
     }
 
-    // Standard unstacked input with sharp black focus ring
     return (
       <div className="w-full">
         <input
@@ -88,14 +133,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           disabled={disabled}
           onFocus={onFocus}
           onBlur={onBlur}
-          className={`flex h-11 w-full rounded-[10px] border bg-secondary px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 transition-all focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground disabled:cursor-not-allowed disabled:opacity-60 ${
-            error
-              ? 'border-destructive ring-1 ring-destructive'
-              : 'border-border/80 hover:border-border'
-          } ${className}`}
+          className={cn(
+            'flex h-11 w-full px-3.5 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/60',
+            'focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground',
+            'disabled:cursor-not-allowed disabled:opacity-60',
+            fieldChrome,
+            error ? fieldChromeError : fieldChromeIdle,
+            className
+          )}
           {...props}
         />
-        {hint && !error && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
+        {hint && !error && (
+          <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+        )}
         {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
       </div>
     )

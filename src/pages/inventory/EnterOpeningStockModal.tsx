@@ -8,14 +8,22 @@ import {
   ChevronDown,
   History,
   CheckCircle2,
-  Clock,
-  Ban,
   PackageCheck,
   AlertCircle,
   Eye,
 } from 'lucide-react'
+import { cn } from '../../lib/cn'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
+import { DateField } from '../../components/ui/DateField'
+import {
+  fieldChrome,
+  fieldChromeFocus,
+  fieldChromeIdle,
+} from '../../components/ui/fieldStyles'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
 import { OpeningStockDetailsModal } from './OpeningStockDetailsModal'
@@ -402,7 +410,7 @@ export function EnterOpeningStockModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -410,14 +418,14 @@ export function EnterOpeningStockModal({
 
           {/* Feedback banners */}
           {error && (
-            <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+            <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <p className="flex-1 font-medium">{error}</p>
             </div>
           )}
 
           {successMessage && (
-            <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+            <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
               <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
               <p className="flex-1 font-medium">{successMessage}</p>
             </div>
@@ -428,52 +436,52 @@ export function EnterOpeningStockModal({
             <div className="space-y-4">
               {/* Top row: Reference Number (left 50%) and Opening Date (right 50%) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Reference Number */}
-                <div>
-                  <label className="block text-xs font-medium text-foreground mb-1.5">
-                    Reference Number
-                  </label>
-                  <input
-                    type="text"
-                    disabled
-                    value={openingStockNumber}
-                    className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
-                  />
-                  <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
-                </div>
+                <Input
+                  label="Reference Number"
+                  value={openingStockNumber}
+                  disabled
+                  hint="Auto-generated"
+                  className="[&_input]:font-mono [&_input]:text-muted-foreground"
+                />
 
-                {/* Opening Date * */}
-                <div>
-                  <label className="block text-xs font-medium text-foreground mb-1.5">
-                    Opening Date <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={openingDate}
-                    onChange={(e) => setOpeningDate(e.target.value)}
-                    className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-                  />
-                </div>
+                <DateField
+                  label="Opening Date *"
+                  value={openingDate}
+                  onChange={(e) => setOpeningDate(e.target.value)}
+                />
               </div>
 
               {/* Warehouse * (Full width row) */}
               <div className="relative" ref={warehouseRef}>
-                <label className="block text-xs font-medium text-foreground mb-1.5">
-                  Warehouse <span className="text-destructive">*</span>
-                </label>
                 <button
                   type="button"
                   onClick={() => setIsWarehouseDropdownOpen(!isWarehouseDropdownOpen)}
-                  className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                  className={cn(
+                    'flex min-h-14 w-full flex-col justify-center px-3.5 py-2 text-left cursor-pointer transition-all duration-150',
+                    fieldChrome,
+                    isWarehouseDropdownOpen ? fieldChromeFocus : fieldChromeIdle
+                  )}
                 >
-                  <span className={selectedWarehouse ? 'font-medium' : 'text-muted-foreground'}>
-                    {selectedWarehouse ? `${selectedWarehouse.name} (${selectedWarehouse.warehouseCode})` : 'Select warehouse...'}
+                  <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                    Warehouse <span className="text-destructive">*</span>
                   </span>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="mt-1 flex w-full items-center justify-between gap-2 text-sm font-medium min-w-0">
+                    <span
+                      className={cn(
+                        'truncate',
+                        selectedWarehouse ? 'text-foreground' : 'text-muted-foreground/60'
+                      )}
+                    >
+                      {selectedWarehouse
+                        ? `${selectedWarehouse.name} (${selectedWarehouse.warehouseCode})`
+                        : 'Select warehouse...'}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </span>
                 </button>
 
                 {isWarehouseDropdownOpen && (
-                  <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                  <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                     <div className="relative mb-1.5">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                       <input
@@ -481,7 +489,7 @@ export function EnterOpeningStockModal({
                         placeholder="Search warehouse..."
                         value={warehouseSearch}
                         onChange={(e) => setWarehouseSearch(e.target.value)}
-                        className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                        className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                       />
@@ -504,7 +512,7 @@ export function EnterOpeningStockModal({
                                 setIsWarehouseDropdownOpen(false)
                                 setWarehouseSearch('')
                               }}
-                              className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs cursor-pointer transition-colors ${
+                              className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
                                 isSelected
                                   ? 'bg-secondary text-foreground font-semibold'
                                   : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -568,7 +576,7 @@ export function EnterOpeningStockModal({
                           <button
                             type="button"
                             onClick={() => handleToggleRowDropdown(row.id, !row.isDropdownOpen)}
-                            className="flex h-10 w-full items-center justify-between rounded-[10px] border border-border/80 bg-secondary/30 px-3 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
                           >
                             <span className={itemObj ? 'font-medium truncate' : 'text-muted-foreground'}>
                               {itemObj ? `${itemObj.name} (${itemObj.itemCode})` : 'Select item...'}
@@ -577,7 +585,7 @@ export function EnterOpeningStockModal({
                           </button>
 
                           {row.isDropdownOpen && (
-                            <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[300px] rounded-[12px] border border-border bg-white dark:bg-[#18181b] p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                            <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full min-w-[300px] rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                               <div className="relative mb-1.5">
                                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                                 <input
@@ -585,7 +593,7 @@ export function EnterOpeningStockModal({
                                   placeholder="Search item code or name..."
                                   value={row.searchQuery}
                                   onChange={(e) => handleRowSearchChange(row.id, e.target.value)}
-                                  className="flex h-8 w-full rounded-[6px] border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
+                                  className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
                                   autoFocus
                                   onClick={(e) => e.stopPropagation()}
                                 />
@@ -606,7 +614,7 @@ export function EnterOpeningStockModal({
                                           e.stopPropagation()
                                           handleSelectItem(row.id, it)
                                         }}
-                                        className={`flex w-full items-center justify-between rounded-[8px] p-2 text-xs cursor-pointer transition-colors ${
+                                        className={`flex w-full items-center justify-between rounded-md p-2 text-xs cursor-pointer transition-colors ${
                                           isSelected
                                             ? 'bg-secondary text-foreground font-semibold'
                                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -632,14 +640,15 @@ export function EnterOpeningStockModal({
 
                         {/* Quantity Input */}
                         <div className="w-36 sm:w-44 shrink-0">
-                          <input
+                          <Input
+                            dense
                             type="number"
                             min="0.001"
                             step="any"
                             placeholder="e.g. 500"
                             value={row.quantity}
                             onChange={(e) => handleQuantityChange(row.id, e.target.value)}
-                            className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                            className="[&_input]:font-mono"
                           />
                         </div>
 
@@ -655,7 +664,7 @@ export function EnterOpeningStockModal({
                           <button
                             type="button"
                             onClick={() => handleRemoveRow(row.id)}
-                            className="rounded-[8px] p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                            className="rounded-md p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                             title="Remove line item"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -671,7 +680,7 @@ export function EnterOpeningStockModal({
                   <button
                     type="button"
                     onClick={handleAddRow}
-                    className="inline-flex items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Add Item</span>
@@ -680,16 +689,22 @@ export function EnterOpeningStockModal({
               </div>
 
               {/* Notes */}
-              <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">
-                  Notes <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
-                </label>
+              <div
+                className={cn(
+                  'group relative flex min-h-14 w-full flex-col rounded-md px-3.5 py-2',
+                  fieldChrome,
+                  fieldChromeIdle
+                )}
+              >
+                <span className="text-[11px] font-medium text-muted-foreground leading-none">
+                  Notes <span className="font-normal">(Optional)</span>
+                </span>
                 <textarea
                   rows={2}
                   placeholder="Initial inventory migration..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+                  className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
                 />
               </div>
 
@@ -717,7 +732,7 @@ export function EnterOpeningStockModal({
                     size="sm"
                     disabled={isSubmitting}
                     onClick={() => handleSubmit(false)}
-                    className="text-xs font-medium cursor-pointer rounded-[8px] px-3.5"
+                    className="text-xs font-medium cursor-pointer rounded-md px-3.5"
                   >
                     Save Draft
                   </Button>
@@ -727,7 +742,7 @@ export function EnterOpeningStockModal({
                     size="sm"
                     disabled={isSubmitting}
                     onClick={() => handleSubmit(true)}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-xs rounded-[8px] px-4 flex items-center gap-1.5"
+                    className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
                   >
                     <PackageCheck className="h-4 w-4" />
                     <span>{isSubmitting ? 'Posting...' : 'Post Opening Stock'}</span>
@@ -758,61 +773,51 @@ export function EnterOpeningStockModal({
                   <p className="mt-2 text-xs text-muted-foreground">Loading history...</p>
                 </div>
               ) : historyList.length === 0 ? (
-                <div className="py-12 text-center rounded-[10px] border border-border/60 bg-secondary/20">
+                <div className="py-12 text-center rounded-md border border-border/60 bg-secondary/20">
                   <p className="text-xs font-medium text-foreground">No opening stock records found</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     Use the 'Enter Stock' tab to initialize materials.
                   </p>
                 </div>
               ) : (
-                <div className="rounded-[10px] border border-border/80 overflow-hidden">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="bg-secondary/60 text-muted-foreground font-semibold border-b border-border/80">
-                      <tr>
-                        <th className="py-2.5 px-3.5">Reference</th>
-                        <th className="py-2.5 px-3.5">Date</th>
-                        <th className="py-2.5 px-3.5">Warehouse</th>
-                        <th className="py-2.5 px-3.5 text-center">Items</th>
-                        <th className="py-2.5 px-3.5">Status</th>
-                        <th className="py-2.5 px-3.5 text-right">Actions</th>
+                <Table className="border-0 rounded-none shadow-none">
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Reference</TH>
+                        <TH className="py-2.5">Date</TH>
+                        <TH className="py-2.5">Warehouse</TH>
+                        <TH className="py-2.5 text-center">Items</TH>
+                        <TH className="py-2.5">Status</TH>
+                        <TH className="py-2.5 text-right">Actions</TH>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60">
+                    </THead>
+                    <TBody className="divide-y divide-border/60">
                       {historyList.map((stock) => (
-                        <tr key={stock.id} className="hover:bg-secondary/20 transition-colors">
-                          <td className="py-2.5 px-3.5 font-mono font-medium text-foreground">
+                        <TR key={stock.id} className="hover:bg-secondary/20 transition-colors">
+                          <TD className="py-2.5 px-3.5 font-mono font-medium text-foreground">
                             {stock.openingStockNumber}
-                          </td>
-                          <td className="py-2.5 px-3.5 text-muted-foreground">
+                          </TD>
+                          <TD className="py-2.5 px-3.5 text-muted-foreground">
                             {stock.openingDate}
-                          </td>
-                          <td className="py-2.5 px-3.5 text-foreground">
+                          </TD>
+                          <TD className="py-2.5 px-3.5 text-foreground">
                             {stock.warehouseName}
-                          </td>
-                          <td className="py-2.5 px-3.5 text-center font-mono">
+                          </TD>
+                          <TD className="py-2.5 px-3.5 text-center font-mono">
                             {stock.totalItems}
-                          </td>
-                          <td className="py-2.5 px-3.5">
+                          </TD>
+                          <TD className="py-2.5 px-3.5">
                             {stock.status === 'POSTED' && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 border border-emerald-500/20">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Posted
-                              </span>
+                              <Badge variant="success">Posted</Badge>
                             )}
                             {stock.status === 'DRAFT' && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-500 border border-amber-500/20">
-                                <Clock className="h-3 w-3" />
-                                Draft
-                              </span>
+                              <Badge variant="warning">Draft</Badge>
                             )}
                             {stock.status === 'CANCELLED' && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-500 border border-rose-500/20">
-                                <Ban className="h-3 w-3" />
-                                Cancelled
-                              </span>
+                              <Badge variant="destructive">Cancelled</Badge>
                             )}
-                          </td>
-                          <td className="py-2.5 px-3.5 text-right space-x-1.5 whitespace-nowrap">
+                          </TD>
+                          <TD className="py-2.5 px-3.5 text-right space-x-1.5 whitespace-nowrap">
                             {stock.status === 'DRAFT' ? (
                               <>
                                 <Button
@@ -845,12 +850,11 @@ export function EnterOpeningStockModal({
                                 <span>View</span>
                               </Button>
                             )}
-                          </td>
-                        </tr>
+                          </TD>
+                        </TR>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                    </TBody>
+            </Table>
               )}
             </div>
           )}

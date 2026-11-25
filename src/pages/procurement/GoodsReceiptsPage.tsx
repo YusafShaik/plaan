@@ -18,6 +18,9 @@ import {
   History,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { UnderlineTabs } from '../../components/ui/Tabs'
 import { CreateGoodsReceiptModal } from './CreateGoodsReceiptModal'
 import { GoodsReceiptDetailsModal } from './GoodsReceiptDetailsModal'
 import { procurementService } from '../../services/procurementService'
@@ -253,7 +256,7 @@ export function GoodsReceiptsPage({
 
           <Button
             onClick={() => setCreateOpen(true)}
-            className="gap-2 bg-[#171717] text-white hover:opacity-90 font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
+            className="gap-2 bg-ink text-ink-foreground hover:opacity-90 font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" />
             <span>Create goods receipt</span>
@@ -279,7 +282,7 @@ export function GoodsReceiptsPage({
         <div className="h-9 w-px bg-border" />
         <div>
           <span className="text-xs text-muted-foreground font-medium">Posted receipts</span>
-          <p className="text-xl font-semibold text-emerald-600 tracking-tight mt-0.5">
+          <p className="text-xl font-semibold text-success tracking-tight mt-0.5">
             {summary?.postedCount ?? receipts.filter((r) => r.status === 'POSTED').length}
           </p>
         </div>
@@ -292,47 +295,27 @@ export function GoodsReceiptsPage({
         </div>
       </div>
 
-      {/* Sub-Navigation: Goods receipts vs Stock Movements (Transaction history) */}
-      <div className="flex items-center justify-between border-b border-border/70 pb-2.5 pt-1">
-        <div className="flex items-center gap-2 rounded-[8px] bg-secondary p-1 border border-border/80">
-          <button
-            type="button"
-            onClick={() => setSubTab('receipts')}
-            className={`flex items-center gap-2 rounded-[6px] px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-              subTab === 'receipts'
-                ? 'bg-[#171717] text-white shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <PackageCheck className="h-3.5 w-3.5" />
-            <span>Goods receipts</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSubTab('movements')
-              loadMovements()
-            }}
-            className={`flex items-center gap-2 rounded-[6px] px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-              subTab === 'movements'
-                ? 'bg-[#171717] text-white shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <History className="h-3.5 w-3.5" />
-            <span>Stock movements</span>
-            <span
-              className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
-                subTab === 'movements' ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {movements.length > 0 ? movements.length : 'ledger'}
-            </span>
-          </button>
-        </div>
-
+      <div className="pt-1">
+        <UnderlineTabs
+          items={[
+            { id: 'receipts', label: 'Goods receipts' },
+            {
+              id: 'movements',
+              label:
+                movements.length > 0
+                  ? `Stock movements (${movements.length})`
+                  : 'Stock movements',
+            },
+          ]}
+          value={subTab}
+          onChange={(id) => {
+            const next = id as 'receipts' | 'movements'
+            setSubTab(next)
+            if (next === 'movements') loadMovements()
+          }}
+        />
         {subTab === 'movements' && (
-          <p className="text-xs text-muted-foreground hidden sm:block">
+          <p className="mt-2 text-xs text-muted-foreground">
             Inbound inventory movement ledger against purchase orders
           </p>
         )}
@@ -383,7 +366,7 @@ export function GoodsReceiptsPage({
                   placeholder="Search GRN, PO, supplier..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                  className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                 />
               </div>
 
@@ -392,7 +375,7 @@ export function GoodsReceiptsPage({
                 <button
                   type="button"
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`flex h-10 w-10 items-center justify-center rounded-[10px] border transition-colors cursor-pointer ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors cursor-pointer ${
                     selectedStatusFilter !== 'all' || isFilterOpen
                       ? 'border-foreground bg-secondary text-foreground'
                       : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:border-border'
@@ -403,7 +386,7 @@ export function GoodsReceiptsPage({
                 </button>
 
                 {isFilterOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-[12px] border border-border bg-white p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+                  <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                     <div className="px-2 py-1.5 border-b border-border/60 mb-1 flex items-center justify-between">
                       <span className="text-xs font-semibold text-foreground">Filter Status</span>
                       {selectedStatusFilter !== 'all' && (
@@ -432,7 +415,7 @@ export function GoodsReceiptsPage({
                               setSelectedStatusFilter(option.id)
                               setIsFilterOpen(false)
                             }}
-                            className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                            className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                               isSelected
                                 ? 'bg-secondary text-foreground font-semibold'
                                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -453,7 +436,7 @@ export function GoodsReceiptsPage({
                 type="button"
                 onClick={handleExportCsv}
                 disabled={receipts.length === 0}
-                className="flex h-10 items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="flex h-10 items-center gap-1.5 rounded-md border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 title="Export as CSV"
               >
                 <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -496,7 +479,7 @@ export function GoodsReceiptsPage({
                   <Button
                     size="sm"
                     onClick={() => setCreateOpen(true)}
-                    className="mt-4 gap-1.5 bg-[#171717] text-white"
+                    className="mt-4 gap-1.5 bg-ink text-ink-foreground"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Create goods receipt</span>
@@ -504,98 +487,80 @@ export function GoodsReceiptsPage({
                 )}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-border text-sm font-semibold text-foreground">
-                      <th className="py-3.5 px-4 font-semibold">GRN number</th>
-                      <th className="py-3.5 px-4 font-semibold">PO number</th>
-                      <th className="py-3.5 px-4 font-semibold">Supplier</th>
-                      <th className="py-3.5 px-4 font-semibold">Receiving warehouse</th>
-                      <th className="py-3.5 px-4 font-semibold">Receipt date</th>
-                      <th className="py-3.5 px-4 font-semibold">Delivery note</th>
-                      <th className="py-3.5 px-4 font-semibold">Items received</th>
-                      <th className="py-3.5 px-4 font-semibold text-center">Status</th>
-                      <th className="py-3.5 px-4 text-right w-28" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60 text-sm">
+              <Table>
+                <THead>
+                  <tr>
+                    <TH>GRN number</TH>
+                    <TH>PO number</TH>
+                    <TH>Supplier</TH>
+                    <TH>Receiving warehouse</TH>
+                    <TH>Receipt date</TH>
+                    <TH>Delivery note</TH>
+                    <TH>Items received</TH>
+                    <TH className="text-center">Status</TH>
+                    <TH className="text-right w-28" />
+                  </tr>
+                </THead>
+                <TBody>
                     {receipts.map((grn) => (
-                      <tr
+                      <TR
                         key={grn.id}
                         onClick={() => setSelectedReceipt(grn)}
-                        className="group border-b border-border/50 hover:bg-secondary/70 transition-colors duration-150 cursor-pointer"
+                        clickable
+                        className="group"
                       >
-                        {/* GRN Number */}
-                        <td className="py-4 px-4 text-sm font-semibold text-foreground tracking-tight">
-                          {grn.grnNumber}
-                        </td>
-
-                        {/* PO Number */}
-                        <td className="py-4 px-4">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] bg-secondary text-xs font-medium font-mono text-foreground border border-border/70">
-                            {grn.poNumber}
+                        <TD>
+                          <span className="text-ref-link">
+                            {grn.grnNumber}
                           </span>
-                        </td>
+                        </TD>
 
-                        {/* Supplier */}
-                        <td className="py-4 px-4">
+                        <TD className="text-ref text-foreground">
+                          {grn.poNumber}
+                        </TD>
+
+                        <TD>
                           <div className="flex items-center gap-2.5">
                             <Building2 className="h-4 w-4 text-muted-foreground/80 shrink-0" />
                             <div>
-                              <p className="text-sm font-medium text-foreground">{grn.supplierName}</p>
-                              <p className="text-xs text-muted-foreground font-medium">{grn.supplierCode}</p>
+                              <p className="font-medium">{grn.supplierName}</p>
+                              <p className="text-[11px] text-ref text-muted-foreground">{grn.supplierCode}</p>
                             </div>
                           </div>
-                        </td>
+                        </TD>
 
-                        {/* Warehouse */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2 text-sm text-foreground">
+                        <TD>
+                          <div className="flex items-center gap-2">
                             <WarehouseIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             <span>{grn.warehouseName}</span>
                           </div>
-                        </td>
+                        </TD>
 
-                        {/* Receipt Date */}
-                        <td className="py-4 px-4 text-xs font-normal text-muted-foreground">
+                        <TD className="font-normal text-muted-foreground">
                           {grn.receiptDate}
-                        </td>
+                        </TD>
 
-                        {/* Delivery note */}
-                        <td className="py-4 px-4 text-xs font-mono text-muted-foreground">
+                        <TD className="text-ref text-muted-foreground font-normal">
                           {grn.deliveryNoteNumber || '—'}
-                        </td>
+                        </TD>
 
-                        {/* Items count */}
-                        <td className="py-4 px-4 text-xs font-medium text-muted-foreground">
+                        <TD className="font-normal text-muted-foreground">
                           {grn.itemsCount} {grn.itemsCount === 1 ? 'item' : 'items'}
-                        </td>
+                        </TD>
 
-                        {/* Status Pill */}
-                        <td className="py-4 px-4 text-center">
+                        <TD className="text-center">
                           {grn.status === 'POSTED' && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 border border-emerald-200">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                              Posted
-                            </span>
+                            <Badge variant="success">Posted</Badge>
                           )}
                           {grn.status === 'DRAFT' && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border">
-                              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
-                              Draft
-                            </span>
+                            <Badge variant="neutral">Draft</Badge>
                           )}
                           {grn.status === 'CANCELLED' && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 border border-rose-200">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-600" />
-                              Cancelled
-                            </span>
+                            <Badge variant="destructive">Cancelled</Badge>
                           )}
-                        </td>
+                        </TD>
 
-                        {/* Actions */}
-                        <td className="py-4 px-4 text-right whitespace-nowrap">
+                        <TD className="text-right whitespace-nowrap">
                           <div
                             className="flex items-center justify-end gap-1"
                             onClick={(e) => e.stopPropagation()}
@@ -603,7 +568,7 @@ export function GoodsReceiptsPage({
                             <button
                               type="button"
                               onClick={() => setSelectedReceipt(grn)}
-                              className="p-1.5 rounded-[8px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
                               title="View GRN Details"
                             >
                               <Eye className="h-4 w-4" />
@@ -613,7 +578,7 @@ export function GoodsReceiptsPage({
                               type="button"
                               onClick={() => handleDownloadPdf(grn.id, grn.grnNumber)}
                               disabled={downloadingGrnId === grn.id}
-                              className="p-1.5 rounded-[8px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
                               title="Download GRN PDF Note"
                             >
                               {downloadingGrnId === grn.id ? (
@@ -628,7 +593,7 @@ export function GoodsReceiptsPage({
                                 <button
                                   type="button"
                                   onClick={() => handlePostReceipt(grn.id)}
-                                  className="p-1.5 rounded-[8px] text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 cursor-pointer transition-colors"
+                                  className="p-1.5 rounded-md text-success hover:text-success hover:bg-success/10 cursor-pointer transition-colors"
                                   title="Post Goods Receipt (Commit to Inventory)"
                                 >
                                   <Send className="h-4 w-4" />
@@ -636,7 +601,7 @@ export function GoodsReceiptsPage({
                                 <button
                                   type="button"
                                   onClick={() => handleCancelReceipt(grn.id)}
-                                  className="p-1.5 rounded-[8px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                                  className="p-1.5 rounded-md text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
                                   title="Cancel Draft"
                                 >
                                   <Ban className="h-4 w-4" />
@@ -644,12 +609,11 @@ export function GoodsReceiptsPage({
                               </>
                             )}
                           </div>
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                </TBody>
+              </Table>
             )}
 
             {/* Pagination Controls */}
@@ -707,12 +671,12 @@ export function GoodsReceiptsPage({
                 placeholder="Search reference, item, PO..."
                 value={movementSearch}
                 onChange={(e) => setMovementSearch(e.target.value)}
-                className="flex h-9 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-9 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
           </div>
 
-          <div className="rounded-[12px] border border-border/80 bg-card overflow-hidden">
+          <div className="rounded-md border border-border/80 bg-card overflow-hidden">
             {isLoadingMovements ? (
               <div className="py-20 text-center">
                 <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
@@ -729,69 +693,60 @@ export function GoodsReceiptsPage({
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30 text-xs font-semibold text-muted-foreground">
-                      <th className="py-3 px-4">Reference</th>
-                      <th className="py-3 px-4">Purchase order</th>
-                      <th className="py-3 px-4">Item</th>
-                      <th className="py-3 px-4">Warehouse</th>
-                      <th className="py-3 px-4">Movement</th>
-                      <th className="py-3 px-4">Date & Time</th>
-                      <th className="py-3 px-4">Type</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60 text-xs">
+              <Table className="border-0 rounded-none bg-transparent">
+                <THead>
+                  <tr>
+                    <TH>Reference</TH>
+                    <TH>Purchase order</TH>
+                    <TH>Item</TH>
+                    <TH>Warehouse</TH>
+                    <TH>Movement</TH>
+                    <TH>Date & time</TH>
+                    <TH>Type</TH>
+                  </tr>
+                </THead>
+                <TBody>
                     {filteredMovements.map((m) => (
-                      <tr key={m.id} className="hover:bg-secondary/50 transition-colors">
-                        {/* Reference (matching screenshot: GRN-001) */}
-                        <td className="py-3.5 px-4 font-mono font-medium text-foreground">
+                      <TR key={m.id} clickable>
+                        <TD className="text-ref text-foreground">
                           {m.referenceNumber}
-                        </td>
+                        </TD>
 
-                        {/* PO */}
-                        <td className="py-3.5 px-4 font-mono text-muted-foreground">
+                        <TD className="text-ref text-muted-foreground font-normal">
                           {m.poNumber}
-                        </td>
+                        </TD>
 
-                        {/* Item (matching screenshot: Steel Sheet) */}
-                        <td className="py-3.5 px-4">
+                        <TD>
                           <div>
-                            <span className="font-medium text-foreground">{m.itemName}</span>
-                            <span className="ml-2 font-mono text-[11px] text-muted-foreground">
+                            <span className="font-medium">{m.itemName}</span>
+                            <span className="ml-2 text-[11px] text-ref text-muted-foreground">
                               {m.itemCode}
                             </span>
                           </div>
-                        </td>
+                        </TD>
 
-                        {/* Warehouse (matching screenshot: WH-001) */}
-                        <td className="py-3.5 px-4">
-                          <span className="font-mono text-foreground">{m.warehouseCode}</span>
-                          <span className="ml-1 text-muted-foreground">({m.warehouseName})</span>
-                        </td>
+                        <TD>
+                          <span className="text-ref text-foreground">{m.warehouseCode}</span>
+                          <span className="ml-1 text-muted-foreground font-normal">({m.warehouseName})</span>
+                        </TD>
 
-                        {/* Movement (matching screenshot: +60 kg in green) */}
-                        <td className="py-3.5 px-4 font-semibold text-emerald-600 font-mono">
+                        <TD className="font-mono font-medium text-success">
                           +{m.quantity} {m.unitOfMeasure}
-                        </td>
+                        </TD>
 
-                        {/* Date */}
-                        <td className="py-3.5 px-4 text-muted-foreground">
+                        <TD className="font-normal text-muted-foreground">
                           {new Date(m.createdAt).toLocaleDateString()} {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </td>
+                        </TD>
 
-                        {/* Movement Type */}
-                        <td className="py-3.5 px-4">
-                          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 border border-emerald-200">
+                        <TD>
+                          <Badge variant="success" className="h-auto px-2 py-0.5 text-[11px] font-medium">
                             Inbound Receipt
-                          </span>
-                        </td>
-                      </tr>
+                          </Badge>
+                        </TD>
+                      </TR>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                </TBody>
+              </Table>
             )}
           </div>
         </div>

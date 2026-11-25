@@ -1,13 +1,22 @@
-import { type LabelHTMLAttributes } from 'react'
+import type { LabelHTMLAttributes } from 'react'
+import { cn } from '../../lib/cn'
 
 export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
   required?: boolean
 }
 
-export function Label({ className = '', children, required, ...props }: LabelProps) {
+export function Label({
+  className,
+  children,
+  required,
+  ...props
+}: LabelProps) {
   return (
     <label
-      className={`block text-sm font-medium text-foreground mb-1.5 ${className}`}
+      className={cn(
+        'block text-sm font-medium text-foreground mb-1.5',
+        className
+      )}
       {...props}
     >
       {children}

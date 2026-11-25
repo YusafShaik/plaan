@@ -17,6 +17,8 @@ import {
   Eye,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreatePurchaseOrderModal } from './CreatePurchaseOrderModal'
 import { PurchaseOrderDetailsModal } from './PurchaseOrderDetailsModal'
 import { procurementService } from '../../services/procurementService'
@@ -196,7 +198,7 @@ export function PurchaseOrdersPage({
 
           <Button
             onClick={() => setCreateOpen(true)}
-            className="gap-2 bg-[#171717] text-white hover:opacity-90 font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
+            className="gap-2 bg-ink text-ink-foreground hover:opacity-90 font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" />
             <span>Create purchase order</span>
@@ -222,28 +224,28 @@ export function PurchaseOrdersPage({
         <div className="h-9 w-px bg-border" />
         <div>
           <span className="text-xs text-muted-foreground font-medium">Issued</span>
-          <p className="text-xl font-semibold text-emerald-600 tracking-tight mt-0.5">
+          <p className="text-xl font-semibold text-success tracking-tight mt-0.5">
             {summary?.issuedCount ?? orders.filter((o) => o.status === 'ISSUED').length}
           </p>
         </div>
         <div className="h-9 w-px bg-border" />
         <div>
           <span className="text-xs text-muted-foreground font-medium">Partially received</span>
-          <p className="text-xl font-semibold text-amber-600 tracking-tight mt-0.5">
+          <p className="text-xl font-semibold text-warning tracking-tight mt-0.5">
             {summary?.partiallyReceivedCount ?? orders.filter((o) => o.status === 'PARTIALLY_RECEIVED').length}
           </p>
         </div>
         <div className="h-9 w-px bg-border" />
         <div>
           <span className="text-xs text-muted-foreground font-medium">Completed</span>
-          <p className="text-xl font-semibold text-blue-600 tracking-tight mt-0.5">
+          <p className="text-xl font-semibold text-info tracking-tight mt-0.5">
             {summary?.completedCount ?? orders.filter((o) => o.status === 'COMPLETED').length}
           </p>
         </div>
         <div className="h-9 w-px bg-border" />
         <div>
           <span className="text-xs text-muted-foreground font-medium">Cancelled</span>
-          <p className="text-xl font-semibold text-rose-500 tracking-tight mt-0.5">
+          <p className="text-xl font-semibold text-destructive tracking-tight mt-0.5">
             {summary?.cancelledCount ?? orders.filter((o) => o.status === 'CANCELLED').length}
           </p>
         </div>
@@ -302,7 +304,7 @@ export function PurchaseOrdersPage({
               placeholder="Search PO number, vendor..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
@@ -311,7 +313,7 @@ export function PurchaseOrdersPage({
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex h-10 w-10 items-center justify-center rounded-[10px] border transition-colors cursor-pointer ${
+              className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors cursor-pointer ${
                 selectedStatusFilter !== 'all' || isFilterOpen
                   ? 'border-foreground bg-secondary text-foreground'
                   : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:border-border'
@@ -322,7 +324,7 @@ export function PurchaseOrdersPage({
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-[12px] border border-border bg-white p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                 <div className="px-2 py-1.5 border-b border-border/60 mb-1 flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground">Filter Status</span>
                   {selectedStatusFilter !== 'all' && (
@@ -353,7 +355,7 @@ export function PurchaseOrdersPage({
                           setSelectedStatusFilter(option.id)
                           setIsFilterOpen(false)
                         }}
-                        className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                           isSelected
                             ? 'bg-secondary text-foreground font-semibold'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -374,7 +376,7 @@ export function PurchaseOrdersPage({
             type="button"
             onClick={handleExport}
             disabled={orders.length === 0}
-            className="flex h-10 items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="flex h-10 items-center gap-1.5 rounded-md border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             title="Export as CSV"
           >
             <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -427,7 +429,7 @@ export function PurchaseOrdersPage({
               <Button
                 size="sm"
                 onClick={() => setCreateOpen(true)}
-                className="mt-4 gap-1.5 bg-[#171717] text-white"
+                className="mt-4 gap-1.5 bg-ink text-ink-foreground"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Create purchase order</span>
@@ -435,102 +437,81 @@ export function PurchaseOrdersPage({
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-sm font-semibold text-foreground">
-                  <th className="py-3.5 px-4 font-semibold">PO number</th>
-                  <th className="py-3.5 px-4 font-semibold">Supplier</th>
-                  <th className="py-3.5 px-4 font-semibold">Receiving warehouse</th>
-                  <th className="py-3.5 px-4 font-semibold">Order date</th>
-                  <th className="py-3.5 px-4 font-semibold">Items</th>
-                  <th className="py-3.5 px-4 font-semibold text-right">Total amount</th>
-                  <th className="py-3.5 px-4 font-semibold text-center">Status</th>
-                  <th className="py-3.5 px-4 text-right w-24" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 text-sm">
+          <Table>
+            <THead>
+              <tr>
+                <TH>PO number</TH>
+                <TH>Supplier</TH>
+                <TH>Receiving warehouse</TH>
+                <TH>Order date</TH>
+                <TH>Items</TH>
+                <TH className="text-right">Total amount</TH>
+                <TH className="text-center">Status</TH>
+                <TH className="text-right w-24" />
+              </tr>
+            </THead>
+            <TBody>
                 {orders.map((po) => (
-                  <tr
+                  <TR
                     key={po.id}
                     onClick={() => setSelectedOrder(po)}
-                    className="group border-b border-border/50 hover:bg-secondary/70 transition-colors duration-150 cursor-pointer"
+                    clickable
+                    className="group"
                   >
-                    {/* PO Number */}
-                    <td className="py-4 px-4 text-sm font-semibold text-foreground tracking-tight">
-                      {po.poNumber}
-                    </td>
+                    <TD>
+                      <span className="text-ref-link">
+                        {po.poNumber}
+                      </span>
+                    </TD>
 
-                    {/* Supplier */}
-                    <td className="py-4 px-4">
+                    <TD>
                       <div className="flex items-center gap-2.5">
                         <Building2 className="h-4 w-4 text-muted-foreground/80 shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-foreground">{po.supplierName}</p>
-                          <p className="text-xs text-muted-foreground font-medium">{po.supplierCode}</p>
+                          <p className="font-medium">{po.supplierName}</p>
+                          <p className="text-[11px] text-ref text-muted-foreground">{po.supplierCode}</p>
                         </div>
                       </div>
-                    </td>
+                    </TD>
 
-                    {/* Warehouse */}
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
+                    <TD>
+                      <div className="flex items-center gap-2">
                         <WarehouseIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span>{po.warehouseName}</span>
                       </div>
-                    </td>
+                    </TD>
 
-                    {/* Order Date */}
-                    <td className="py-4 px-4 text-xs font-normal text-muted-foreground">
+                    <TD className="font-normal text-muted-foreground">
                       {po.orderDate}
-                    </td>
+                    </TD>
 
-                    {/* Items count */}
-                    <td className="py-4 px-4 text-xs font-medium text-muted-foreground">
+                    <TD className="font-normal text-muted-foreground">
                       {po.itemsCount} {po.itemsCount === 1 ? 'item' : 'items'}
-                    </td>
+                    </TD>
 
-                    {/* Total Amount */}
-                    <td className="py-4 px-4 text-right font-mono text-sm font-semibold text-foreground">
+                    <TD className="text-right font-mono font-medium">
                       {currencySymbol}{po.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
+                    </TD>
 
-                    {/* Status Pill */}
-                    <td className="py-4 px-4 text-center">
+                    <TD className="text-center">
                       {po.status === 'ISSUED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 border border-emerald-200">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                          Issued
-                        </span>
+                        <Badge variant="success">Issued</Badge>
                       )}
                       {po.status === 'PARTIALLY_RECEIVED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 border border-amber-200">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-                          Partially received
-                        </span>
+                        <Badge variant="warning">Partially received</Badge>
                       )}
                       {po.status === 'COMPLETED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 border border-blue-200">
-                          <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                          Completed
-                        </span>
+                        <Badge variant="info">Completed</Badge>
                       )}
                       {po.status === 'DRAFT' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border">
-                          <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
-                          Draft
-                        </span>
+                        <Badge variant="neutral">Draft</Badge>
                       )}
                       {po.status === 'CANCELLED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 border border-rose-200">
-                          <span className="h-1.5 w-1.5 rounded-full bg-rose-600" />
-                          Cancelled
-                        </span>
+                        <Badge variant="destructive">Cancelled</Badge>
                       )}
-                    </td>
+                    </TD>
 
-                    {/* Direct action buttons (View Details, Download PDF, Issue, Cancel - no duplicated dropdown) */}
-                    <td className="py-4 px-4 text-right whitespace-nowrap">
+                    <TD className="text-right whitespace-nowrap">
                       <div
                         className="flex items-center justify-end gap-1.5"
                         onClick={(e) => e.stopPropagation()}
@@ -538,7 +519,7 @@ export function PurchaseOrdersPage({
                         <button
                           type="button"
                           onClick={() => setSelectedOrder(po)}
-                          className="p-1.5 rounded-[8px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
                           title="View PO Details"
                         >
                           <Eye className="h-4 w-4" />
@@ -548,7 +529,7 @@ export function PurchaseOrdersPage({
                           type="button"
                           onClick={() => handleDownloadPdf(po.id, po.poNumber)}
                           disabled={downloadingPoId === po.id}
-                          className="p-1.5 rounded-[8px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
                           title="Download PDF"
                         >
                           {downloadingPoId === po.id ? (
@@ -562,7 +543,7 @@ export function PurchaseOrdersPage({
                           <button
                             type="button"
                             onClick={() => handleStatusTransition(po.id, 'ISSUED')}
-                            className="p-1.5 rounded-[8px] text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 cursor-pointer transition-colors"
+                            className="p-1.5 rounded-md text-success hover:text-success hover:bg-success/10 cursor-pointer transition-colors"
                             title="Issue Purchase Order"
                           >
                             <Send className="h-4 w-4" />
@@ -573,19 +554,18 @@ export function PurchaseOrdersPage({
                           <button
                             type="button"
                             onClick={() => handleStatusTransition(po.id, 'CANCELLED')}
-                            className="p-1.5 rounded-[8px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                            className="p-1.5 rounded-md text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
                             title="Cancel Order"
                           >
                             <Ban className="h-4 w-4" />
                           </button>
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
-          </div>
+            </TBody>
+          </Table>
         )}
 
         {/* 5. Pagination Footer */}
@@ -599,7 +579,7 @@ export function PurchaseOrdersPage({
                 type="button"
                 disabled={currentPage === 0 || isLoading}
                 onClick={() => loadOrders(currentPage - 1)}
-                className="flex items-center gap-1 rounded-[8px] border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 rounded-md border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
                 Previous
@@ -611,7 +591,7 @@ export function PurchaseOrdersPage({
                 type="button"
                 disabled={currentPage + 1 >= pageData.totalPages || isLoading}
                 onClick={() => loadOrders(currentPage + 1)}
-                className="flex items-center gap-1 rounded-[8px] border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 rounded-md border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 Next
                 <ChevronRight className="h-3.5 w-3.5" />

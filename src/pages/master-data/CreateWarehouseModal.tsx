@@ -1,8 +1,9 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { Sparkles, X, Check } from 'lucide-react'
+import { Sparkles, X } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
 import { Alert } from '../../components/ui/Alert'
 import { masterDataService } from '../../services/masterDataService'
 import type { CreateWarehousePayload } from '../../types/masterData'
@@ -118,9 +119,9 @@ export function CreateWarehouseModal({
           value={warehouseCode}
           onChange={(e) => setWarehouseCode(e.target.value.toUpperCase())}
           disabled={isLoading}
-          className="font-mono font-semibold"
+          className="font-mono font-medium"
           rightElement={
-            <span className="text-[11px] font-sans font-medium text-accent flex items-center gap-1">
+            <span className="text-[11px] font-sans font-medium text-brand-deep flex items-center gap-1">
               <Sparkles className="h-3 w-3" /> Auto
             </span>
           }
@@ -155,26 +156,16 @@ export function CreateWarehouseModal({
           disabled={isLoading}
         />
 
-        {/* Field 5: Status (Default Active) */}
-        <div className="pt-1">
-          <label className="block text-xs font-semibold text-foreground mb-1.5">
-            Status
-          </label>
-          <button
-            type="button"
-            onClick={() => setActive(!active)}
-            className="flex items-center gap-2.5 rounded-[10px] border border-border/80 bg-secondary px-3.5 py-2.5 text-sm text-foreground cursor-pointer hover:border-border transition-colors w-full"
-          >
-            <div
-              className={`flex h-4 w-4 items-center justify-center rounded-full transition-colors ${
-                active ? 'bg-emerald-500 text-white' : 'border border-muted-foreground/40 bg-transparent'
-              }`}
-            >
-              {active && <Check className="h-3 w-3 stroke-[3]" />}
-            </div>
-            <span className="text-sm font-medium">{active ? 'Active' : 'Inactive'}</span>
-          </button>
-        </div>
+        <Select
+          label="Status"
+          value={active ? 'active' : 'inactive'}
+          onChange={(v) => setActive(v === 'active')}
+          disabled={isLoading}
+          options={[
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+          ]}
+        />
 
         {/* Footer Actions matching reference */}
         <div className="mt-6 flex items-center justify-end gap-3 pt-3 border-t border-border">
@@ -183,15 +174,10 @@ export function CreateWarehouseModal({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-            className="border-border/80 bg-white text-foreground hover:bg-secondary font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            isLoading={isLoading}
-            className="bg-[#171717] hover:bg-[#262626] text-white font-medium px-5 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
-          >
+          <Button type="submit" variant="primary" isLoading={isLoading}>
             Save warehouse
           </Button>
         </div>

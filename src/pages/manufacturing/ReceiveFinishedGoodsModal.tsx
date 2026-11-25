@@ -179,7 +179,7 @@ export function ReceiveFinishedGoodsModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -187,14 +187,14 @@ export function ReceiveFinishedGoodsModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {!hasPostedConsumption && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">
               Cannot record production receipt before raw materials have been consumed. Please record material consumption first.
@@ -203,7 +203,7 @@ export function ReceiveFinishedGoodsModal({
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -221,7 +221,7 @@ export function ReceiveFinishedGoodsModal({
                 type="text"
                 disabled
                 value={receiptNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
               />
             </div>
 
@@ -233,7 +233,7 @@ export function ReceiveFinishedGoodsModal({
                 type="date"
                 value={receiptDate}
                 onChange={(e) => setReceiptDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
               />
             </div>
           </div>
@@ -248,7 +248,7 @@ export function ReceiveFinishedGoodsModal({
                 type="text"
                 disabled
                 value={order.orderNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
               />
             </div>
 
@@ -260,7 +260,7 @@ export function ReceiveFinishedGoodsModal({
                 type="text"
                 disabled
                 value={order.productName}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
               />
             </div>
           </div>
@@ -274,7 +274,7 @@ export function ReceiveFinishedGoodsModal({
               type="text"
               disabled
               value={order.finishedGoodsWarehouseName}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
             />
           </div>
 
@@ -285,19 +285,19 @@ export function ReceiveFinishedGoodsModal({
           <div className="space-y-1.5 text-xs">
             <div>
               <span className="text-muted-foreground">Ordered quantity</span>{' '}
-              <span className="font-semibold text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground font-mono ml-2">
                 {formatQuantity(orderedQuantity)} {uom}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Previously received</span>{' '}
-              <span className="font-semibold text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground font-mono ml-2">
                 {formatQuantity(previouslyReceived)} {uom}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Pending quantity</span>{' '}
-              <span className="font-semibold text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground font-mono ml-2">
                 {formatQuantity(pendingQuantity)} {uom}
               </span>
             </div>
@@ -320,7 +320,7 @@ export function ReceiveFinishedGoodsModal({
                   setReceiptQuantity(isNaN(val as number) ? '' : val)
                 }}
                 placeholder={`Max ${formatQuantity(pendingQuantity)}`}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
 
@@ -332,22 +332,22 @@ export function ReceiveFinishedGoodsModal({
                 type="text"
                 disabled
                 value={uom}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
               />
             </div>
           </div>
 
           {/* Dynamic Calculation Box matching Screenshot 0 */}
-          <div className="rounded-[10px] border border-border/80 bg-secondary/20 p-4 space-y-2 text-xs">
+          <div className="rounded-md border border-border/80 bg-secondary/20 p-4 space-y-2 text-xs">
             <div>
               <span className="text-muted-foreground">Total received after posting</span>{' '}
-              <span className="font-bold text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground font-mono ml-2">
                 {formatQuantity(totalAfterPosting)} {uom}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Remaining production quantity</span>{' '}
-              <span className="font-bold text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground font-mono ml-2">
                 {formatQuantity(remainingQuantity)} {uom}
               </span>
             </div>
@@ -363,7 +363,7 @@ export function ReceiveFinishedGoodsModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional production receipt notes..."
               rows={3}
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
         </div>
@@ -402,7 +402,7 @@ export function ReceiveFinishedGoodsModal({
               size="sm"
               onClick={() => handleSubmit(true)}
               disabled={isSubmitting || !hasPostedConsumption}
-              className="bg-[#107048] hover:bg-[#0d603e] text-white font-semibold text-xs px-4 h-9 rounded-[8px] cursor-pointer shadow-xs disabled:opacity-50"
+              className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs px-4 h-9 rounded-md cursor-pointer shadow-xs disabled:opacity-50"
             >
               Post Receipt
             </Button>

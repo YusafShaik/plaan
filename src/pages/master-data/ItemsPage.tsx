@@ -13,6 +13,8 @@ import {
   Check,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateItemModal } from './CreateItemModal'
 import { masterDataService } from '../../services/masterDataService'
 import type {
@@ -204,7 +206,7 @@ export function ItemsPage({
 
           <Button
             onClick={() => setIsModalOpen(true)}
-            className="gap-2 bg-primary text-primary-foreground hover:opacity-90 font-medium px-4 py-2.5 rounded-[10px] text-sm self-start sm:self-auto cursor-pointer"
+            className="gap-2 bg-primary text-primary-foreground hover:opacity-90 font-medium px-4 py-2.5 rounded-md text-sm self-start sm:self-auto cursor-pointer"
           >
             <span>Add item</span>
           </Button>
@@ -224,7 +226,7 @@ export function ItemsPage({
 
         <div>
           <p className="text-sm font-medium text-muted-foreground">Active items</p>
-          <p className="text-[24px] font-semibold tracking-tight text-[#048140] mt-1">
+          <p className="text-[24px] font-semibold tracking-tight text-success mt-1">
             {summary?.activeItems ?? items.filter((i) => i.active).length}
           </p>
         </div>
@@ -300,7 +302,7 @@ export function ItemsPage({
               placeholder="Search name or code..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
@@ -309,22 +311,22 @@ export function ItemsPage({
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`h-10 w-10 flex items-center justify-center rounded-[10px] border transition-colors cursor-pointer relative ${
+              className={`h-10 w-10 flex items-center justify-center rounded-md border transition-colors cursor-pointer relative ${
                 isFilterOpen || hasActiveFilters
-                  ? 'border-accent bg-accent/15 text-accent'
+                  ? 'border-accent bg-brand/15 text-brand-deep'
                   : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'
               }`}
               title="Filter by Type or Status"
             >
               <Filter className="h-4 w-4" />
               {hasActiveFilters && (
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent" />
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-brand-deep" />
               )}
             </button>
 
             {/* Filter Menu anchored below button */}
             {isFilterOpen && (
-              <div className="absolute right-0 top-full mt-2 z-30 w-72 rounded-[10px] border border-border bg-white p-3.5 shadow-panel animate-in fade-in-50 zoom-in-95 duration-150">
+              <div className="absolute right-0 top-full mt-2 z-30 w-72 rounded-md border border-border bg-card p-3.5 shadow-panel animate-in fade-in-50 zoom-in-95 duration-150">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Filter by
@@ -353,7 +355,7 @@ export function ItemsPage({
                         setSelectedTypeFilter('all')
                         setIsFilterOpen(false)
                       }}
-                      className={`flex w-full items-center justify-between rounded-[6px] px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
+                      className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
                         selectedTypeFilter === 'all'
                           ? 'bg-secondary font-medium text-foreground'
                           : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -361,7 +363,7 @@ export function ItemsPage({
                     >
                       <span>All Types</span>
                       {selectedTypeFilter === 'all' && (
-                        <Check className="h-4 w-4 text-accent" />
+                        <Check className="h-4 w-4 text-brand-deep" />
                       )}
                     </button>
 
@@ -373,7 +375,7 @@ export function ItemsPage({
                           setSelectedTypeFilter(String(type.id))
                           setIsFilterOpen(false)
                         }}
-                        className={`flex w-full items-center justify-between rounded-[6px] px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
+                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
                           selectedTypeFilter === String(type.id)
                             ? 'bg-secondary font-medium text-foreground'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -381,7 +383,7 @@ export function ItemsPage({
                       >
                         <span className="truncate">{type.name}</span>
                         {selectedTypeFilter === String(type.id) && (
-                          <Check className="h-4 w-4 text-accent" />
+                          <Check className="h-4 w-4 text-brand-deep" />
                         )}
                       </button>
                     ))}
@@ -406,7 +408,7 @@ export function ItemsPage({
                           setSelectedStatusFilter(s.value)
                           setIsFilterOpen(false)
                         }}
-                        className={`flex w-full items-center justify-between rounded-[6px] px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
+                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-sm transition-colors cursor-pointer ${
                           selectedStatusFilter === s.value
                             ? 'bg-secondary font-medium text-foreground'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -414,7 +416,7 @@ export function ItemsPage({
                       >
                         <span>{s.label}</span>
                         {selectedStatusFilter === s.value && (
-                          <Check className="h-4 w-4 text-accent" />
+                          <Check className="h-4 w-4 text-brand-deep" />
                         )}
                       </button>
                     ))}
@@ -431,7 +433,7 @@ export function ItemsPage({
             size="sm"
             onClick={handleExport}
             disabled={items.length === 0}
-            className="h-10 px-4 gap-2 rounded-[10px] border-input text-sm font-medium text-foreground hover:bg-secondary cursor-pointer"
+            className="h-10 px-4 gap-2 rounded-md border-input text-sm font-medium text-foreground hover:bg-secondary cursor-pointer"
           >
             <Download className="h-4 w-4" />
             <span>Export</span>
@@ -440,34 +442,33 @@ export function ItemsPage({
       </div>
 
       {/* 4. Clean Enterprise Data Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-border text-sm font-semibold text-foreground">
-              <th className="py-3.5 px-4 font-semibold">Item code</th>
-              <th className="py-3.5 px-4 font-semibold">Item name</th>
-              <th className="py-3.5 px-4 font-semibold">Type</th>
-              <th className="py-3.5 px-4 font-semibold">UOM</th>
-              <th className="py-3.5 px-4 font-semibold">Status</th>
-              <th className="py-3.5 px-4 text-right w-12"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60 text-sm">
+      <Table>
+        <THead>
+          <tr>
+            <TH>Item code</TH>
+            <TH>Item name</TH>
+            <TH>Type</TH>
+            <TH>UOM</TH>
+            <TH>Status</TH>
+            <TH className="text-right w-12" />
+          </tr>
+        </THead>
+        <TBody>
             {isLoading ? (
-              <tr>
-                <td colSpan={6} className="py-16 text-center text-sm text-muted-foreground">
+              <TR>
+                <TD colSpan={6} className="py-16 text-center text-muted-foreground font-normal">
                   Loading items...
-                </td>
-              </tr>
+                </TD>
+              </TR>
             ) : error ? (
-              <tr>
-                <td colSpan={6} className="py-16 text-center text-sm text-destructive">
+              <TR>
+                <TD colSpan={6} className="py-16 text-center text-destructive font-normal">
                   {error}
-                </td>
-              </tr>
+                </TD>
+              </TR>
             ) : items.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-16 text-center">
+              <TR>
+                <TD colSpan={6} className="py-16 text-center font-normal">
                   <p className="text-base font-semibold text-foreground">
                     No items found
                   </p>
@@ -476,23 +477,24 @@ export function ItemsPage({
                       ? 'Try clearing your filters or changing your search terms.'
                       : 'Your organization item master is empty. Click "+ Add item" above to create your first item.'}
                   </p>
-                </td>
-              </tr>
+                </TD>
+              </TR>
             ) : (
               items.map((item) => (
-                <tr
+                <TR
                   key={item.id}
-                  className="group border-b border-border/50 hover:bg-secondary/70 transition-colors duration-150 cursor-pointer"
+                  clickable
+                  className="group"
                 >
-                  <td className="py-4 px-4 font-mono text-sm font-normal text-muted-foreground">
+                  <TD className="text-ref text-foreground">
                     {item.itemCode}
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4">
+                  <TD>
                     <div className="flex items-center gap-3">
                       <Package className="h-4 w-4 text-muted-foreground/80 shrink-0 group-hover:text-foreground transition-colors" />
                       <div>
-                        <p className="text-sm font-medium text-foreground">{item.name}</p>
+                        <p className="font-medium text-foreground">{item.name}</p>
                         {item.description && (
                           <p className="text-xs font-normal text-muted-foreground mt-0.5 line-clamp-1">
                             {item.description}
@@ -500,38 +502,30 @@ export function ItemsPage({
                         )}
                       </div>
                     </div>
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4 text-sm font-normal text-foreground">
+                  <TD className="font-normal">
                     {item.itemType.name}
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4 text-sm font-normal text-muted-foreground">
+                  <TD className="font-normal text-muted-foreground">
                     {item.unitOfMeasure}
-                  </td>
+                  </TD>
 
-                  <td className="py-4 px-4">
-                    {item.active ? (
-                      <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-                        <span className="h-2 w-2 rounded-full bg-[#048140]" />
-                        Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <span className="h-2 w-2 rounded-full bg-muted-foreground/60" />
-                        Inactive
-                      </span>
-                    )}
-                  </td>
+                  <TD>
+                    <Badge variant={item.active ? 'success' : 'neutral'}>
+                      {item.active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </TD>
 
-                  <td className="py-4 px-4 text-right relative">
+                  <TD className="text-right relative">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
                         setActiveMenuId(activeMenuId === item.id ? null : item.id)
                       }}
-                      className="p-1 rounded-[6px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
                       title="More actions"
                     >
                       <MoreHorizontal className="h-4 w-4" />
@@ -540,26 +534,25 @@ export function ItemsPage({
                     {activeMenuId === item.id && (
                       <div
                         ref={actionMenuRef}
-                        className="absolute right-4 top-10 z-20 w-40 rounded-[10px] border border-border bg-white p-1 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100"
+                        className="absolute right-4 top-10 z-20 w-40 rounded-md border border-border bg-card p-1 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(item)}
-                          className="flex w-full items-center gap-2 rounded-[6px] px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
                         >
                           <Power className="h-3.5 w-3.5 text-muted-foreground" />
                           <span>{item.active ? 'Deactivate' : 'Activate'}</span>
                         </button>
                       </div>
                     )}
-                  </td>
-                </tr>
+                  </TD>
+                </TR>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+        </TBody>
+      </Table>
 
       {/* 5. Pagination Bar */}
       {pageData && pageData.totalPages > 1 && (
@@ -586,7 +579,7 @@ export function ItemsPage({
               size="sm"
               disabled={pageData.first || isLoading}
               onClick={() => loadItems(currentPage - 1)}
-              className="gap-1 rounded-[8px] px-3"
+              className="gap-1 rounded-md px-3"
             >
               <ChevronLeft className="h-4 w-4" />
               <span>Previous</span>
@@ -599,7 +592,7 @@ export function ItemsPage({
               size="sm"
               disabled={pageData.last || isLoading}
               onClick={() => loadItems(currentPage + 1)}
-              className="gap-1 rounded-[8px] px-3"
+              className="gap-1 rounded-md px-3"
             >
               <span>Next</span>
               <ChevronRight className="h-4 w-4" />

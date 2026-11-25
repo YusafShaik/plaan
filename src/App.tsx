@@ -35,7 +35,7 @@ function PlatformLayout() {
           {activeTab === 'organizations' ? (
             <OrganizationsPage />
           ) : (
-            <div className="rounded-[12px] border border-border bg-card p-8 shadow-xs">
+            <div className="rounded-md border border-border bg-card p-8 shadow-xs">
               <h2 className="text-lg font-semibold text-card-foreground">
                 {activeTab} View
               </h2>

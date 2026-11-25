@@ -14,6 +14,8 @@ import {
   MapPin,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateWarehouseModal } from './CreateWarehouseModal'
 import { masterDataService } from '../../services/masterDataService'
 import type {
@@ -184,7 +186,7 @@ export function WarehousesPage({
           </div>
           <Button
             onClick={() => setIsModalOpen(true)}
-            className="gap-2 bg-[#171717] text-white hover:opacity-90 font-medium px-4 py-2 rounded-[10px] text-sm cursor-pointer shadow-xs"
+            className="gap-2 bg-ink text-ink-foreground hover:opacity-90 font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
           >
             <span>+ Add warehouse</span>
           </Button>
@@ -202,7 +204,7 @@ export function WarehousesPage({
         <div className="h-9 w-px bg-border" />
         <div>
           <span className="text-xs text-muted-foreground font-medium">Active</span>
-          <p className="text-xl font-semibold text-emerald-600 tracking-tight mt-0.5">
+          <p className="text-xl font-semibold text-success tracking-tight mt-0.5">
             {summary?.activeWarehouses ?? warehouses.filter((w) => w.active).length}
           </p>
         </div>
@@ -257,7 +259,7 @@ export function WarehousesPage({
               placeholder="Search code, name, location..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
@@ -266,7 +268,7 @@ export function WarehousesPage({
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex h-10 w-10 items-center justify-center rounded-[10px] border transition-colors cursor-pointer ${
+              className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors cursor-pointer ${
                 selectedStatusFilter !== 'all' || isFilterOpen
                   ? 'border-foreground bg-secondary text-foreground'
                   : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:border-border'
@@ -277,7 +279,7 @@ export function WarehousesPage({
             </button>
 
             {isFilterOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-[12px] border border-border bg-white p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
                 <div className="px-2 py-1.5 border-b border-border/60 mb-1 flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground">Filter Status</span>
                   {selectedStatusFilter !== 'all' && (
@@ -305,7 +307,7 @@ export function WarehousesPage({
                           setSelectedStatusFilter(option.id)
                           setIsFilterOpen(false)
                         }}
-                        className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                           isSelected
                             ? 'bg-secondary text-foreground font-semibold'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -326,7 +328,7 @@ export function WarehousesPage({
             type="button"
             onClick={handleExport}
             disabled={warehouses.length === 0}
-            className="flex h-10 items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="flex h-10 items-center gap-1.5 rounded-md border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             title="Export as CSV"
           >
             <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -378,41 +380,38 @@ export function WarehousesPage({
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-sm font-semibold text-foreground">
-                  <th className="py-3.5 px-4 font-semibold">Warehouse code</th>
-                  <th className="py-3.5 px-4 font-semibold">Warehouse name</th>
-                  <th className="py-3.5 px-4 font-semibold">Address / Location</th>
-                  <th className="py-3.5 px-4 font-semibold">Description</th>
-                  <th className="py-3.5 px-4 font-semibold">Status</th>
-                  <th className="py-3.5 px-4 text-right w-12" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 text-sm">
+          <Table>
+            <THead>
+              <tr>
+                <TH>Warehouse code</TH>
+                <TH>Warehouse name</TH>
+                <TH>Address / Location</TH>
+                <TH>Description</TH>
+                <TH>Status</TH>
+                <TH className="text-right w-12" />
+              </tr>
+            </THead>
+            <TBody>
                 {warehouses.map((w) => (
-                  <tr
+                  <TR
                     key={w.id}
-                    className="group border-b border-border/50 hover:bg-secondary/70 transition-colors duration-150 cursor-pointer"
+                    clickable
+                    className="group"
                   >
-                    {/* Warehouse Code */}
-                    <td className="py-4 px-4 font-mono text-sm font-normal text-muted-foreground">
+                    <TD className="text-ref text-foreground">
                       {w.warehouseCode}
-                    </td>
+                    </TD>
 
-                    {/* Warehouse Name */}
-                    <td className="py-4 px-4">
+                    <TD>
                       <div className="flex items-center gap-3">
                         <WarehouseIcon className="h-4 w-4 text-muted-foreground/80 shrink-0 group-hover:text-foreground transition-colors" />
                         <div>
                           <p className="text-sm font-medium text-foreground">{w.name}</p>
                         </div>
                       </div>
-                    </td>
+                    </TD>
 
-                    {/* Address / Location */}
-                    <td className="py-4 px-4 text-sm font-normal text-foreground">
+                    <TD className="font-normal">
                       {w.address ? (
                         <div className="flex items-center gap-1.5">
                           <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -421,38 +420,27 @@ export function WarehousesPage({
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
-                    </td>
+                    </TD>
 
-                    {/* Description */}
-                    <td className="py-4 px-4 text-sm font-normal text-muted-foreground">
+                    <TD className="font-normal text-muted-foreground">
                       {w.description ? (
                         <span className="line-clamp-1 max-w-xs block">{w.description}</span>
                       ) : (
                         <span>—</span>
                       )}
-                    </td>
+                    </TD>
 
-                    {/* Status Indicator */}
-                    <td className="py-4 px-4">
-                      {w.active ? (
-                        <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-                          <span className="h-2 w-2 rounded-full bg-[#048140]" />
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                          <span className="h-2 w-2 rounded-full bg-muted-foreground/60" />
-                          Inactive
-                        </span>
-                      )}
-                    </td>
+                    <TD>
+                      <Badge variant={w.active ? 'success' : 'neutral'}>
+                        {w.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TD>
 
-                    {/* Actions Context Menu */}
-                    <td className="py-4 px-4 text-right relative">
+                    <TD className="text-right relative">
                       <button
                         type="button"
                         onClick={() => setActiveMenuId(activeMenuId === w.id ? null : w.id)}
-                        className="p-1.5 rounded-[8px] text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
                         title="Actions"
                       >
                         <MoreHorizontal className="h-4 w-4" />
@@ -461,24 +449,23 @@ export function WarehousesPage({
                       {activeMenuId === w.id && (
                         <div
                           ref={actionMenuRef}
-                          className="absolute right-4 top-10 z-50 w-40 rounded-[10px] border border-border bg-white p-1 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100 text-left"
+                          className="absolute right-4 top-10 z-50 w-40 rounded-md border border-border bg-card p-1 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100 text-left"
                         >
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(w)}
-                            className="flex w-full items-center gap-2 rounded-[6px] px-2.5 py-1.5 text-xs text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                            className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-foreground hover:bg-secondary cursor-pointer transition-colors"
                           >
                             <Power className="h-3.5 w-3.5 text-muted-foreground" />
                             <span>Mark as {w.active ? 'Inactive' : 'Active'}</span>
                           </button>
                         </div>
                       )}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
-          </div>
+            </TBody>
+          </Table>
         )}
 
         {/* 5. Pagination Footer */}
@@ -492,7 +479,7 @@ export function WarehousesPage({
                 type="button"
                 disabled={currentPage === 0 || isLoading}
                 onClick={() => loadWarehouses(currentPage - 1)}
-                className="flex items-center gap-1 rounded-[8px] border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 rounded-md border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
                 Previous
@@ -504,7 +491,7 @@ export function WarehousesPage({
                 type="button"
                 disabled={currentPage + 1 >= pageData.totalPages || isLoading}
                 onClick={() => loadWarehouses(currentPage + 1)}
-                className="flex items-center gap-1 rounded-[8px] border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="flex items-center gap-1 rounded-md border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
               >
                 Next
                 <ChevronRight className="h-3.5 w-3.5" />

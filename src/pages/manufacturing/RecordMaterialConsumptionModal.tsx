@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
 import type {
   ProductionOrder,
@@ -229,7 +230,7 @@ export function RecordMaterialConsumptionModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -237,14 +238,14 @@ export function RecordMaterialConsumptionModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -262,7 +263,7 @@ export function RecordMaterialConsumptionModal({
                 type="text"
                 disabled
                 value={consumptionNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
               />
             </div>
 
@@ -274,7 +275,7 @@ export function RecordMaterialConsumptionModal({
                 type="date"
                 value={consumptionDate}
                 onChange={(e) => setConsumptionDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
               />
             </div>
           </div>
@@ -288,37 +289,36 @@ export function RecordMaterialConsumptionModal({
               type="text"
               disabled
               value={order.orderNumber}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
             />
           </div>
 
           {/* Table matching Screenshot 2: Material | Available in production | Consume Qty | Remaining */}
           <div className="space-y-2.5 pt-1">
-            <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                    <th className="py-2.5 px-3.5">Material</th>
-                    <th className="py-2.5 px-3 text-right">Available in production</th>
-                    <th className="py-2.5 px-3 text-right w-40">Consume Qty</th>
-                    <th className="py-2.5 px-3.5 text-right">Remaining</th>
+            <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Material</TH>
+                    <TH className="py-2.5 text-right">Available in production</TH>
+                    <TH className="py-2.5 text-right w-40">Consume Qty</TH>
+                    <TH className="py-2.5 text-right">Remaining</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+                </THead>
+                <TBody className="divide-y divide-border/60">
                   {rows.map((r) => {
                     const entered = r.consumeQuantity === '' ? 0 : Number(r.consumeQuantity)
                     const remaining = Math.max(0, r.availableInProduction - entered)
                     const isExceeding = entered > r.availableInProduction
 
                     return (
-                      <tr key={r.materialId} className="hover:bg-secondary/30 transition-colors">
-                        <td className="py-2.5 px-3.5 font-medium text-foreground">
+                      <TR key={r.materialId} className="hover:bg-secondary/30 transition-colors">
+                        <TD className="py-2.5 px-3.5 font-medium text-foreground">
                           {r.materialName}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
                           {formatQuantity(r.availableInProduction)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right">
+                        </TD>
+                        <TD className="py-2.5 px-3 text-right">
                           <input
                             type="number"
                             min="0"
@@ -326,31 +326,30 @@ export function RecordMaterialConsumptionModal({
                             placeholder="0"
                             value={r.consumeQuantity}
                             onChange={(e) => handleRowQuantityChange(r.materialId, e.target.value)}
-                            className={`flex h-8 w-28 ml-auto rounded-[6px] border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
+                            className={`flex h-8 w-28 ml-auto rounded-md border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
                               isExceeding
                                 ? 'border-destructive bg-destructive/10 text-destructive focus:border-destructive'
                                 : 'border-border/80 bg-secondary/40 text-foreground focus:border-foreground focus:ring-1 focus:ring-foreground'
                             }`}
                           />
-                        </td>
-                        <td className="py-2.5 px-3.5 text-right font-mono font-medium">
-                          <span className={remaining === 0 ? 'text-emerald-500 font-semibold' : 'text-foreground'}>
+                        </TD>
+                        <TD className="py-2.5 px-3.5 text-right font-mono font-medium">
+                          <span className={remaining === 0 ? 'text-success font-semibold' : 'text-foreground'}>
                             {formatQuantity(remaining)}
                           </span>
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     )
                   })}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+            </Table>
 
             {/* Quick action button: Consume all remaining materials */}
             <div className="pt-1">
               <button
                 type="button"
                 onClick={handleConsumeAll}
-                className="w-full py-2 rounded-[8px] border border-border/80 bg-secondary/40 hover:bg-secondary hover:border-foreground text-xs font-medium text-foreground transition-colors cursor-pointer text-center"
+                className="w-full py-2 rounded-md border border-border/80 bg-secondary/40 hover:bg-secondary hover:border-foreground text-xs font-medium text-foreground transition-colors cursor-pointer text-center"
               >
                 Consume all remaining materials
               </button>
@@ -367,7 +366,7 @@ export function RecordMaterialConsumptionModal({
               placeholder="Optional consumption notes..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
 
@@ -379,7 +378,7 @@ export function RecordMaterialConsumptionModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-[8px] px-3.5"
+              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
               Save Draft
             </Button>
@@ -389,7 +388,7 @@ export function RecordMaterialConsumptionModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-[#107048] hover:bg-[#0d603e] text-white font-semibold text-xs cursor-pointer shadow-xs rounded-[8px] px-4"
+              className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4"
             >
               <span>{isSubmitting ? 'Posting...' : 'Post Consumption'}</span>
             </Button>

@@ -10,6 +10,7 @@ import {
   Warehouse as WarehouseIcon,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
 import { procurementService } from '../../services/procurementService'
@@ -307,7 +308,7 @@ export function StockLedgerPage() {
               setIsItemOpen(!isItemOpen)
               setIsWarehouseOpen(false)
             }}
-            className={`flex h-11 w-full items-center justify-between rounded-[10px] border bg-secondary px-3.5 py-2 text-sm transition-all cursor-pointer ${
+            className={`flex h-11 w-full items-center justify-between rounded-md border bg-secondary px-3.5 py-2 text-sm transition-all cursor-pointer ${
               isItemOpen
                 ? 'border-foreground ring-1 ring-foreground text-foreground shadow-xs'
                 : 'border-border/80 text-foreground hover:border-border'
@@ -339,7 +340,7 @@ export function StockLedgerPage() {
 
           {/* Searchable Item Popover */}
           {isItemOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1.5 w-full rounded-[12px] border border-border bg-white p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+            <div className="absolute left-0 top-full z-50 mt-1.5 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
               {/* Search input header */}
               <div className="relative mb-2">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
@@ -348,7 +349,7 @@ export function StockLedgerPage() {
                   placeholder="Search item by name or code..."
                   value={itemSearch}
                   onChange={(e) => setItemSearch(e.target.value)}
-                  className="flex h-9 w-full rounded-[8px] border border-border/80 bg-secondary pl-9 pr-8 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                  className="flex h-9 w-full rounded-md border border-border/80 bg-secondary pl-9 pr-8 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                   autoFocus
                 />
                 {itemSearch && (
@@ -381,7 +382,7 @@ export function StockLedgerPage() {
                           setIsItemOpen(false)
                           setItemSearch('')
                         }}
-                        className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                        className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
                           isSelected
                             ? 'bg-secondary text-foreground font-semibold'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -416,7 +417,7 @@ export function StockLedgerPage() {
               setIsWarehouseOpen(!isWarehouseOpen)
               setIsItemOpen(false)
             }}
-            className={`flex h-11 w-full items-center justify-between rounded-[10px] border bg-secondary px-3.5 py-2 text-sm transition-all cursor-pointer ${
+            className={`flex h-11 w-full items-center justify-between rounded-md border bg-secondary px-3.5 py-2 text-sm transition-all cursor-pointer ${
               isWarehouseOpen
                 ? 'border-foreground ring-1 ring-foreground text-foreground shadow-xs'
                 : 'border-border/80 text-foreground hover:border-border'
@@ -446,7 +447,7 @@ export function StockLedgerPage() {
 
           {/* Searchable Warehouse Popover */}
           {isWarehouseOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1.5 w-full rounded-[12px] border border-border bg-white p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
+            <div className="absolute left-0 top-full z-50 mt-1.5 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
               {/* Search input header */}
               <div className="relative mb-2">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
@@ -455,7 +456,7 @@ export function StockLedgerPage() {
                   placeholder="Search warehouse..."
                   value={warehouseSearch}
                   onChange={(e) => setWarehouseSearch(e.target.value)}
-                  className="flex h-9 w-full rounded-[8px] border border-border/80 bg-secondary pl-9 pr-8 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                  className="flex h-9 w-full rounded-md border border-border/80 bg-secondary pl-9 pr-8 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                   autoFocus
                 />
                 {warehouseSearch && (
@@ -480,7 +481,7 @@ export function StockLedgerPage() {
                     setIsWarehouseOpen(false)
                     setWarehouseSearch('')
                   }}
-                  className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
                     selectedWarehouseId === null
                       ? 'bg-secondary text-foreground font-semibold'
                       : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -509,7 +510,7 @@ export function StockLedgerPage() {
                           setIsWarehouseOpen(false)
                           setWarehouseSearch('')
                         }}
-                        className={`flex w-full items-center justify-between rounded-[8px] px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                        className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
                           isSelected
                             ? 'bg-secondary text-foreground font-semibold'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -537,15 +538,15 @@ export function StockLedgerPage() {
       {/* 2. Metric Cards Strip (Total In, Total Out, Closing balance) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Total In */}
-        <div className="rounded-[12px] border border-border/80 bg-card p-4 shadow-xs">
+        <div className="rounded-md border border-border/80 bg-card p-4 shadow-xs">
           <span className="text-xs font-medium text-muted-foreground">Total In</span>
-          <p className="mt-1 text-2xl font-semibold tracking-tight text-emerald-500 font-mono">
+          <p className="mt-1 text-2xl font-semibold tracking-tight text-success font-mono">
             {formatQuantity(ledgerData?.totalIn ?? 0)} {currentUom}
           </p>
         </div>
 
         {/* Total Out */}
-        <div className="rounded-[12px] border border-border/80 bg-card p-4 shadow-xs">
+        <div className="rounded-md border border-border/80 bg-card p-4 shadow-xs">
           <span className="text-xs font-medium text-muted-foreground">Total Out</span>
           <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground font-mono">
             {formatQuantity(ledgerData?.totalOut ?? 0)} {currentUom}
@@ -553,7 +554,7 @@ export function StockLedgerPage() {
         </div>
 
         {/* Closing balance */}
-        <div className="rounded-[12px] border border-border/80 bg-card p-4 shadow-xs">
+        <div className="rounded-md border border-border/80 bg-card p-4 shadow-xs">
           <span className="text-xs font-medium text-muted-foreground">Closing balance</span>
           <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground font-mono">
             {formatQuantity(ledgerData?.closingBalance ?? 0)} {currentUom}
@@ -574,7 +575,7 @@ export function StockLedgerPage() {
           type="button"
           onClick={handleExportCsv}
           disabled={!ledgerData || ledgerData.movements.length === 0}
-          className="flex h-9 items-center gap-1.5 rounded-[10px] border border-border/80 bg-secondary px-3 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="flex h-9 items-center gap-1.5 rounded-md border border-border/80 bg-secondary px-3 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           title="Export stock ledger as CSV"
         >
           <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -597,7 +598,7 @@ export function StockLedgerPage() {
             </Button>
           </div>
         ) : !ledgerData || ledgerData.movements.length === 0 ? (
-          <div className="py-16 text-center rounded-[12px] border border-border/80 bg-card">
+          <div className="py-16 text-center rounded-md border border-border/80 bg-card">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
               <Package className="h-6 w-6" />
             </div>
@@ -607,85 +608,65 @@ export function StockLedgerPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-xs font-semibold text-muted-foreground">
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Reference</th>
-                  <th className="py-3 px-4 text-right">In</th>
-                  <th className="py-3 px-4 text-right">Out</th>
-                  <th className="py-3 px-4 text-right">Balance</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 text-sm">
-                {ledgerData.movements.map((entry: StockLedgerEntry) => (
-                  <tr
-                    key={entry.id}
-                    className="hover:bg-secondary/50 transition-colors"
-                  >
-                    {/* Date */}
-                    <td className="py-3.5 px-4 text-xs text-foreground font-normal whitespace-nowrap">
-                      {formatDate(entry.movementDate)}
-                    </td>
+          <Table>
+            <THead>
+              <tr>
+                <TH>Date</TH>
+                <TH>Reference</TH>
+                <TH className="text-right">In</TH>
+                <TH className="text-right">Out</TH>
+                <TH className="text-right">Balance</TH>
+              </tr>
+            </THead>
+            <TBody>
+                {ledgerData.movements.map((entry: StockLedgerEntry) => {
+                  const canOpenDetails = Boolean(
+                    entry.goodsReceiptId ||
+                      entry.openingStockId ||
+                      entry.stockTransferId ||
+                      entry.stockAdjustmentId
+                  )
+                  const openDetails = () => {
+                    if (entry.goodsReceiptId) handleViewGrn(entry.goodsReceiptId)
+                    else if (entry.openingStockId)
+                      handleViewOpeningStock(entry.openingStockId)
+                    else if (entry.stockTransferId)
+                      handleViewStockTransfer(entry.stockTransferId)
+                    else if (entry.stockAdjustmentId)
+                      handleViewStockAdjustment(entry.stockAdjustmentId)
+                  }
+                  // Only match when a load is in flight (null === null was always true)
+                  const isLoading =
+                    (loadingGrnId != null &&
+                      loadingGrnId === entry.goodsReceiptId) ||
+                    (loadingOpeningStockId != null &&
+                      loadingOpeningStockId === entry.openingStockId) ||
+                    (loadingStockTransferId != null &&
+                      loadingStockTransferId === entry.stockTransferId) ||
+                    (loadingStockAdjustmentId != null &&
+                      loadingStockAdjustmentId === entry.stockAdjustmentId)
 
-                    {/* Reference (Clickable GRN or Opening Stock link with subtext) */}
-                    <td className="py-3.5 px-4">
+                  return (
+                  <TR
+                    key={entry.id}
+                    clickable={canOpenDetails}
+                    onClick={canOpenDetails ? openDetails : undefined}
+                  >
+                    <TD className="font-normal whitespace-nowrap">
+                      {formatDate(entry.movementDate)}
+                    </TD>
+
+                    <TD>
                       <div>
-                        {entry.goodsReceiptId ? (
-                          <button
-                            type="button"
-                            onClick={() => handleViewGrn(entry.goodsReceiptId)}
-                            disabled={loadingGrnId === entry.goodsReceiptId}
-                            className="font-medium text-xs text-blue-500 hover:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1 transition-colors"
-                            title="Click to view GRN Details"
-                          >
+                        {canOpenDetails ? (
+                          <span className="text-ref-link inline-flex items-center gap-1">
                             <span>{entry.referenceNumber}</span>
-                            {loadingGrnId === entry.goodsReceiptId && (
-                              <span className="h-3 w-3 animate-spin rounded-full border border-blue-500 border-t-transparent inline-block" />
+                            {isLoading && (
+                              <span className="h-3 w-3 animate-spin rounded-full border border-info border-t-transparent inline-block" />
                             )}
-                          </button>
-                        ) : entry.openingStockId ? (
-                          <button
-                            type="button"
-                            onClick={() => handleViewOpeningStock(entry.openingStockId)}
-                            disabled={loadingOpeningStockId === entry.openingStockId}
-                            className="font-medium text-xs text-blue-500 hover:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1 transition-colors font-mono"
-                            title="Click to view Opening Stock Details"
-                          >
-                            <span>{entry.referenceNumber}</span>
-                            {loadingOpeningStockId === entry.openingStockId && (
-                              <span className="h-3 w-3 animate-spin rounded-full border border-blue-500 border-t-transparent inline-block" />
-                            )}
-                          </button>
-                        ) : entry.stockTransferId ? (
-                          <button
-                            type="button"
-                            onClick={() => handleViewStockTransfer(entry.stockTransferId)}
-                            disabled={loadingStockTransferId === entry.stockTransferId}
-                            className="font-medium text-xs text-blue-500 hover:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1 transition-colors font-mono"
-                            title="Click to view Stock Transfer Details"
-                          >
-                            <span>{entry.referenceNumber}</span>
-                            {loadingStockTransferId === entry.stockTransferId && (
-                              <span className="h-3 w-3 animate-spin rounded-full border border-blue-500 border-t-transparent inline-block" />
-                            )}
-                          </button>
-                        ) : entry.stockAdjustmentId ? (
-                          <button
-                            type="button"
-                            onClick={() => handleViewStockAdjustment(entry.stockAdjustmentId)}
-                            disabled={loadingStockAdjustmentId === entry.stockAdjustmentId}
-                            className="font-medium text-xs text-blue-500 hover:text-blue-400 hover:underline cursor-pointer inline-flex items-center gap-1 transition-colors font-mono"
-                            title="Click to view Stock Adjustment Details"
-                          >
-                            <span>{entry.referenceNumber}</span>
-                            {loadingStockAdjustmentId === entry.stockAdjustmentId && (
-                              <span className="h-3 w-3 animate-spin rounded-full border border-blue-500 border-t-transparent inline-block" />
-                            )}
-                          </button>
+                          </span>
                         ) : (
-                          <span className="font-medium text-xs text-foreground font-mono">
+                          <span className="text-ref text-foreground">
                             {entry.referenceNumber}
                           </span>
                         )}
@@ -693,27 +674,24 @@ export function StockLedgerPage() {
                           {entry.transactionType}
                         </p>
                       </div>
-                    </td>
+                    </TD>
 
-                    {/* Quantity In */}
-                    <td className="py-3.5 px-4 text-right font-mono text-xs font-medium text-emerald-500">
+                    <TD className="text-right font-mono font-medium text-success">
                       {entry.quantityIn ? `+${formatQuantity(entry.quantityIn)}` : '—'}
-                    </td>
+                    </TD>
 
-                    {/* Quantity Out */}
-                    <td className="py-3.5 px-4 text-right font-mono text-xs font-medium text-rose-500">
+                    <TD className="text-right font-mono font-medium text-destructive">
                       {entry.quantityOut ? `-${formatQuantity(entry.quantityOut)}` : '—'}
-                    </td>
+                    </TD>
 
-                    {/* Running Balance */}
-                    <td className="py-3.5 px-4 text-right font-mono text-sm font-semibold text-foreground">
+                    <TD className="text-right font-mono font-medium">
                       {formatQuantity(entry.runningBalance)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </TD>
+                  </TR>
+                  )
+                })}
+            </TBody>
+          </Table>
         )}
 
         {/* Bottom summary text matching screenshot: "3 movements · Unit: kg" */}

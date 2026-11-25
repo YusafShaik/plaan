@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   X,
-  CheckCircle2,
-  Clock,
   Ban,
   Pencil,
   Trash2,
@@ -14,6 +12,8 @@ import {
 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { salesService } from '../../services/salesService'
 import { dispatchService } from '../../services/dispatchService'
 import { useAuth } from '../../hooks/useAuth'
@@ -213,38 +213,23 @@ export function SalesOrderDetailsModal({
               Sales / Sales Orders / {displayOrder.orderNumber}
             </p>
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xl font-bold tracking-tight text-foreground">
+              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
                 {displayOrder.orderNumber}
               </span>
               {displayOrder.status === 'CONFIRMED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Confirmed
-                </span>
+                <Badge variant="success">Confirmed</Badge>
               )}
               {displayOrder.status === 'PARTIALLY_DISPATCHED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-400 border border-orange-500/30">
-                  <Truck className="h-3.5 w-3.5" />
-                  Partially Dispatched
-                </span>
+                <Badge variant="warning">Partially Dispatched</Badge>
               )}
               {displayOrder.status === 'FULLY_DISPATCHED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/30">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Fully Dispatched
-                </span>
+                <Badge variant="success">Fully Dispatched</Badge>
               )}
               {displayOrder.status === 'DRAFT' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
-                  <Clock className="h-3.5 w-3.5" />
-                  Draft
-                </span>
+                <Badge variant="warning">Draft</Badge>
               )}
               {displayOrder.status === 'CANCELLED' && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-500 border border-rose-500/20">
-                  <Ban className="h-3.5 w-3.5" />
-                  Cancelled
-                </span>
+                <Badge variant="destructive">Cancelled</Badge>
               )}
             </div>
 
@@ -256,7 +241,7 @@ export function SalesOrderDetailsModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -264,7 +249,7 @@ export function SalesOrderDetailsModal({
 
         {/* Action Error Alert */}
         {actionError && (
-          <div className="flex items-center gap-2 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>{actionError}</span>
           </div>
@@ -272,26 +257,26 @@ export function SalesOrderDetailsModal({
 
         {/* Order Details Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="rounded-[10px] border border-border/80 bg-secondary/30 p-3">
+          <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
             <span className="text-muted-foreground font-normal">Order Date</span>
             <p className="mt-1 font-semibold text-foreground">{formatDate(displayOrder.orderDate)}</p>
           </div>
 
-          <div className="rounded-[10px] border border-border/80 bg-secondary/30 p-3">
+          <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
             <span className="text-muted-foreground font-normal">Expected Delivery</span>
             <p className="mt-1 font-semibold text-foreground">
               {formatDate(displayOrder.expectedDeliveryDate)}
             </p>
           </div>
 
-          <div className="rounded-[10px] border border-border/80 bg-secondary/30 p-3">
+          <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
             <span className="text-muted-foreground font-normal">PO Reference</span>
-            <p className="mt-1 font-semibold text-foreground font-mono">
+            <p className="mt-1 font-medium text-foreground font-mono">
               {displayOrder.customerPoReference || '—'}
             </p>
           </div>
 
-          <div className="rounded-[10px] border border-border/80 bg-secondary/30 p-3">
+          <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
             <span className="text-muted-foreground font-normal">Dispatch Warehouse</span>
             <p className="mt-1 font-semibold text-foreground">{displayOrder.warehouseName}</p>
           </div>
@@ -299,14 +284,14 @@ export function SalesOrderDetailsModal({
 
         {/* Addresses */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="rounded-[10px] border border-border/80 bg-secondary/20 p-3.5 space-y-1">
+          <div className="rounded-md border border-border/80 bg-secondary/20 p-3.5 space-y-1">
             <span className="text-muted-foreground font-medium">Billing Address</span>
             <p className="text-foreground whitespace-pre-wrap">
               {displayOrder.billingAddress || 'No billing address specified.'}
             </p>
           </div>
 
-          <div className="rounded-[10px] border border-border/80 bg-secondary/20 p-3.5 space-y-1">
+          <div className="rounded-md border border-border/80 bg-secondary/20 p-3.5 space-y-1">
             <span className="text-muted-foreground font-medium">Shipping Address</span>
             <p className="text-foreground whitespace-pre-wrap">
               {displayOrder.shippingAddress || 'No shipping address specified.'}
@@ -315,7 +300,7 @@ export function SalesOrderDetailsModal({
         </div>
 
         {/* Order Fulfillment Section matching Screenshot 4 */}
-        <div className="space-y-4 rounded-[12px] border border-border/80 bg-secondary/15 p-4">
+        <div className="space-y-4 rounded-md border border-border/80 bg-secondary/15 p-4">
           <h3 className="text-sm font-semibold text-foreground">Order Fulfillment</h3>
 
           {/* Item Progress Bars */}
@@ -338,14 +323,14 @@ export function SalesOrderDetailsModal({
 
                   <div className="w-full bg-secondary/80 rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                      className="bg-success h-2 rounded-full transition-all duration-300"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
 
                   <p className="text-[11px]">
                     {isFullyDispatched ? (
-                      <span className="text-emerald-400 font-medium">Fully dispatched</span>
+                      <span className="text-success font-medium">Fully dispatched</span>
                     ) : (
                       <span className="text-muted-foreground">{formatQuantity(pending)} {it.unitOfMeasure} pending</span>
                     )}
@@ -356,55 +341,53 @@ export function SalesOrderDetailsModal({
           </div>
 
           {/* Fulfillment Summary Table matching Screenshot 4 */}
-          <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                  <th className="py-2.5 px-3.5">Item</th>
-                  <th className="py-2.5 px-3 text-right">Ordered</th>
-                  <th className="py-2.5 px-3 text-right">Dispatched</th>
-                  <th className="py-2.5 px-3.5 text-right">Pending</th>
+          <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Item</TH>
+                  <TH className="py-2.5 text-right">Ordered</TH>
+                  <TH className="py-2.5 text-right">Dispatched</TH>
+                  <TH className="py-2.5 text-right">Pending</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+              </THead>
+              <TBody className="divide-y divide-border/60">
                 {displayOrder.items.map((it) => {
                   const ordered = it.orderedQuantity || 0
                   const dispatched = it.dispatchedQuantity || 0
                   const pending = it.pendingQuantity ?? Math.max(0, ordered - dispatched)
 
                   return (
-                    <tr key={it.id} className="hover:bg-secondary/20 transition-colors">
-                      <td className="py-2.5 px-3.5 font-medium text-foreground">
+                    <TR key={it.id} className="hover:bg-secondary/20 transition-colors">
+                      <TD className="py-2.5 px-3.5 font-medium text-foreground">
                         {it.itemName}
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                      </TD>
+                      <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
                         {formatQuantity(ordered)}
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                      </TD>
+                      <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
                         {formatQuantity(dispatched)}
-                      </td>
-                      <td className={`py-2.5 px-3.5 text-right font-mono font-semibold ${
+                      </TD>
+                      <TD className={`py-2.5 px-3.5 text-right font-mono font-medium ${
                         pending > 0 ? 'text-orange-400' : 'text-muted-foreground'
                       }`}>
                         {formatQuantity(pending)}
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   )
                 })}
-              </tbody>
-            </table>
-          </div>
+              </TBody>
+            </Table>
         </div>
 
         {/* Dispatch History Section matching Screenshot 4 */}
-        <div className="space-y-3 rounded-[12px] border border-border/80 bg-secondary/15 p-4">
+        <div className="space-y-3 rounded-md border border-border/80 bg-secondary/15 p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Dispatch History</h3>
             {(displayOrder.status === 'CONFIRMED' || displayOrder.status === 'PARTIALLY_DISPATCHED') && (
               <Button
                 size="sm"
                 onClick={() => setIsCreateDispatchOpen(true)}
-                className="bg-[#107048] hover:bg-[#0d603e] text-white font-medium text-xs px-3.5 h-7.5 rounded-[8px] cursor-pointer shadow-xs flex items-center gap-1.5"
+                className="bg-brand hover:bg-brand-hover text-brand-foreground font-medium text-xs px-3.5 h-7.5 rounded-md cursor-pointer shadow-xs flex items-center gap-1.5"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Create Dispatch</span>
@@ -418,7 +401,7 @@ export function SalesOrderDetailsModal({
                 Loading dispatch history...
               </div>
             ) : dispatches.length === 0 ? (
-              <div className="p-4 rounded-[10px] border border-border/80 bg-secondary/10 text-center text-xs text-muted-foreground">
+              <div className="p-4 rounded-md border border-border/80 bg-secondary/10 text-center text-xs text-muted-foreground">
                 No dispatches recorded yet for this order.
               </div>
             ) : (
@@ -429,21 +412,21 @@ export function SalesOrderDetailsModal({
                     setSelectedDispatch(d)
                     setIsDispatchDetailsOpen(true)
                   }}
-                  className="flex items-center justify-between p-3 rounded-[10px] border border-border/80 bg-secondary/20 hover:bg-secondary/40 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 rounded-md border border-border/80 bg-secondary/20 hover:bg-secondary/40 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-[8px] bg-secondary/50 text-muted-foreground">
-                      <Truck className="h-4 w-4 text-emerald-400" />
+                    <div className="p-2 rounded-md bg-secondary/50 text-muted-foreground">
+                      <Truck className="h-4 w-4 text-success" />
                     </div>
                     <div>
-                      <p className="font-mono font-semibold text-foreground text-xs">{d.dispatchNumber}</p>
+                      <p className="font-mono font-medium text-foreground text-xs">{d.dispatchNumber}</p>
                       <p className="text-[11px] text-muted-foreground">{formatDate(d.dispatchDate)}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {d.status === 'POSTED' ? (
-                      <span className="text-xs font-semibold text-emerald-400">Posted</span>
+                      <span className="text-xs font-semibold text-success">Posted</span>
                     ) : (
                       <span className="text-xs font-medium text-muted-foreground">Draft</span>
                     )}
@@ -456,24 +439,20 @@ export function SalesOrderDetailsModal({
         </div>
 
         {/* Stock Availability Section matching Screenshot */}
-        <div className="space-y-3 rounded-[12px] border border-border/80 bg-secondary/15 p-4">
+        <div className="space-y-3 rounded-md border border-border/80 bg-secondary/15 p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Stock Availability</h3>
             {availability && (
               availability.overallStatus === 'STOCK_SHORTAGE' ? (
-                <span className="inline-flex items-center rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-400 border border-orange-500/30">
-                  Stock Shortage
-                </span>
+                <Badge variant="warning">Stock Shortage</Badge>
               ) : (
-                <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/30">
-                  All Available
-                </span>
+                <Badge variant="success">All Available</Badge>
               )
             )}
           </div>
 
           {availabilityError ? (
-            <div className="flex items-center justify-between rounded-[8px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+            <div className="flex items-center justify-between rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
               <span>{availabilityError}</span>
               <Button
                 variant="outline"
@@ -486,65 +465,69 @@ export function SalesOrderDetailsModal({
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                      <th className="py-2.5 px-3.5">Item</th>
-                      <th className="py-2.5 px-3 text-right">Ordered</th>
-                      <th className="py-2.5 px-3 text-right">On Hand</th>
-                      <th className="py-2.5 px-3 text-right">Shortage</th>
-                      <th className="py-2.5 px-3.5 text-right">Status</th>
+              <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Item</TH>
+                      <TH className="py-2.5 text-right">Ordered</TH>
+                      <TH className="py-2.5 text-right">On Hand</TH>
+                      <TH className="py-2.5 text-right">Shortage</TH>
+                      <TH className="py-2.5 text-right">Status</TH>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
+                  </THead>
+                  <TBody className="divide-y divide-border/60">
                     {isLoadingAvailability && !availability ? (
-                      <tr>
-                        <td colSpan={5} className="py-6 text-center text-muted-foreground">
+                      <TR>
+                        <TD colSpan={5} className="py-6 text-center text-muted-foreground">
                           Checking warehouse stock levels...
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     ) : availability && availability.items.length > 0 ? (
                       availability.items.map((it) => (
-                        <tr key={it.itemId} className="hover:bg-secondary/20 transition-colors">
-                          <td className="py-3 px-3.5 font-medium text-foreground">
+                        <TR key={it.itemId} className="hover:bg-secondary/20 transition-colors">
+                          <TD className="py-3 px-3.5 font-medium text-foreground">
                             <p>{it.itemName}</p>
-                            <p className="text-[11px] text-muted-foreground font-mono">{it.itemCode}</p>
-                          </td>
-                          <td className="py-3 px-3 text-right font-mono font-medium text-foreground">
+                            <p className="text-[11px] text-ref text-muted-foreground">{it.itemCode}</p>
+                          </TD>
+                          <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
                             {formatQuantity(it.orderedQuantity)}
-                          </td>
-                          <td className="py-3 px-3 text-right font-mono font-medium text-foreground">
+                          </TD>
+                          <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
                             {formatQuantity(it.onHandQuantity)}
-                          </td>
-                          <td className={`py-3 px-3 text-right font-mono font-semibold ${
-                            it.shortageQuantity > 0 ? 'text-rose-400' : 'text-foreground'
+                          </TD>
+                          <TD className={`py-3 px-3 text-right font-mono font-medium ${
+                            it.shortageQuantity > 0 ? 'text-destructive' : 'text-foreground'
                           }`}>
                             {formatQuantity(it.shortageQuantity)}
-                          </td>
-                          <td className="py-3 px-3.5 text-right font-semibold">
+                          </TD>
+                          <TD className="py-3 px-3.5 text-right">
                             {it.status === 'AVAILABLE' && (
-                              <span className="text-emerald-400">Available</span>
+                              <Badge variant="success" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                                Available
+                              </Badge>
                             )}
                             {it.status === 'PARTIALLY_AVAILABLE' && (
-                              <span className="text-orange-400">Partial</span>
+                              <Badge variant="warning" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                                Partial
+                              </Badge>
                             )}
                             {it.status === 'NOT_AVAILABLE' && (
-                              <span className="text-rose-400">Unavailable</span>
+                              <Badge variant="destructive" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                                Unavailable
+                              </Badge>
                             )}
-                          </td>
-                        </tr>
+                          </TD>
+                        </TR>
                       ))
                     ) : (
-                      <tr>
-                        <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                      <TR>
+                        <TD colSpan={5} className="py-4 text-center text-muted-foreground">
                           No items to evaluate.
-                        </td>
-                      </tr>
+                        </TD>
+                      </TR>
                     )}
-                  </tbody>
-                </table>
-              </div>
+                  </TBody>
+            </Table>
 
               {availability && (
                 <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
@@ -563,7 +546,7 @@ export function SalesOrderDetailsModal({
                   type="button"
                   onClick={() => fetchAvailability(displayOrder.id)}
                   disabled={isLoadingAvailability}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-[10px] border border-border/80 bg-secondary/30 hover:bg-secondary/60 text-xs font-medium text-foreground transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md border border-border/80 bg-secondary/30 hover:bg-secondary/60 text-xs font-medium text-foreground transition-colors cursor-pointer disabled:opacity-50"
                 >
                   <RefreshCw className={`h-3.5 w-3.5 ${isLoadingAvailability ? 'animate-spin' : ''}`} />
                   <span>Refresh live stock</span>
@@ -577,52 +560,50 @@ export function SalesOrderDetailsModal({
         <div className="space-y-2.5">
           <h3 className="text-sm font-semibold text-foreground">Ordered Items</h3>
 
-          <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                  <th className="py-2.5 px-3.5">Item</th>
-                  <th className="py-2.5 px-3 text-right">Quantity</th>
-                  <th className="py-2.5 px-3">UOM</th>
-                  <th className="py-2.5 px-3 text-right">Unit Price</th>
-                  <th className="py-2.5 px-3.5 text-right">Amount</th>
+          <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Item</TH>
+                  <TH className="py-2.5 text-right">Quantity</TH>
+                  <TH className="py-2.5">UOM</TH>
+                  <TH className="py-2.5 text-right">Unit Price</TH>
+                  <TH className="py-2.5 text-right">Amount</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+              </THead>
+              <TBody className="divide-y divide-border/60">
                 {displayOrder.items.map((it) => (
-                  <tr key={it.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="py-3 px-3.5 font-medium text-foreground">
+                  <TR key={it.id} className="hover:bg-secondary/20 transition-colors">
+                    <TD className="py-3 px-3.5 font-medium text-foreground">
                       <p>{it.itemName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">{it.itemCode}</p>
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono font-semibold text-foreground">
+                      <p className="text-[11px] text-ref text-muted-foreground">{it.itemCode}</p>
+                    </TD>
+                    <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
                       {formatQuantity(it.orderedQuantity)}
-                    </td>
-                    <td className="py-3 px-3 text-muted-foreground">{it.unitOfMeasure}</td>
-                    <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                    </TD>
+                    <TD className="py-3 px-3 text-muted-foreground">{it.unitOfMeasure}</TD>
+                    <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
                       {formatCurrency(it.unitPrice)}
-                    </td>
-                    <td className="py-3 px-3.5 text-right font-mono font-bold text-foreground">
+                    </TD>
+                    <TD className="py-3 px-3.5 text-right font-mono font-medium text-foreground">
                       {formatCurrency(it.lineAmount)}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TBody>
+            </Table>
         </div>
 
         {/* Order Total Card */}
-        <div className="flex items-center justify-between p-3.5 rounded-[10px] border border-border/80 bg-secondary/30">
+        <div className="flex items-center justify-between p-3.5 rounded-md border border-border/80 bg-secondary/30">
           <span className="text-sm font-semibold text-foreground">Total Order Amount</span>
-          <span className="text-xl font-bold font-mono text-foreground">
+          <span className="text-xl font-medium font-mono text-foreground">
             {formatCurrency(displayOrder.totalAmount)}
           </span>
         </div>
 
         {/* Notes */}
         {displayOrder.notes && (
-          <div className="rounded-[10px] border border-border/80 bg-secondary/20 p-3 text-xs">
+          <div className="rounded-md border border-border/80 bg-secondary/20 p-3 text-xs">
             <span className="text-muted-foreground font-medium">Notes:</span>
             <p className="mt-0.5 text-foreground italic">{displayOrder.notes}</p>
           </div>
@@ -681,7 +662,7 @@ export function SalesOrderDetailsModal({
                 size="sm"
                 onClick={handleConfirm}
                 disabled={isSubmitting}
-                className="bg-[#107048] hover:bg-[#0d603e] text-white font-medium text-xs px-4 h-8 rounded-[8px] cursor-pointer shadow-xs"
+                className="bg-brand hover:bg-brand-hover text-brand-foreground font-medium text-xs px-4 h-8 rounded-md cursor-pointer shadow-xs"
               >
                 {isSubmitting ? 'Confirming...' : 'Confirm Order'}
               </Button>

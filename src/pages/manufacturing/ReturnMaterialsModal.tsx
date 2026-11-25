@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
 import type {
   ProductionOrder,
@@ -224,7 +225,7 @@ export function ReturnMaterialsModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -232,14 +233,14 @@ export function ReturnMaterialsModal({
 
         {/* Feedback banners */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-[10px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500">
+          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{successMessage}</p>
           </div>
@@ -257,7 +258,7 @@ export function ReturnMaterialsModal({
                 type="text"
                 disabled
                 value={returnNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
               />
             </div>
 
@@ -269,7 +270,7 @@ export function ReturnMaterialsModal({
                 type="date"
                 value={returnDate}
                 onChange={(e) => setReturnDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
               />
             </div>
           </div>
@@ -284,7 +285,7 @@ export function ReturnMaterialsModal({
                 type="text"
                 disabled
                 value={order.orderNumber}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
               />
             </div>
 
@@ -296,43 +297,42 @@ export function ReturnMaterialsModal({
                 type="text"
                 disabled
                 value={order.sourceWarehouseName}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
               />
             </div>
           </div>
 
           {/* Table matching Screenshot 3: Material | Returnable Qty | Return Qty | UOM */}
           <div className="space-y-2.5 pt-1">
-            <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                    <th className="py-2.5 px-3.5">Material</th>
-                    <th className="py-2.5 px-3 text-right">Returnable Qty</th>
-                    <th className="py-2.5 px-3 text-right w-40">Return Qty</th>
-                    <th className="py-2.5 px-3.5">UOM</th>
+            <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5">Material</TH>
+                    <TH className="py-2.5 text-right">Returnable Qty</TH>
+                    <TH className="py-2.5 text-right w-40">Return Qty</TH>
+                    <TH className="py-2.5">UOM</TH>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+                </THead>
+                <TBody className="divide-y divide-border/60">
                   {visibleRows.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="py-6 text-center text-muted-foreground">
+                    <TR>
+                      <TD colSpan={4} className="py-6 text-center text-muted-foreground">
                         No materials currently available to return from production
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   ) : (
                     visibleRows.map((r) => {
                       const isExceeding = r.returnQuantity !== '' && Number(r.returnQuantity) > r.returnableQuantity
 
                       return (
-                        <tr key={r.materialId} className="hover:bg-secondary/30 transition-colors">
-                          <td className="py-2.5 px-3.5 font-medium text-foreground">
+                        <TR key={r.materialId} className="hover:bg-secondary/30 transition-colors">
+                          <TD className="py-2.5 px-3.5 font-medium text-foreground">
                             {r.materialName}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                          </TD>
+                          <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
                             {formatQuantity(r.returnableQuantity)}
-                          </td>
-                          <td className="py-2.5 px-3 text-right">
+                          </TD>
+                          <TD className="py-2.5 px-3 text-right">
                             <input
                               type="number"
                               min="0"
@@ -340,23 +340,22 @@ export function ReturnMaterialsModal({
                               placeholder="0"
                               value={r.returnQuantity}
                               onChange={(e) => handleRowQuantityChange(r.materialId, e.target.value)}
-                              className={`flex h-8 w-28 ml-auto rounded-[6px] border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
+                              className={`flex h-8 w-28 ml-auto rounded-md border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
                                 isExceeding
                                   ? 'border-destructive bg-destructive/10 text-destructive focus:border-destructive'
                                   : 'border-border/80 bg-secondary/40 text-foreground focus:border-foreground focus:ring-1 focus:ring-foreground'
                               }`}
                             />
-                          </td>
-                          <td className="py-2.5 px-3.5 text-muted-foreground font-mono">
+                          </TD>
+                          <TD className="py-2.5 px-3.5 text-muted-foreground font-mono">
                             {r.unitOfMeasure}
-                          </td>
-                        </tr>
+                          </TD>
+                        </TR>
                       )
                     })
                   )}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+            </Table>
           </div>
 
           {/* Notes */}
@@ -369,7 +368,7 @@ export function ReturnMaterialsModal({
               placeholder="Reason for returning unused materials..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
 
@@ -381,7 +380,7 @@ export function ReturnMaterialsModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-[8px] px-3.5"
+              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
               Save Draft
             </Button>
@@ -391,7 +390,7 @@ export function ReturnMaterialsModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-[#107048] hover:bg-[#0d603e] text-white font-semibold text-xs cursor-pointer shadow-xs rounded-[8px] px-4"
+              className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4"
             >
               <span>{isSubmitting ? 'Posting...' : 'Post Return'}</span>
             </Button>

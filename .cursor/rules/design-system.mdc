@@ -1,0 +1,21 @@
+---
+description: Plaan design system — tokens, primitives, tables, refs, tabs, forms
+alwaysApply: true
+---
+
+# Plaan Design System
+
+Read and follow **`Design.md`** at the repo root before changing UI. Tokens: `src/index.css`. Primitives: `src/components/ui/`.
+
+## Hard rules
+
+1. **No raw hex / one-off radii** — use theme tokens (`bg-ink`, `text-muted-foreground`, `rounded-md` = 2px). `rounded-full` only for avatars/logo.
+2. **Use primitives** — `Button`, `Input`, `Select`, `DateField`, `Badge`, `Table`/`TH`/`TD`/`TR`, `UnderlineTabs`, `Modal`, `fieldStyles`.
+3. **Stacked labels** — modal/form fields use `label` prop so the name sits **inside** the field chrome (like Create Purchase Order). No external `label` + `mb-1.5` above bare inputs.
+4. **Status** — `Badge` only (sharp pill). No green-dot + text status cells.
+5. **Refs** — non-clickable: `text-ref` / `RefCode`. Clickable only: `text-ref-link` / `RefLink`. Never blue non-links. Never bold mono codes.
+6. **Tables** — always `Table` primitives; `TR` has hover; clickable rows open detail via `onClick` with actions `stopPropagation`.
+7. **Tabs** — `UnderlineTabs` only (ink underline on hairline, width = label text). No segmented pills; no green/success underlines. `SegmentedTabs` is a deprecated alias.
+8. **CTAs** — default Add/Save/New = `Button variant="primary"` (ink) to match tab underline. Brand green is not the default list CTA.
+
+If a screen diverges from Master Data / Create Purchase Order / Inventory underline tabs, fix it to match `Design.md`.

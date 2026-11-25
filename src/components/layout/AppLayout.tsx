@@ -55,7 +55,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           ) : activeTab === 'dispatch' ? (
             <DispatchPage />
           ) : (
-            <div className="rounded-[12px] border border-border bg-card p-8 shadow-xs">
+            <div className="rounded-md border border-border bg-card p-8 shadow-xs">
               <h2 className="text-lg font-semibold text-card-foreground">
                 {getPageTitle(activeTab)} View
               </h2>

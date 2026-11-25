@@ -2,6 +2,10 @@ import { useState, useEffect, useMemo, type FormEvent } from 'react'
 import { Plus, Trash2, X } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Select } from '../../components/ui/Select'
+import { NativeSelect } from '../../components/ui/NativeSelect'
+import { DateField } from '../../components/ui/DateField'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { masterDataService } from '../../services/masterDataService'
 import { salesService } from '../../services/salesService'
 import { useAuth } from '../../hooks/useAuth'
@@ -338,7 +342,7 @@ export function CreateSalesOrderModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[8px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -346,7 +350,7 @@ export function CreateSalesOrderModal({
 
         {/* Error Alert */}
         {error && (
-          <div className="rounded-[8px] border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             {error}
           </div>
         )}
@@ -364,78 +368,50 @@ export function CreateSalesOrderModal({
                 value={orderNumber}
                 readOnly
                 disabled
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground font-mono focus:outline-none opacity-80 cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground font-mono focus:outline-none opacity-80 cursor-not-allowed"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Order Date <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="date"
-                value={orderDate}
-                onChange={(e) => setOrderDate(e.target.value)}
-                required
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-              />
-            </div>
+            <DateField
+              label="Order Date *"
+              value={orderDate}
+              onChange={(e) => setOrderDate(e.target.value)}
+              required
+            />
           </div>
 
           {/* Row 2: Customer * | Dispatch Warehouse * */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Customer <span className="text-rose-500">*</span>
-              </label>
-              <select
-                value={customerId}
-                onChange={(e) => handleCustomerChange(e.target.value)}
-                required
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground cursor-pointer"
-              >
-                <option value="">Select customer...</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.customerCode})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Customer *"
+              value={customerId}
+              onChange={handleCustomerChange}
+              placeholder="Select customer..."
+              options={customers.map((c) => ({
+                value: c.id,
+                label: `${c.name} (${c.customerCode})`,
+              }))}
+            />
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Dispatch Warehouse <span className="text-rose-500">*</span>
-              </label>
-              <select
-                value={dispatchWarehouseId}
-                onChange={(e) => setDispatchWarehouseId(e.target.value)}
-                required
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground cursor-pointer"
-              >
-                <option value="">Select dispatch warehouse...</option>
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name} ({w.warehouseCode})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Dispatch Warehouse *"
+              value={dispatchWarehouseId}
+              onChange={setDispatchWarehouseId}
+              placeholder="Select dispatch warehouse..."
+              options={warehouses.map((w) => ({
+                value: w.id,
+                label: `${w.name} (${w.warehouseCode})`,
+              }))}
+            />
           </div>
 
           {/* Row 3: Expected Delivery Date | Customer PO Reference */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Expected Delivery Date
-              </label>
-              <input
-                type="date"
-                value={expectedDeliveryDate}
-                onChange={(e) => setExpectedDeliveryDate(e.target.value)}
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-              />
-            </div>
+            <DateField
+              label="Expected Delivery Date"
+              value={expectedDeliveryDate}
+              onChange={(e) => setExpectedDeliveryDate(e.target.value)}
+            />
 
             <div>
               <label className="block text-xs font-medium text-foreground mb-1.5">
@@ -446,7 +422,7 @@ export function CreateSalesOrderModal({
                 value={customerPoReference}
                 onChange={(e) => setCustomerPoReference(e.target.value)}
                 placeholder="Optional reference"
-                className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
           </div>
@@ -461,7 +437,7 @@ export function CreateSalesOrderModal({
               value={shippingAddress}
               onChange={(e) => setShippingAddress(e.target.value)}
               placeholder="Enter shipping address (auto-populated from Customer Master)"
-              className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
             />
           </div>
         </div>
@@ -477,19 +453,18 @@ export function CreateSalesOrderModal({
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-[10px] border border-border/80 bg-card">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-secondary/40 font-semibold text-muted-foreground">
-                  <th className="py-2.5 px-3.5 w-[38%]">Item</th>
-                  <th className="py-2.5 px-2.5 w-[16%]">Qty</th>
-                  <th className="py-2.5 px-2.5 w-[10%]">UOM</th>
-                  <th className="py-2.5 px-2.5 w-[18%]">Unit Price</th>
-                  <th className="py-2.5 px-3.5 text-right w-[14%]">Amount</th>
-                  <th className="py-2.5 px-2 w-[4%] text-center"></th>
+          <Table>
+              <THead>
+                <tr>
+                  <TH className="py-2.5 w-[38%]">Item</TH>
+                  <TH className="py-2.5 w-[16%]">Qty</TH>
+                  <TH className="py-2.5 w-[10%]">UOM</TH>
+                  <TH className="py-2.5 w-[18%]">Unit Price</TH>
+                  <TH className="py-2.5 text-right w-[14%]">Amount</TH>
+                  <TH className="py-2.5 w-[4%] text-center"></TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+              </THead>
+              <TBody className="divide-y divide-border/60">
                 {orderItems.map((row) => {
                   const selItem = row.itemId ? itemMap.get(Number(row.itemId)) : null
                   const qty = typeof row.orderedQuantity === 'number' ? row.orderedQuantity : 0
@@ -497,13 +472,15 @@ export function CreateSalesOrderModal({
                   const lineAmount = qty * price
 
                   return (
-                    <tr key={row.rowId} className="hover:bg-secondary/20">
+                    <TR key={row.rowId} className="hover:bg-secondary/20">
                       {/* Item Select */}
-                      <td className="py-2.5 px-3">
-                        <select
+                      <TD className="py-2.5 px-3">
+                        <NativeSelect
+                          dense
                           value={row.itemId}
-                          onChange={(e) => handleRowChange(row.rowId, 'itemId', e.target.value)}
-                          className="flex h-9 w-full rounded-[8px] border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground focus:outline-none focus:border-foreground cursor-pointer"
+                          onChange={(e) =>
+                            handleRowChange(row.rowId, 'itemId', e.target.value)
+                          }
                         >
                           <option value="">Select item...</option>
                           {items.map((it) => (
@@ -511,11 +488,11 @@ export function CreateSalesOrderModal({
                               {it.name} ({it.itemCode})
                             </option>
                           ))}
-                        </select>
-                      </td>
+                        </NativeSelect>
+                      </TD>
 
                       {/* Qty Input */}
-                      <td className="py-2.5 px-2">
+                      <TD className="py-2.5 px-2">
                         <input
                           type="number"
                           min="0.001"
@@ -529,17 +506,17 @@ export function CreateSalesOrderModal({
                             )
                           }
                           placeholder="1"
-                          className="flex h-9 w-full rounded-[8px] border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-foreground"
+                          className="flex h-9 w-full rounded-md border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-foreground"
                         />
-                      </td>
+                      </TD>
 
                       {/* UOM */}
-                      <td className="py-2.5 px-2 text-muted-foreground font-medium">
+                      <TD className="py-2.5 px-2 text-muted-foreground font-medium">
                         {selItem?.unitOfMeasure || '—'}
-                      </td>
+                      </TD>
 
                       {/* Unit Price */}
-                      <td className="py-2.5 px-2">
+                      <TD className="py-2.5 px-2">
                         <input
                           type="number"
                           min="0"
@@ -553,17 +530,17 @@ export function CreateSalesOrderModal({
                             )
                           }
                           placeholder="0.00"
-                          className="flex h-9 w-full rounded-[8px] border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-foreground"
+                          className="flex h-9 w-full rounded-md border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-foreground"
                         />
-                      </td>
+                      </TD>
 
                       {/* Line Amount */}
-                      <td className="py-2.5 px-3 text-right font-mono font-semibold text-foreground">
+                      <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
                         {formatCurrency(lineAmount)}
-                      </td>
+                      </TD>
 
                       {/* Delete */}
-                      <td className="py-2.5 px-2 text-center">
+                      <TD className="py-2.5 px-2 text-center">
                         <button
                           type="button"
                           onClick={() => handleRemoveItemRow(row.rowId)}
@@ -572,20 +549,19 @@ export function CreateSalesOrderModal({
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   )
                 })}
-              </tbody>
-            </table>
-          </div>
+              </TBody>
+            </Table>
 
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleAddItemRow}
-            className="flex items-center gap-1.5 text-xs font-medium cursor-pointer h-8 rounded-[8px]"
+            className="flex items-center gap-1.5 text-xs font-medium cursor-pointer h-8 rounded-md"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Add Item</span>
@@ -593,9 +569,9 @@ export function CreateSalesOrderModal({
         </div>
 
         {/* Order Total matching Screenshot 0 */}
-        <div className="flex items-center justify-between p-3.5 rounded-[10px] border border-border/80 bg-secondary/30">
+        <div className="flex items-center justify-between p-3.5 rounded-md border border-border/80 bg-secondary/30">
           <span className="text-sm font-semibold text-foreground">Order Total</span>
-          <span className="text-xl font-bold font-mono text-foreground">
+          <span className="text-xl font-medium font-mono text-foreground">
             {formatCurrency(calculatedTotal)}
           </span>
         </div>
@@ -608,7 +584,7 @@ export function CreateSalesOrderModal({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Additional order instructions..."
-            className="flex w-full rounded-[10px] border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+            className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
           />
         </div>
 
@@ -641,7 +617,7 @@ export function CreateSalesOrderModal({
             size="sm"
             onClick={(e) => handleSave('CONFIRMED', e)}
             disabled={isSubmitting || isLoading}
-            className="bg-[#107048] hover:bg-[#0d603e] text-white font-medium text-xs px-4 h-9 rounded-[8px] cursor-pointer shadow-xs disabled:opacity-50"
+            className="bg-brand hover:bg-brand-hover text-brand-foreground font-medium text-xs px-4 h-9 rounded-md cursor-pointer shadow-xs disabled:opacity-50"
           >
             {isSubmitting ? 'Confirming...' : 'Confirm Order'}
           </Button>

@@ -15,7 +15,7 @@ export function PlatformSidebar({ activeTab, onTabChange }: PlatformSidebarProps
       {/* 1. Brand Logo & Platform Badge */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs font-bold">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-deep text-brand-foreground text-xs font-bold">
             <svg
               className="h-3 w-3 fill-current"
               viewBox="0 0 24 24"
@@ -29,7 +29,7 @@ export function PlatformSidebar({ activeTab, onTabChange }: PlatformSidebarProps
           </span>
         </div>
 
-        <span className="inline-flex items-center rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent uppercase tracking-wider">
+        <span className="inline-flex items-center rounded-md bg-brand/15 px-2 py-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
           Platform
         </span>
       </div>
@@ -37,7 +37,7 @@ export function PlatformSidebar({ activeTab, onTabChange }: PlatformSidebarProps
       {/* 2. Platform Profile Summary Card */}
       <div className="my-6 flex flex-col items-center text-center">
         <div className="relative">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-foreground text-2xl font-semibold shadow-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-deep text-brand-foreground text-2xl font-semibold shadow-sm">
             PA
           </div>
           <div className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-xs">
@@ -52,7 +52,7 @@ export function PlatformSidebar({ activeTab, onTabChange }: PlatformSidebarProps
           {user?.email || 'platform@plaan.io'}
         </p>
 
-        <span className="mt-1.5 inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <span className="mt-1.5 inline-flex items-center rounded-md bg-secondary px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
           Global Operator
         </span>
       </div>

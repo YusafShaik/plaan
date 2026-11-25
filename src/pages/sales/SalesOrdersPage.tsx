@@ -11,6 +11,9 @@ import {
   Ban,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { NativeSelect } from '../../components/ui/NativeSelect'
 import { CreateSalesOrderModal } from './CreateSalesOrderModal'
 import { SalesOrderDetailsModal } from './SalesOrderDetailsModal'
 import { salesService } from '../../services/salesService'
@@ -148,21 +151,24 @@ export function SalesOrdersPage() {
               placeholder="Search sales orders..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
           {/* Status Filter */}
-          <select
+          <NativeSelect
+            dense
+            className="w-auto min-w-[9.5rem]"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as SalesOrderStatus | '')}
-            className="flex h-10 items-center rounded-[10px] border border-border/80 bg-secondary px-3 text-xs font-medium text-foreground focus:outline-none focus:border-foreground cursor-pointer"
+            onChange={(e) =>
+              setStatusFilter(e.target.value as SalesOrderStatus | '')
+            }
           >
             <option value="">All Statuses</option>
             <option value="DRAFT">Draft</option>
             <option value="CONFIRMED">Confirmed</option>
             <option value="CANCELLED">Cancelled</option>
-          </select>
+          </NativeSelect>
 
           {(search || statusFilter) && (
             <button
@@ -181,13 +187,9 @@ export function SalesOrdersPage() {
 
         {/* Right side: + New Sales Order button */}
         <div className="flex items-center gap-2.5">
-          <Button
-            type="button"
-            onClick={handleOpenCreate}
-            className="flex h-10 items-center gap-1.5 rounded-[10px] bg-[#107048] hover:bg-[#0d603e] text-white px-4 text-xs font-semibold cursor-pointer shadow-xs transition-colors"
-          >
+          <Button type="button" variant="primary" onClick={handleOpenCreate}>
             <Plus className="h-4 w-4" />
-            <span>New Sales Order</span>
+            New sales order
           </Button>
         </div>
       </div>
@@ -215,7 +217,7 @@ export function SalesOrdersPage() {
             </Button>
           </div>
         ) : orders.length === 0 ? (
-          <div className="py-16 text-center rounded-[12px] border border-border/80 bg-card">
+          <div className="py-16 text-center rounded-md border border-border/80 bg-card">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
               <ShoppingCart className="h-6 w-6" />
             </div>
@@ -225,72 +227,71 @@ export function SalesOrdersPage() {
             </p>
             <Button
               size="sm"
+              variant="primary"
+              className="mt-4"
               onClick={handleOpenCreate}
-              className="mt-4 gap-1.5 text-xs bg-[#107048] hover:bg-[#0d603e] text-white"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>Create First Sales Order</span>
+              Create first sales order
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-[12px] border border-border/80 bg-card">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-border text-muted-foreground font-semibold">
-                  <th className="py-3.5 px-4 font-normal">Order No.</th>
-                  <th className="py-3.5 px-4 font-normal">Customer</th>
-                  <th className="py-3.5 px-4 font-normal">Amount</th>
-                  <th className="py-3.5 px-4 font-normal">Status</th>
-                  <th className="py-3.5 px-4 text-right font-normal">Actions</th>
+          <>
+            <Table>
+              <THead>
+                <tr>
+                  <TH>Order no.</TH>
+                  <TH>Customer</TH>
+                  <TH>Amount</TH>
+                  <TH>Status</TH>
+                  <TH className="text-right">Actions</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+              </THead>
+              <TBody>
                 {orders.map((o) => (
-                  <tr
+                  <TR
                     key={o.id}
-                    className="hover:bg-secondary/40 transition-colors cursor-pointer group"
+                    clickable
+                    className="group"
                     onClick={() => handleOpenDetails(o)}
                   >
-                    {/* Order No. */}
-                    <td className="py-3.5 px-4 font-mono font-medium text-foreground">
-                      {o.orderNumber}
-                    </td>
+                    <TD>
+                      <span className="text-ref-link">
+                        {o.orderNumber}
+                      </span>
+                    </TD>
 
-                    {/* Customer */}
-                    <td className="py-3.5 px-4 font-medium text-foreground">
-                      <p>{o.customerName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
+                    <TD>
+                      <p className="font-medium">{o.customerName}</p>
+                      <p className="text-[11px] text-ref text-muted-foreground">
                         {o.customerCode} · WH: {o.warehouseName}
                       </p>
-                    </td>
+                    </TD>
 
-                    {/* Amount */}
-                    <td className="py-3.5 px-4 font-mono font-semibold text-foreground">
+                    <TD className="font-mono font-medium">
                       {formatCurrency(o.totalAmount)}
-                    </td>
+                    </TD>
 
-                    {/* Status matching Screenshot 1: Confirmed in green, Draft in muted */}
-                    <td className="py-3.5 px-4">
+                    <TD>
                       {o.status === 'CONFIRMED' && (
-                        <span className="text-emerald-500 font-semibold">Confirmed</span>
+                        <Badge variant="success">Confirmed</Badge>
                       )}
                       {o.status === 'DRAFT' && (
-                        <span className="text-muted-foreground font-medium">Draft</span>
+                        <Badge variant="neutral">Draft</Badge>
                       )}
                       {o.status === 'CANCELLED' && (
-                        <span className="text-rose-500 font-medium">Cancelled</span>
+                        <Badge variant="destructive">Cancelled</Badge>
                       )}
-                    </td>
+                    </TD>
 
-                    {/* Actions */}
-                    <td
-                      className="py-3.5 px-4 text-right space-x-1 whitespace-nowrap"
+                    <TD
+                      className="text-right space-x-1 whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
                         type="button"
                         onClick={() => handleOpenDetails(o)}
-                        className="rounded-[6px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
                         title="View Order Details"
                       >
                         <Eye className="h-3.5 w-3.5" />
@@ -301,7 +302,7 @@ export function SalesOrdersPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(o)}
-                            className="rounded-[6px] p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
                             title="Edit Draft"
                           >
                             <Pencil className="h-3.5 w-3.5" />
@@ -310,7 +311,7 @@ export function SalesOrdersPage() {
                           <button
                             type="button"
                             onClick={() => handleConfirmOrder(o)}
-                            className="rounded-[6px] p-1.5 text-emerald-500 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                            className="rounded-md p-1.5 text-success hover:bg-success/10 transition-colors cursor-pointer"
                             title="Confirm Order"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" />
@@ -319,7 +320,7 @@ export function SalesOrdersPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteDraft(o)}
-                            className="rounded-[6px] p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
                             title="Delete Draft"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -331,21 +332,21 @@ export function SalesOrdersPage() {
                         <button
                           type="button"
                           onClick={() => handleCancelOrder(o)}
-                          className="rounded-[6px] p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                          className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
                           title="Cancel Order"
                         >
                           <Ban className="h-3.5 w-3.5" />
                         </button>
                       )}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
 
             {/* Pagination Controls */}
             {pageData && pageData.totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-border px-4 py-3 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between border border-t-0 border-border/80 rounded-b-md bg-card px-4 py-3 text-xs text-muted-foreground">
                 <span>
                   Showing {pageData.page * pageData.size + 1} to{' '}
                   {Math.min((pageData.page + 1) * pageData.size, pageData.totalElements)} of{' '}
@@ -376,7 +377,7 @@ export function SalesOrdersPage() {
                 </div>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 

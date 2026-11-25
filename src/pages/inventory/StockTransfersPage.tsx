@@ -5,13 +5,13 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
-  Clock,
-  Ban,
   Eye,
   RotateCcw,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { NativeSelect } from '../../components/ui/NativeSelect'
 import { inventoryService } from '../../services/inventoryService'
 import { CreateStockTransferModal } from './CreateStockTransferModal'
 import { StockTransferDetailsModal } from './StockTransferDetailsModal'
@@ -121,21 +121,24 @@ export function StockTransfersPage() {
               placeholder="Search transfers..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-[10px] border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
           {/* Status Filter */}
-          <select
+          <NativeSelect
+            dense
+            className="w-auto min-w-[9.5rem]"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as StockTransferStatus | '')}
-            className="flex h-10 items-center rounded-[10px] border border-border/80 bg-secondary px-3 text-xs font-medium text-foreground focus:outline-none focus:border-foreground cursor-pointer"
+            onChange={(e) =>
+              setStatusFilter(e.target.value as StockTransferStatus | '')
+            }
           >
             <option value="">All Statuses</option>
             <option value="POSTED">Posted</option>
             <option value="DRAFT">Draft</option>
             <option value="CANCELLED">Cancelled</option>
-          </select>
+          </NativeSelect>
 
           {(search || statusFilter) && (
             <button
@@ -160,7 +163,7 @@ export function StockTransfersPage() {
               setEditingDraft(null)
               setIsCreateModalOpen(true)
             }}
-            className="flex h-10 items-center gap-1.5 rounded-[10px] bg-primary text-primary-foreground px-4 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+            className="flex h-10 items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-4 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
             <Plus className="h-4 w-4" />
             <span>New Transfer</span>
@@ -183,7 +186,7 @@ export function StockTransfersPage() {
             </Button>
           </div>
         ) : transfers.length === 0 ? (
-          <div className="py-16 text-center rounded-[12px] border border-border/80 bg-card">
+          <div className="py-16 text-center rounded-md border border-border/80 bg-card">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
               <ArrowRight className="h-6 w-6" />
             </div>
@@ -201,90 +204,79 @@ export function StockTransfersPage() {
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-[12px] border border-border/80 bg-card">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border text-xs font-semibold text-muted-foreground">
-                  <th className="py-3 px-4">Reference</th>
-                  <th className="py-3 px-4">From</th>
-                  <th className="py-3 px-4">To</th>
-                  <th className="py-3 px-4">Transfer Date</th>
-                  <th className="py-3 px-4 text-center">Items</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+          <>
+            <Table>
+              <THead>
+                <tr>
+                  <TH>Reference</TH>
+                  <TH>From</TH>
+                  <TH>To</TH>
+                  <TH>Transfer date</TH>
+                  <TH className="text-center">Items</TH>
+                  <TH>Status</TH>
+                  <TH className="text-right">Actions</TH>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 text-sm">
+              </THead>
+              <TBody>
                 {transfers.map((t) => (
-                  <tr key={t.id} className="hover:bg-secondary/40 transition-colors">
-                    {/* Reference */}
-                    <td className="py-3.5 px-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedTransfer(t)
-                          setIsDetailsModalOpen(true)
-                        }}
-                        className="font-mono font-medium text-xs text-blue-500 hover:text-blue-400 hover:underline cursor-pointer"
-                        title="Click to view transfer details"
-                      >
-                        {t.transferNumber}
-                      </button>
-                    </td>
+                  <TR
+                    key={t.id}
+                    clickable
+                    onClick={() => {
+                      if (t.status === 'DRAFT') {
+                        setEditingDraft(t)
+                        setIsCreateModalOpen(true)
+                      } else {
+                        setSelectedTransfer(t)
+                        setIsDetailsModalOpen(true)
+                      }
+                    }}
+                  >
+                    <TD>
+                      <span className="text-ref-link">{t.transferNumber}</span>
+                    </TD>
 
-                    {/* From Warehouse */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <p className="font-medium text-foreground">{t.fromWarehouseName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
+                    <TD>
+                      <p className="font-medium">{t.fromWarehouseName}</p>
+                      <p className="text-[11px] text-ref text-muted-foreground">
                         {t.fromWarehouseCode}
                       </p>
-                    </td>
+                    </TD>
 
-                    {/* To Warehouse */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <p className="font-medium text-foreground">{t.toWarehouseName}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">
+                    <TD>
+                      <p className="font-medium">{t.toWarehouseName}</p>
+                      <p className="text-[11px] text-ref text-muted-foreground">
                         {t.toWarehouseCode}
                       </p>
-                    </td>
+                    </TD>
 
-                    {/* Date */}
-                    <td className="py-3.5 px-4 text-xs text-muted-foreground whitespace-nowrap">
+                    <TD className="font-normal text-muted-foreground whitespace-nowrap">
                       {formatDate(t.transferDate)}
-                    </td>
+                    </TD>
 
-                    {/* Items & Total Qty */}
-                    <td className="py-3.5 px-4 text-xs text-center font-mono">
+                    <TD className="text-center font-mono">
                       <span className="font-medium text-foreground">{t.totalItems}</span>
                       <span className="text-[11px] text-muted-foreground ml-1">
                         ({formatQuantity(t.totalQuantity)})
                       </span>
-                    </td>
+                    </TD>
 
-                    {/* Status Badge */}
-                    <td className="py-3.5 px-4">
+                    <TD>
                       {t.status === 'POSTED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Posted
-                        </span>
+                        <Badge variant="success">Posted</Badge>
                       )}
                       {t.status === 'DRAFT' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-500 border border-amber-500/20">
-                          <Clock className="h-3.5 w-3.5" />
-                          Draft
-                        </span>
+                        <Badge variant="warning">Draft</Badge>
                       )}
                       {t.status === 'CANCELLED' && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-xs font-semibold text-rose-500 border border-rose-500/20">
-                          <Ban className="h-3.5 w-3.5" />
-                          Cancelled
-                        </span>
+                        <Badge variant="destructive">Cancelled</Badge>
                       )}
-                    </td>
+                    </TD>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                    <TD
+                      className="text-right space-x-1.5 whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {t.status === 'DRAFT' ? (
                         <>
                           <Button
@@ -320,15 +312,15 @@ export function StockTransfersPage() {
                           <span>View</span>
                         </Button>
                       )}
-                    </td>
-                  </tr>
+                    </TD>
+                  </TR>
                 ))}
-              </tbody>
-            </table>
+              </TBody>
+            </Table>
 
             {/* Pagination footer */}
             {pageData && pageData.totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-border/80 px-4 py-3 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between border border-t-0 border-border/80 rounded-b-md bg-card px-4 py-3 text-xs text-muted-foreground">
                 <span>
                   Showing {transfers.length} of {pageData.totalElements} transfers
                 </span>
@@ -359,7 +351,7 @@ export function StockTransfersPage() {
                 </div>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 

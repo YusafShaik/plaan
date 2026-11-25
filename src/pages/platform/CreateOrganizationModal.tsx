@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
-import { Label } from '../../components/ui/Label'
+import { NativeSelect } from '../../components/ui/NativeSelect'
 import { Alert } from '../../components/ui/Alert'
 import type { CreateOrganizationPayload } from '../../types/platform'
 
@@ -116,77 +116,59 @@ export function CreateOrganizationModal({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="orgName" required>
-            Organization name
-          </Label>
-          <Input
-            id="orgName"
-            placeholder="e.g. Acme Manufacturing Pvt. Ltd."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={isLoading}
-          />
-        </div>
+        <Input
+          id="orgName"
+          label="Organization name *"
+          placeholder="e.g. Acme Manufacturing Pvt. Ltd."
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isLoading}
+        />
 
-        <div>
-          <Label htmlFor="country" required>
-            Country
-          </Label>
-          <div className="relative">
-            <select
-              id="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              disabled={isLoading}
-              className="flex h-10 w-full rounded-[10px] border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-            >
-              {COUNTRIES.map((c) => (
-                <option key={c} value={c} className="bg-card text-card-foreground">
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <NativeSelect
+          id="country"
+          label="Country"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          disabled={isLoading}
+          required
+        >
+          {COUNTRIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </NativeSelect>
 
-        <div>
-          <Label htmlFor="currency" required>
-            Base currency
-          </Label>
-          <select
-            id="currency"
-            value={baseCurrency}
-            onChange={(e) => setBaseCurrency(e.target.value)}
-            disabled={isLoading}
-            className="flex h-10 w-full rounded-[10px] border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-          >
-            {CURRENCIES.map((cur) => (
-              <option key={cur} value={cur} className="bg-card text-card-foreground">
-                {cur}
-              </option>
-            ))}
-          </select>
-        </div>
+        <NativeSelect
+          id="currency"
+          label="Base currency"
+          value={baseCurrency}
+          onChange={(e) => setBaseCurrency(e.target.value)}
+          disabled={isLoading}
+          required
+        >
+          {CURRENCIES.map((cur) => (
+            <option key={cur} value={cur}>
+              {cur}
+            </option>
+          ))}
+        </NativeSelect>
 
-        <div>
-          <Label htmlFor="timezone" required>
-            Time zone
-          </Label>
-          <select
-            id="timezone"
-            value={timeZone}
-            onChange={(e) => setTimeZone(e.target.value)}
-            disabled={isLoading}
-            className="flex h-10 w-full rounded-[10px] border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-          >
-            {TIMEZONES.map((tz) => (
-              <option key={tz} value={tz} className="bg-card text-card-foreground">
-                {tz}
-              </option>
-            ))}
-          </select>
-        </div>
+        <NativeSelect
+          id="timezone"
+          label="Time zone"
+          value={timeZone}
+          onChange={(e) => setTimeZone(e.target.value)}
+          disabled={isLoading}
+          required
+        >
+          {TIMEZONES.map((tz) => (
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
+          ))}
+        </NativeSelect>
 
         <div className="my-4 border-t border-border" />
 
@@ -199,25 +181,19 @@ export function CreateOrganizationModal({
           </p>
         </div>
 
-        <div>
-          <Label htmlFor="adminName" required>
-            Full name
-          </Label>
-          <Input
-            id="adminName"
-            placeholder="e.g. Ravi Kumar"
-            value={adminFullName}
-            onChange={(e) => setAdminFullName(e.target.value)}
-            disabled={isLoading}
-          />
-        </div>
+        <Input
+          id="adminName"
+          label="Full name *"
+          placeholder="e.g. Ravi Kumar"
+          value={adminFullName}
+          onChange={(e) => setAdminFullName(e.target.value)}
+          disabled={isLoading}
+        />
 
         <div>
-          <Label htmlFor="adminEmail" required>
-            Work email
-          </Label>
           <Input
             id="adminEmail"
+            label="Work email *"
             type="email"
             placeholder="admin@example.com"
             value={adminEmail}
@@ -242,7 +218,7 @@ export function CreateOrganizationModal({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            className="bg-accent text-accent-foreground hover:opacity-90"
+            className="bg-brand-deep text-brand-foreground hover:opacity-90"
           >
             Create Organization
           </Button>

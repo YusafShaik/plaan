@@ -3,6 +3,7 @@ import { Sparkles, X } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
 import { Alert } from '../../components/ui/Alert'
 import { masterDataService } from '../../services/masterDataService'
 import type { CreateSupplierPayload } from '../../types/masterData'
@@ -127,9 +128,9 @@ export function CreateSupplierModal({
           value={supplierCode}
           onChange={(e) => setSupplierCode(e.target.value.toUpperCase())}
           disabled={isLoading}
-          className="font-mono font-semibold"
+          className="font-mono font-medium"
           rightElement={
-            <span className="text-[11px] font-sans font-medium text-accent flex items-center gap-1">
+            <span className="text-[11px] font-sans font-medium text-brand-deep flex items-center gap-1">
               <Sparkles className="h-3 w-3" /> Auto
             </span>
           }
@@ -193,22 +194,16 @@ export function CreateSupplierModal({
           disabled={isLoading}
         />
 
-        {/* Status: Active in operations */}
-        <div className="flex items-center gap-2 pt-1">
-          <input
-            id="supplierActive"
-            type="checkbox"
-            checked={active}
-            onChange={(e) => setActive(e.target.checked)}
-            className="h-4 w-4 rounded-[4px] border border-border accent-foreground cursor-pointer"
-          />
-          <label
-            htmlFor="supplierActive"
-            className="text-sm font-medium text-foreground cursor-pointer select-none"
-          >
-            Active for procurement & purchases
-          </label>
-        </div>
+        <Select
+          label="Status"
+          value={active ? 'active' : 'inactive'}
+          onChange={(v) => setActive(v === 'active')}
+          disabled={isLoading}
+          options={[
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+          ]}
+        />
 
         {/* Footer Actions (Matching Link by Stripe: Outlined Cancel + Solid Black Confirm) */}
         <div className="mt-6 pt-4 flex items-center justify-end gap-3 border-t border-border">
@@ -216,7 +211,7 @@ export function CreateSupplierModal({
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="border border-border bg-white text-foreground hover:bg-secondary rounded-[10px] px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50"
+            className="border border-border bg-card text-foreground hover:bg-secondary rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
@@ -224,7 +219,7 @@ export function CreateSupplierModal({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            className="bg-[#171717] text-white hover:opacity-90 rounded-[10px] px-5 py-2 text-sm font-medium shadow-sm"
+            className="bg-ink text-ink-foreground hover:opacity-90 rounded-md px-5 py-2 text-sm font-medium shadow-sm"
           >
             Save Supplier
           </Button>
