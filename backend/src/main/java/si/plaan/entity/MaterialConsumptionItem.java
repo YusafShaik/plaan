@@ -1,0 +1,43 @@
+package si.plaan.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "material_consumption_items")
+public class MaterialConsumptionItem extends BaseEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "material_consumption_id", nullable = false)
+    private MaterialConsumption materialConsumption;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "material_id", nullable = false)
+    private Item material;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "production_order_item_id")
+    private ProductionOrderItem productionOrderItem;
+
+    @Column(name = "consumed_quantity", nullable = false, precision = 15, scale = 4)
+    private BigDecimal consumedQuantity;
+
+    @Column(name = "unit_of_measure", nullable = false, length = 30)
+    private String unitOfMeasure;
+}
