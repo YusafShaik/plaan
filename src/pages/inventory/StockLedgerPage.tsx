@@ -28,12 +28,20 @@ import type {
 } from '../../types/inventory'
 import type { GoodsReceipt } from '../../types/procurement'
 
-export function StockLedgerPage() {
+export interface StockLedgerPageProps {
+  initialItemId?: number | null
+  initialWarehouseId?: number | null
+}
+
+export function StockLedgerPage({
+  initialItemId = null,
+  initialWarehouseId = null,
+}: StockLedgerPageProps = {}) {
   const [items, setItems] = useState<Item[]>([])
   const [warehouses, setWarehouses] = useState<Warehouse[]>([])
 
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(null)
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(initialItemId)
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(initialWarehouseId)
 
   // Searchable dropdown states
   const [isItemOpen, setIsItemOpen] = useState(false)
@@ -84,6 +92,12 @@ export function StockLedgerPage() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // Apply focus from Stock Summary (or other deep links)
+  useEffect(() => {
+    if (initialItemId != null) setSelectedItemId(initialItemId)
+    if (initialWarehouseId != null) setSelectedWarehouseId(initialWarehouseId)
+  }, [initialItemId, initialWarehouseId])
 
   // Load items and warehouses for dropdowns
   useEffect(() => {

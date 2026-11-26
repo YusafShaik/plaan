@@ -11,6 +11,7 @@ import si.plaan.dto.response.ProductionReceiptResponse;
 import si.plaan.entity.*;
 import si.plaan.exception.ResourceNotFoundException;
 import si.plaan.repository.*;
+import si.plaan.service.FinishedGoodsInspectionService;
 import si.plaan.service.ProductionReceiptService;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ public class ProductionReceiptServiceImpl implements ProductionReceiptService {
     private final OrganizationRepository organizationRepository;
     private final MaterialConsumptionRepository materialConsumptionRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final FinishedGoodsInspectionService finishedGoodsInspectionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -188,7 +190,9 @@ public class ProductionReceiptServiceImpl implements ProductionReceiptService {
             throw new IllegalStateException("Production receipt is already posted.");
         }
 
-        ProductionOrder order = receipt.getProductionOrder();
+        ProductionOrder order = productionOrderRepository.findByIdAndOrganizationIdForUpdate(
+                        receipt.getProductionOrder().getId(), orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Production order not found"));
         if (order.getStatus() != ProductionOrderStatus.IN_PROGRESS) {
             throw new IllegalStateException("Production receipts are allowed only for In Progress production orders. Current status: " + order.getStatus());
         }
@@ -234,6 +238,10 @@ public class ProductionReceiptServiceImpl implements ProductionReceiptService {
         // 3. Mark receipt as POSTED
         receipt.setStatus(ProductionReceiptStatus.POSTED);
         ProductionReceipt saved = productionReceiptRepository.save(receipt);
+
+        // 4. Hold stock for Finished Goods Inspection when an active FG template exists
+        finishedGoodsInspectionService.createPendingFromPostedReceipt(
+                receipt.getOrganization().getId(), saved, order);
 
         log.info("Posted production receipt {} for order {} in org {}: received {} {}",
                 saved.getReceiptNumber(), order.getOrderNumber(), receipt.getOrganization().getId(),

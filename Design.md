@@ -154,7 +154,7 @@ Mercury-style underline navigation:
 - Gap: `gap-6`
 - Primary module CTAs (`Add` / `New …`) use ink `Button variant="primary"` so they match the ink underline — not brand green
 
-`SegmentedTabs` is a **deprecated alias** of `UnderlineTabs` — do not build new ink pill tab bars.
+Use `UnderlineTabs` only — do not build segmented pill tab bars.
 
 ### Tables — `Table` primitives
 

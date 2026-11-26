@@ -3,6 +3,7 @@ package si.plaan.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import si.plaan.repository.UserRepository;
 
 @Slf4j
 @Component
+@Profile({"dev", "local", "test"})
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
@@ -50,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             userRepository.save(platformAdmin);
 
-            log.info("Platform Admin created: platform@plaan.io / admin123");
+            log.info("Platform Admin created: platform@plaan.io (dev seed — change password before any shared use)");
         }
 
         // 2. Seed Default Customer Organization & Org Admin
@@ -75,7 +77,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             userRepository.save(defaultOrgAdmin);
 
-            log.info("Customer Org Admin created: admin@plaan.io / admin123 (Acme Manufacturing Corp)");
+            log.info("Customer Org Admin created: admin@plaan.io (Acme Manufacturing Corp, dev seed)");
         }
 
         // 3. Seed Default Item Prefix for Acme if missing

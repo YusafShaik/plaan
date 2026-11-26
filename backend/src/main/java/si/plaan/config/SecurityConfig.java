@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/login", "/error").permitAll()
                         .requestMatchers("/api/v1/platform/**").hasRole("PLATFORM_ADMIN")
-                        .requestMatchers("/api/v1/master-data/**", "/api/v1/procurement/**", "/api/v1/inventory/**").hasAnyRole("ADMIN", "ORG_ADMIN", "USER")
+                        .requestMatchers("/api/v1/master-data/**", "/api/v1/procurement/**", "/api/v1/inventory/**", "/api/v1/manufacturing/**", "/api/v1/sales/**", "/api/v1/dispatch/**", "/api/v1/finance/**", "/api/v1/quality/**", "/api/v1/maintenance/**", "/api/v1/reports/**", "/api/v1/dashboard/**").hasAnyRole("ADMIN", "ORG_ADMIN", "USER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);

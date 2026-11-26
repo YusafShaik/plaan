@@ -55,4 +55,9 @@ public class OpeningStock extends BaseEntity {
     public void clearItems() {
         items.clear();
     }
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
 }

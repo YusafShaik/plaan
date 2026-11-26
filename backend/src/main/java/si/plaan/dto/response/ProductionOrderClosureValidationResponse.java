@@ -26,10 +26,12 @@ public class ProductionOrderClosureValidationResponse {
     private boolean allPlannedQuantitiesReceived;
     private boolean allMaterialsReconciled;
     private boolean noPendingDraftTransactions;
+    private boolean allQualityInspectionsCompleted;
     private boolean canClose;
 
     private int pendingDraftTransactionsCount;
     private int unreconciledMaterialsCount;
+    private int pendingQualityInspectionsCount;
 
     private List<MaterialReconciliationItemResponse> materials;
 }

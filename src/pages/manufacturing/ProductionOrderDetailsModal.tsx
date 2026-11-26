@@ -328,7 +328,7 @@ export function ProductionOrderDetailsModal({
             </div>
           )}
 
-          {/* Summary Cards matching Screenshot 1: Ordered | Received | Pending */}
+          {/* Summary Cards: Ordered | Received | Pending */}
           <div className="grid grid-cols-3 gap-3.5 pt-1">
             <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
               <p className="text-xs text-muted-foreground font-normal">Ordered</p>
@@ -354,6 +354,32 @@ export function ProductionOrderDetailsModal({
               <p className="mt-1 text-xs text-muted-foreground">{effectiveOrder.unitOfMeasure}</p>
             </div>
           </div>
+
+          {/* Quality results when FG inspections apply */}
+          {((effectiveOrder.qualityPendingQuantity ?? 0) > 0 ||
+            (effectiveOrder.qualityAcceptedQuantity ?? 0) > 0 ||
+            (effectiveOrder.qualityRejectedQuantity ?? 0) > 0) && (
+            <div className="grid grid-cols-3 gap-3.5">
+              <div className="rounded-md border border-border/80 bg-secondary/30 p-3.5">
+                <p className="text-xs text-muted-foreground font-normal">Quality pending</p>
+                <p className="mt-1.5 text-lg font-medium text-warning font-mono">
+                  {formatQuantity(effectiveOrder.qualityPendingQuantity ?? 0)}
+                </p>
+              </div>
+              <div className="rounded-md border border-border/80 bg-secondary/30 p-3.5">
+                <p className="text-xs text-muted-foreground font-normal">Quality accepted</p>
+                <p className="mt-1.5 text-lg font-medium text-success font-mono">
+                  {formatQuantity(effectiveOrder.qualityAcceptedQuantity ?? 0)}
+                </p>
+              </div>
+              <div className="rounded-md border border-border/80 bg-secondary/30 p-3.5">
+                <p className="text-xs text-muted-foreground font-normal">Quality rejected</p>
+                <p className="mt-1.5 text-lg font-medium text-destructive font-mono">
+                  {formatQuantity(effectiveOrder.qualityRejectedQuantity ?? 0)}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Production Progress matching Screenshot 1 */}
           <div className="space-y-1.5 py-1">

@@ -1,6 +1,7 @@
 package si.plaan.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Version;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -67,4 +68,9 @@ public class ProductionReceipt extends BaseEntity {
 
     @Column(length = 1000)
     private String notes;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
 }

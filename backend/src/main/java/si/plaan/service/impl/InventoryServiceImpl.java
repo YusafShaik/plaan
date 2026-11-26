@@ -19,10 +19,14 @@ import si.plaan.repository.ItemRepository;
 import si.plaan.repository.StockMovementRepository;
 import si.plaan.repository.WarehouseRepository;
 import si.plaan.service.InventoryService;
+import si.plaan.service.StockAvailabilityService;
+import si.plaan.service.support.StockMovementSupport;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -30,37 +34,55 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class InventoryServiceImpl implements InventoryService {
 
+    public static final String STOCK_STATUS_AVAILABLE = "AVAILABLE";
+    public static final String STOCK_STATUS_NO_AVAILABLE = "NO_AVAILABLE_STOCK";
+    public static final String STOCK_STATUS_QUALITY_HOLD = "QUALITY_HOLD";
+
     private final StockMovementRepository stockMovementRepository;
     private final ItemRepository itemRepository;
     private final WarehouseRepository warehouseRepository;
+    private final StockAvailabilityService stockAvailabilityService;
+
+    @Override
+    public List<StockOverviewItemResponse> listStockOverview(
+            Long orgId,
+            String search,
+            Long warehouseId,
+            Long itemTypeId,
+            String stockStatus
+    ) {
+        log.info("Listing stock overview for orgId: {}, search: {}, warehouseId: {}, itemTypeId: {}, stockStatus: {}",
+                orgId, search, warehouseId, itemTypeId, stockStatus);
+
+        List<StockOverviewItemResponse> allAggregated = enrichWithHolds(
+                stockMovementRepository.aggregateStockOverview(orgId), orgId);
+
+        String normalizedStatus = stockStatus != null ? stockStatus.trim().toUpperCase(Locale.ROOT) : null;
+        if (normalizedStatus != null
+                && !normalizedStatus.isEmpty()
+                && !STOCK_STATUS_AVAILABLE.equals(normalizedStatus)
+                && !STOCK_STATUS_NO_AVAILABLE.equals(normalizedStatus)
+                && !STOCK_STATUS_QUALITY_HOLD.equals(normalizedStatus)) {
+            throw new IllegalArgumentException(
+                    "Stock status must be AVAILABLE, NO_AVAILABLE_STOCK, or QUALITY_HOLD");
+        }
+
+        return allAggregated.stream()
+                .filter(item -> matchesFilters(item, search, warehouseId, itemTypeId, normalizedStatus))
+                .toList();
+    }
 
     @Override
     public PageResponse<StockOverviewItemResponse> getStockOverview(
             Long orgId,
             String search,
             Long warehouseId,
+            Long itemTypeId,
+            String stockStatus,
             Pageable pageable
     ) {
-        log.info("Fetching stock overview for orgId: {}, search: {}, warehouseId: {}", orgId, search, warehouseId);
-
-        List<StockOverviewItemResponse> allAggregated = stockMovementRepository.aggregateStockOverview(orgId);
-
-        List<StockOverviewItemResponse> filtered = allAggregated.stream()
-                .filter(item -> {
-                    if (warehouseId != null && !item.warehouseId().equals(warehouseId)) {
-                        return false;
-                    }
-                    if (search != null && !search.trim().isEmpty()) {
-                        String query = search.trim().toLowerCase();
-                        boolean matchName = item.itemName() != null && item.itemName().toLowerCase().contains(query);
-                        boolean matchCode = item.itemCode() != null && item.itemCode().toLowerCase().contains(query);
-                        if (!matchName && !matchCode) {
-                            return false;
-                        }
-                    }
-                    return true;
-                })
-                .toList();
+        List<StockOverviewItemResponse> filtered = listStockOverview(
+                orgId, search, warehouseId, itemTypeId, stockStatus);
 
         Pageable effectivePageable = pageable != null ? pageable : PageRequest.of(0, Math.max(filtered.size(), 1));
         int pageSize = effectivePageable.getPageSize() > 0 ? effectivePageable.getPageSize() : 10;
@@ -70,7 +92,6 @@ public class InventoryServiceImpl implements InventoryService {
 
         List<StockOverviewItemResponse> pageContent = filtered.subList(fromIndex, toIndex);
         PageImpl<StockOverviewItemResponse> page = new PageImpl<>(pageContent, effectivePageable, filtered.size());
-
         return PageResponse.from(page);
     }
 
@@ -78,14 +99,17 @@ public class InventoryServiceImpl implements InventoryService {
     public StockOverviewSummaryResponse getStockOverviewSummary(Long orgId) {
         log.info("Fetching stock overview summary for orgId: {}", orgId);
 
-        List<StockOverviewItemResponse> allAggregated = stockMovementRepository.aggregateStockOverview(orgId);
+        List<StockOverviewItemResponse> allAggregated = enrichWithHolds(
+                stockMovementRepository.aggregateStockOverview(orgId), orgId);
 
         long itemsInStock = allAggregated.stream()
+                .filter(i -> positive(i.onHandQuantity()))
                 .map(StockOverviewItemResponse::itemId)
                 .distinct()
                 .count();
 
         long warehousesWithStock = allAggregated.stream()
+                .filter(i -> positive(i.onHandQuantity()))
                 .map(StockOverviewItemResponse::warehouseId)
                 .distinct()
                 .count();
@@ -101,7 +125,6 @@ public class InventoryServiceImpl implements InventoryService {
     public StockLedgerResponse getStockLedger(Long orgId, Long itemId, Long warehouseId) {
         log.info("Fetching stock ledger for orgId: {}, itemId: {}, warehouseId: {}", orgId, itemId, warehouseId);
 
-        // If no item is specified, pick the first item that has stock/movements in the organization
         if (itemId == null) {
             List<StockOverviewItemResponse> stock = stockMovementRepository.aggregateStockOverview(orgId);
             if (!stock.isEmpty()) {
@@ -121,7 +144,6 @@ public class InventoryServiceImpl implements InventoryService {
             );
         }
 
-        // Fetch movements ordered chronologically (movementDate ASC, id ASC)
         List<StockMovement> movements = stockMovementRepository.findStockLedgerMovements(orgId, itemId, warehouseId);
 
         String itemCode = null;
@@ -156,14 +178,7 @@ public class InventoryServiceImpl implements InventoryService {
 
         List<StockLedgerEntryResponse> entries = new ArrayList<>();
         for (StockMovement sm : movements) {
-            boolean isIn = sm.getMovementType() == null
-                    || sm.getMovementType().toUpperCase().startsWith("INBOUND")
-                    || sm.getMovementType().equalsIgnoreCase("OPENING_STOCK")
-                    || sm.getMovementType().equalsIgnoreCase("TRANSFER_IN")
-                    || sm.getMovementType().equalsIgnoreCase("ADJUSTMENT_IN")
-                    || sm.getMovementType().equalsIgnoreCase("MATERIAL_RETURN")
-                    || sm.getMovementType().toUpperCase().contains("RETURN")
-                    || sm.getMovementType().equalsIgnoreCase("PRODUCTION_RECEIPT");
+            boolean isIn = StockMovementSupport.isIncoming(sm.getMovementType());
             BigDecimal qtyIn = isIn ? sm.getQuantity() : null;
             BigDecimal qtyOut = !isIn ? sm.getQuantity() : null;
 
@@ -173,23 +188,6 @@ public class InventoryServiceImpl implements InventoryService {
             } else {
                 balance = balance.subtract(sm.getQuantity());
                 totalOut = totalOut.add(sm.getQuantity());
-            }
-
-            String transactionType = "Purchase Receipt";
-            if (sm.getMovementType() != null && sm.getMovementType().equalsIgnoreCase("OPENING_STOCK")) {
-                transactionType = "Opening Stock";
-            } else if (sm.getMovementType() != null && (sm.getMovementType().equalsIgnoreCase("TRANSFER_IN") || sm.getMovementType().equalsIgnoreCase("TRANSFER_OUT") || sm.getMovementType().toUpperCase().contains("TRANSFER"))) {
-                transactionType = "Stock Transfer";
-            } else if (sm.getMovementType() != null && (sm.getMovementType().equalsIgnoreCase("ADJUSTMENT_IN") || sm.getMovementType().equalsIgnoreCase("ADJUSTMENT_OUT") || sm.getMovementType().toUpperCase().contains("ADJUSTMENT"))) {
-                transactionType = "Stock Adjustment";
-            } else if (sm.getMovementType() != null && sm.getMovementType().toUpperCase().contains("ISSUE")) {
-                transactionType = "Material Issue";
-            } else if (sm.getMovementType() != null && sm.getMovementType().toUpperCase().contains("RETURN")) {
-                transactionType = "Material Return";
-            } else if (sm.getMovementType() != null && sm.getMovementType().equalsIgnoreCase("PRODUCTION_RECEIPT")) {
-                transactionType = "Production Receipt";
-            } else if (sm.getMovementType() != null && (sm.getMovementType().equalsIgnoreCase("SALES_DISPATCH") || sm.getMovementType().toUpperCase().contains("DISPATCH"))) {
-                transactionType = "Sales Dispatch";
             }
 
             entries.add(new StockLedgerEntryResponse(
@@ -203,7 +201,7 @@ public class InventoryServiceImpl implements InventoryService {
                     sm.getMaterialIssue() != null ? sm.getMaterialIssue().getId() : null,
                     sm.getMaterialReturn() != null ? sm.getMaterialReturn().getId() : null,
                     sm.getProductionReceipt() != null ? sm.getProductionReceipt().getId() : null,
-                    transactionType,
+                    StockMovementSupport.displayLabel(sm.getMovementType()),
                     sm.getItem().getItemCode(),
                     sm.getItem().getName(),
                     sm.getWarehouse().getWarehouseCode(),
@@ -229,5 +227,74 @@ public class InventoryServiceImpl implements InventoryService {
                 entries.size(),
                 entries
         );
+    }
+
+    private boolean matchesFilters(
+            StockOverviewItemResponse item,
+            String search,
+            Long warehouseId,
+            Long itemTypeId,
+            String stockStatus) {
+        if (warehouseId != null && !item.warehouseId().equals(warehouseId)) {
+            return false;
+        }
+        if (itemTypeId != null && (item.itemTypeId() == null || !item.itemTypeId().equals(itemTypeId))) {
+            return false;
+        }
+        if (search != null && !search.trim().isEmpty()) {
+            String query = search.trim().toLowerCase(Locale.ROOT);
+            boolean matchName = item.itemName() != null && item.itemName().toLowerCase(Locale.ROOT).contains(query);
+            boolean matchCode = item.itemCode() != null && item.itemCode().toLowerCase(Locale.ROOT).contains(query);
+            if (!matchName && !matchCode) {
+                return false;
+            }
+        }
+        if (stockStatus == null || stockStatus.isEmpty()) {
+            return true;
+        }
+        return switch (stockStatus) {
+            case STOCK_STATUS_AVAILABLE -> positive(item.availableQuantity());
+            case STOCK_STATUS_NO_AVAILABLE -> !positive(item.availableQuantity());
+            case STOCK_STATUS_QUALITY_HOLD ->
+                    positive(item.pendingInspectionQuantity()) || positive(item.rejectedQuantity());
+            default -> true;
+        };
+    }
+
+    private List<StockOverviewItemResponse> enrichWithHolds(
+            List<StockOverviewItemResponse> rows, Long orgId) {
+        Map<String, BigDecimal[]> holds = stockAvailabilityService.getHoldsMap(orgId);
+        List<StockOverviewItemResponse> enriched = new ArrayList<>(rows.size());
+        for (StockOverviewItemResponse row : rows) {
+            BigDecimal[] hold = holds.getOrDefault(
+                    row.itemId() + ":" + row.warehouseId(),
+                    new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            BigDecimal pending = hold[0] != null ? hold[0] : BigDecimal.ZERO;
+            BigDecimal rejected = hold[1] != null ? hold[1] : BigDecimal.ZERO;
+            BigDecimal onHand = row.onHandQuantity() != null ? row.onHandQuantity() : BigDecimal.ZERO;
+            BigDecimal available = onHand.subtract(pending).subtract(rejected);
+            if (available.compareTo(BigDecimal.ZERO) < 0) {
+                available = BigDecimal.ZERO;
+            }
+            enriched.add(new StockOverviewItemResponse(
+                    row.itemId(),
+                    row.itemCode(),
+                    row.itemName(),
+                    row.itemTypeId(),
+                    row.itemTypeName(),
+                    row.warehouseId(),
+                    row.warehouseCode(),
+                    row.warehouseName(),
+                    onHand,
+                    pending,
+                    rejected,
+                    available,
+                    row.unitOfMeasure()));
+        }
+        return enriched;
+    }
+
+    private static boolean positive(BigDecimal value) {
+        return value != null && value.compareTo(BigDecimal.ZERO) > 0;
     }
 }

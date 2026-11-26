@@ -77,6 +77,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("A record with the specified code or identifier already exists."));
     }
 
+    @ExceptionHandler({
+            org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(RuntimeException ex) {
+        log.warn("Optimistic lock conflict: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error("This record was updated by someone else. Refresh and try again."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
         log.error("Internal server error encountered", ex);

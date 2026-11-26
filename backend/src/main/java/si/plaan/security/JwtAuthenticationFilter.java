@@ -8,13 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import si.plaan.entity.Role;
 import java.io.IOException;
 
 @Component
@@ -22,32 +21,36 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        
+
         String jwt = resolveToken(request);
 
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-            String email = tokenProvider.getEmailFromToken(jwt);
-            Long userId = tokenProvider.getUserIdFromToken(jwt);
-            Long orgId = tokenProvider.getOrganizationIdFromToken(jwt);
-            String roleStr = tokenProvider.getRoleFromToken(jwt);
-            Role role = roleStr != null ? Role.valueOf(roleStr) : Role.ROLE_USER;
+            try {
+                String email = tokenProvider.getEmailFromToken(jwt);
+                // Reload from DB so inactive users/orgs and role changes take effect immediately
+                CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(email);
 
-            CustomUserDetails userDetails = new CustomUserDetails(userId, email, orgId, role);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (!userDetails.isEnabled() || !userDetails.isAccountNonLocked()) {
+                    SecurityContextHolder.clearContext();
+                } else {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            } catch (UsernameNotFoundException ex) {
+                SecurityContextHolder.clearContext();
+            }
         }
 
         filterChain.doFilter(request, response);

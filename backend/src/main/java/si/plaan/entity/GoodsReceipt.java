@@ -58,4 +58,9 @@ public class GoodsReceipt extends BaseEntity {
     public void clearItems() {
         items.clear();
     }
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
 }

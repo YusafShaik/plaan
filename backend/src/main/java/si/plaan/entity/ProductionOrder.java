@@ -1,6 +1,7 @@
 package si.plaan.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Version;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -134,4 +135,9 @@ public class ProductionOrder extends BaseEntity {
         }
         return progress;
     }
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
 }

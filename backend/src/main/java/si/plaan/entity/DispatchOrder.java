@@ -1,6 +1,7 @@
 package si.plaan.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Version;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -93,4 +94,9 @@ public class DispatchOrder extends BaseEntity {
     public void clearItems() {
         items.clear();
     }
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
 }

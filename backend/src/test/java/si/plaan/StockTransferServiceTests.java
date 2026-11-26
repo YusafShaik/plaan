@@ -250,7 +250,7 @@ class StockTransferServiceTests {
         Assertions.assertEquals(new BigDecimal("700.000"), sheetMainAfter.add(sheetRawAfter));
 
         // [9] Verify Stock Overview and Stock Ledger
-        var overview = inventoryService.getStockOverview(orgA.getId(), null, null, null);
+        var overview = inventoryService.getStockOverview(orgA.getId(), null, null, null, null, null);
         Assertions.assertTrue(overview.totalElements() >= 3);
 
         StockLedgerResponse ledgerSheetMain = inventoryService.getStockLedger(orgA.getId(), steelSheetA.getId(), whMainA.getId());

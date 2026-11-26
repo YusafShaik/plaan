@@ -1,10 +1,9 @@
 package si.plaan.repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -18,6 +17,10 @@ import java.util.Optional;
 public interface GoodsReceiptRepository extends JpaRepository<GoodsReceipt, Long>, JpaSpecificationExecutor<GoodsReceipt> {
 
     Optional<GoodsReceipt> findByIdAndOrganizationId(Long id, Long organizationId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT g FROM GoodsReceipt g WHERE g.id = :id AND g.organization.id = :orgId")
+    Optional<GoodsReceipt> findByIdAndOrganizationIdForUpdate(@Param("id") Long id, @Param("orgId") Long orgId);
 
     boolean existsByOrganizationIdAndGrnNumberIgnoreCase(Long organizationId, String grnNumber);
 

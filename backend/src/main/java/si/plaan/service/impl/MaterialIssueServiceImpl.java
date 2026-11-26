@@ -33,6 +33,8 @@ import si.plaan.repository.OrganizationRepository;
 import si.plaan.repository.ProductionOrderRepository;
 import si.plaan.repository.StockMovementRepository;
 import si.plaan.service.MaterialIssueService;
+import si.plaan.service.StockAvailabilityService;
+import si.plaan.service.StockLockService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -54,6 +56,8 @@ public class MaterialIssueServiceImpl implements MaterialIssueService {
     private final ItemRepository itemRepository;
     private final OrganizationRepository organizationRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final StockAvailabilityService stockAvailabilityService;
+    private final StockLockService stockLockService;
 
     @Override
     @Transactional(readOnly = true)
@@ -194,7 +198,7 @@ public class MaterialIssueServiceImpl implements MaterialIssueService {
                         + pendingQty + " " + orderItem.getUnitOfMeasure() + ".");
             }
 
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+            BigDecimal onHand = stockAvailabilityService.getAvailable(
                     orgId, orderItem.getMaterial().getId(), sourceWarehouse.getId()
             );
             if (onHand == null) {
@@ -278,7 +282,7 @@ public class MaterialIssueServiceImpl implements MaterialIssueService {
                         + pendingQty + " " + orderItem.getUnitOfMeasure() + ".");
             }
 
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+            BigDecimal onHand = stockAvailabilityService.getAvailable(
                     orgId, orderItem.getMaterial().getId(), sourceWarehouse.getId()
             );
             if (onHand == null) {
@@ -335,7 +339,7 @@ public class MaterialIssueServiceImpl implements MaterialIssueService {
         Warehouse sourceWarehouse = issue.getSourceWarehouse();
         Organization org = issue.getOrganization();
 
-        // Validate stock and pending quantities for all lines
+        // Validate stock and pending quantities for all lines (lock item×warehouse first)
         for (MaterialIssueItem issueItem : issue.getItems()) {
             BigDecimal issueQty = issueItem.getIssueQuantity() != null ? issueItem.getIssueQuantity() : BigDecimal.ZERO;
             if (issueQty.compareTo(BigDecimal.ZERO) <= 0) {
@@ -351,7 +355,9 @@ public class MaterialIssueServiceImpl implements MaterialIssueService {
                         + pendingQty + " " + orderItem.getUnitOfMeasure() + ".");
             }
 
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+            stockLockService.lockItemWarehouse(org, orderItem.getMaterial(), sourceWarehouse);
+
+            BigDecimal onHand = stockAvailabilityService.getAvailable(
                     orgId, orderItem.getMaterial().getId(), sourceWarehouse.getId()
             );
             if (onHand == null) {

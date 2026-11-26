@@ -22,6 +22,8 @@ import si.plaan.entity.*;
 import si.plaan.exception.ResourceNotFoundException;
 import si.plaan.repository.*;
 import si.plaan.service.StockAdjustmentService;
+import si.plaan.service.StockAvailabilityService;
+import si.plaan.service.StockLockService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,9 +38,11 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
     private final StockAdjustmentRepository stockAdjustmentRepository;
     private final StockAdjustmentItemRepository stockAdjustmentItemRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final StockAvailabilityService stockAvailabilityService;
     private final OrganizationRepository organizationRepository;
     private final WarehouseRepository warehouseRepository;
     private final ItemRepository itemRepository;
+    private final StockLockService stockLockService;
 
     private static final String SA_PREFIX = "SA-";
 
@@ -337,6 +341,7 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
 
         // Verify stale stock detection and non-zero differences
         for (StockAdjustmentItem item : sa.getItems()) {
+            stockLockService.lockItemWarehouse(sa.getOrganization(), item.getItem(), sa.getWarehouse());
             BigDecimal currentStock = stockMovementRepository.getCurrentStockForItemAndWarehouse(
                     orgId,
                     item.getItem().getId(),
@@ -359,6 +364,20 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
 
             if (item.getAdjustmentQuantity().compareTo(BigDecimal.ZERO) != 0) {
                 hasNonZeroDifference = true;
+            }
+
+            // Negative adjustments cannot consume quality-held or rejected stock
+            if (item.getAdjustmentQuantity().compareTo(BigDecimal.ZERO) < 0) {
+                BigDecimal available = stockAvailabilityService.getAvailable(
+                        orgId, item.getItem().getId(), sa.getWarehouse().getId());
+                if (item.getAdjustmentQuantity().abs().compareTo(available) > 0) {
+                    throw new IllegalArgumentException(String.format(
+                            "Insufficient available stock for item '%s'. Available for use: %s, adjustment out: %s. "
+                                    + "Pending inspection or rejected stock cannot be adjusted out.",
+                            item.getItem().getName(),
+                            available,
+                            item.getAdjustmentQuantity().abs()));
+                }
             }
         }
 

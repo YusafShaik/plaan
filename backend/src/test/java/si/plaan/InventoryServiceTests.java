@@ -217,7 +217,7 @@ class InventoryServiceTests {
 
         // ================= VERIFY STOCK OVERVIEW LIST =================
         PageResponse<StockOverviewItemResponse> overview = inventoryService.getStockOverview(
-                orgA.getId(), null, null, PageRequest.of(0, 10));
+                orgA.getId(), null, null, null, null, PageRequest.of(0, 10));
         Assertions.assertEquals(3, overview.totalElements());
 
         // Verify Steel Sheet in WH1 = 100 kg
@@ -247,20 +247,20 @@ class InventoryServiceTests {
 
         // ================= VERIFY SEARCH FILTER =================
         PageResponse<StockOverviewItemResponse> searchByName = inventoryService.getStockOverview(
-                orgA.getId(), "sheet", null, PageRequest.of(0, 10));
+                orgA.getId(), "sheet", null, null, null, PageRequest.of(0, 10));
         Assertions.assertEquals(2, searchByName.totalElements(), "Search for 'sheet' should match Sheet in WH1 and Sheet in WH2");
 
         PageResponse<StockOverviewItemResponse> searchByCode = inventoryService.getStockOverview(
-                orgA.getId(), "ITM-002", null, PageRequest.of(0, 10));
+                orgA.getId(), "ITM-002", null, null, null, PageRequest.of(0, 10));
         Assertions.assertEquals(1, searchByCode.totalElements(), "Search for 'ITM-002' should match Rod in WH1");
 
         // ================= VERIFY WAREHOUSE FILTER =================
         PageResponse<StockOverviewItemResponse> wh1Filter = inventoryService.getStockOverview(
-                orgA.getId(), null, wh1.getId(), PageRequest.of(0, 10));
+                orgA.getId(), null, wh1.getId(), null, null, PageRequest.of(0, 10));
         Assertions.assertEquals(2, wh1Filter.totalElements(), "WH1 should have 2 records (Sheet and Rod)");
 
         PageResponse<StockOverviewItemResponse> wh2Filter = inventoryService.getStockOverview(
-                orgA.getId(), null, wh2.getId(), PageRequest.of(0, 10));
+                orgA.getId(), null, wh2.getId(), null, null, PageRequest.of(0, 10));
         Assertions.assertEquals(1, wh2Filter.totalElements(), "WH2 should have 1 record (Sheet only)");
 
         // ================= VERIFY TENANT DATA ISOLATION =================
@@ -279,7 +279,7 @@ class InventoryServiceTests {
         Assertions.assertEquals(0, orgBSummary.totalStockRecords(), "Tenant B should see 0 stock records");
 
         PageResponse<StockOverviewItemResponse> orgBOverview = inventoryService.getStockOverview(
-                orgB.getId(), null, null, PageRequest.of(0, 10));
+                orgB.getId(), null, null, null, null, PageRequest.of(0, 10));
         Assertions.assertEquals(0, orgBOverview.totalElements(), "Tenant B must not see any stock from Tenant A");
 
         // ================= VERIFY STOCK LEDGER =================

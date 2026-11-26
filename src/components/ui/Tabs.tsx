@@ -63,9 +63,3 @@ export function UnderlineTabs({
   )
 }
 
-/**
- * @deprecated Prefer UnderlineTabs. Kept as alias so existing imports keep working.
- */
-export function SegmentedTabs(props: TabsProps) {
-  return <UnderlineTabs {...props} />
-}

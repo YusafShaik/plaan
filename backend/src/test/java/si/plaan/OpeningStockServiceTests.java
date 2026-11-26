@@ -171,7 +171,7 @@ class OpeningStockServiceTests {
         // Verify draft does NOT create stock movements or affect overview
         List<StockMovement> draftMovements = stockMovementRepository.findByOpeningStockIdOrderByCreatedAtDesc(created.getId());
         Assertions.assertTrue(draftMovements.isEmpty(), "Draft opening stock must not create stock movements");
-        var overviewBeforePost = inventoryService.getStockOverview(orgA.getId(), null, null, null);
+        var overviewBeforePost = inventoryService.getStockOverview(orgA.getId(), null, null, null, null, null);
         Assertions.assertEquals(0, overviewBeforePost.totalElements(), "Draft opening stock must not affect stock overview");
 
         // [2] Save and edit draft
@@ -206,7 +206,7 @@ class OpeningStockServiceTests {
         }
 
         // [6] Verify Stock Overview updates
-        var overview = inventoryService.getStockOverview(orgA.getId(), null, null, null);
+        var overview = inventoryService.getStockOverview(orgA.getId(), null, null, null, null, null);
         Assertions.assertEquals(3, overview.content().size());
         StockOverviewItemResponse sheetOverview = overview.content().stream()
                 .filter(o -> o.itemCode().equals(steelSheetA.getItemCode()))

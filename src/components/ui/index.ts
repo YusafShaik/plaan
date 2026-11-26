@@ -14,7 +14,7 @@ export { DateField, type DateFieldProps } from './DateField'
 export { Alert, type AlertProps, type AlertVariant } from './Alert'
 export { Modal, type ModalProps } from './Modal'
 export { Label, type LabelProps } from './Label'
-export { UnderlineTabs, SegmentedTabs, type TabItem } from './Tabs'
+export { UnderlineTabs, type TabItem } from './Tabs'
 export { Table, THead, TBody, TR, TH, TD, RefCode, RefLink } from './Table'
 export {
   fieldChrome,

@@ -51,7 +51,9 @@ import si.plaan.repository.OrganizationRepository;
 import si.plaan.repository.ProductionOrderRepository;
 import si.plaan.repository.StockMovementRepository;
 import si.plaan.repository.WarehouseRepository;
+import si.plaan.service.FinishedGoodsInspectionService;
 import si.plaan.service.ProductionOrderService;
+import si.plaan.service.StockAvailabilityService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -74,10 +76,12 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
     private final WarehouseRepository warehouseRepository;
     private final OrganizationRepository organizationRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final StockAvailabilityService stockAvailabilityService;
     private final MaterialIssueRepository materialIssueRepository;
     private final MaterialConsumptionRepository materialConsumptionRepository;
     private final MaterialReturnRepository materialReturnRepository;
     private final ProductionReceiptRepository productionReceiptRepository;
+    private final FinishedGoodsInspectionService finishedGoodsInspectionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -152,7 +156,7 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
         List<MaterialAvailabilityItemResponse> items = new ArrayList<>();
 
         for (ProductionOrderItem item : order.getItems()) {
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+            BigDecimal onHand = stockAvailabilityService.getAvailable(
                     orgId, item.getMaterial().getId(), sourceWarehouseId
             );
             if (onHand == null) {
@@ -691,6 +695,14 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
             throw new IllegalStateException("Cannot close production order: please post or delete all pending draft transactions before closing.");
         }
 
+        // 4. All Finished Goods Inspections for this order must be completed
+        if (finishedGoodsInspectionService.hasIncompleteInspections(orgId, id)) {
+            long pending = finishedGoodsInspectionService.countIncompleteInspections(orgId, id);
+            throw new IllegalStateException(String.format(
+                    "Cannot close production order: %d finished goods inspection(s) are still pending or in draft. Complete all quality inspections before closing.",
+                    pending));
+        }
+
         order.setStatus(ProductionOrderStatus.CLOSED);
         order.setClosedDate(LocalDate.now());
         order.setClosedBy(userEmail != null ? userEmail : "System");
@@ -750,7 +762,10 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
 
         boolean allMaterialsReconciled = unreconciledCount == 0;
         boolean noPendingDraftTransactions = draftCount == 0;
-        boolean canClose = productionCompleted && allPlannedQuantitiesReceived && allMaterialsReconciled && noPendingDraftTransactions;
+        int pendingQualityCount = (int) finishedGoodsInspectionService.countIncompleteInspections(orgId, id);
+        boolean allQualityInspectionsCompleted = pendingQualityCount == 0;
+        boolean canClose = productionCompleted && allPlannedQuantitiesReceived && allMaterialsReconciled
+                && noPendingDraftTransactions && allQualityInspectionsCompleted;
 
         return ProductionOrderClosureValidationResponse.builder()
                 .productionOrderId(order.getId())
@@ -763,9 +778,11 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
                 .allPlannedQuantitiesReceived(allPlannedQuantitiesReceived)
                 .allMaterialsReconciled(allMaterialsReconciled)
                 .noPendingDraftTransactions(noPendingDraftTransactions)
+                .allQualityInspectionsCompleted(allQualityInspectionsCompleted)
                 .canClose(canClose)
                 .unreconciledMaterialsCount(unreconciledCount)
                 .pendingDraftTransactionsCount(draftCount)
+                .pendingQualityInspectionsCount(pendingQualityCount)
                 .materials(materials)
                 .build();
     }
@@ -815,7 +832,7 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
             BigDecimal pending = it.getPendingQuantity();
 
             if (calculateAvailability) {
-                BigDecimal currentStock = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+                BigDecimal currentStock = stockAvailabilityService.getAvailable(
                         orgId, it.getMaterial().getId(), sourceWarehouseId
                 );
                 onHand = currentStock != null ? currentStock : BigDecimal.ZERO;
@@ -866,6 +883,8 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
                 ? order.getBomOutputQuantitySnapshot()
                 : (order.getBom() != null ? order.getBom().getOutputQuantity() : BigDecimal.ONE);
 
+        BigDecimal[] quality = finishedGoodsInspectionService.getQualityTotals(orgId, order.getId());
+
         return ProductionOrderResponse.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
@@ -880,6 +899,9 @@ public class ProductionOrderServiceImpl implements ProductionOrderService {
                 .receivedQuantity(order.getReceivedQuantity())
                 .pendingProductionQuantity(order.getPendingProductionQuantity())
                 .productionProgress(order.getProductionProgress())
+                .qualityPendingQuantity(quality[0])
+                .qualityAcceptedQuantity(quality[1])
+                .qualityRejectedQuantity(quality[2])
                 .unitOfMeasure(order.getUnitOfMeasure())
                 .plannedStartDate(order.getPlannedStartDate())
                 .plannedEndDate(order.getPlannedEndDate())

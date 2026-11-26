@@ -33,6 +33,8 @@ import si.plaan.repository.OrganizationRepository;
 import si.plaan.repository.SalesOrderRepository;
 import si.plaan.repository.StockMovementRepository;
 import si.plaan.service.DispatchOrderService;
+import si.plaan.service.StockAvailabilityService;
+import si.plaan.service.StockLockService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,6 +55,8 @@ public class DispatchOrderServiceImpl implements DispatchOrderService {
     private final DispatchOrderItemRepository dispatchOrderItemRepository;
     private final SalesOrderRepository salesOrderRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final StockAvailabilityService stockAvailabilityService;
+    private final StockLockService stockLockService;
     private final OrganizationRepository organizationRepository;
 
     private static final String DO_PREFIX = "DO-";
@@ -176,7 +180,7 @@ public class DispatchOrderServiceImpl implements DispatchOrderService {
                 pending = BigDecimal.ZERO;
             }
 
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+            BigDecimal onHand = stockAvailabilityService.getAvailable(
                     orgId, soItem.getItem().getId(), warehouseId
             );
             if (onHand == null) {
@@ -311,7 +315,8 @@ public class DispatchOrderServiceImpl implements DispatchOrderService {
             throw new IllegalStateException("Dispatch Order is already posted");
         }
 
-        SalesOrder salesOrder = salesOrderRepository.findByIdAndOrganizationId(dispatch.getSalesOrder().getId(), orgId)
+        SalesOrder salesOrder = salesOrderRepository.findByIdAndOrganizationIdForUpdate(
+                        dispatch.getSalesOrder().getId(), orgId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sales Order not found with id: " + dispatch.getSalesOrder().getId()));
 
         if (salesOrder.getStatus() != SalesOrderStatus.CONFIRMED && salesOrder.getStatus() != SalesOrderStatus.PARTIALLY_DISPATCHED) {
@@ -427,7 +432,9 @@ public class DispatchOrderServiceImpl implements DispatchOrderService {
                 throw new IllegalArgumentException("Dispatch quantity (" + qty + ") exceeds pending order quantity (" + pending + ") for item: " + line.getItem().getName());
             }
 
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(orgId, line.getItem().getId(), warehouseId);
+            stockLockService.lockItemWarehouse(dispatch.getOrganization(), line.getItem(), salesOrder.getDispatchWarehouse());
+
+            BigDecimal onHand = stockAvailabilityService.getAvailable(orgId, line.getItem().getId(), warehouseId);
             if (onHand == null) {
                 onHand = BigDecimal.ZERO;
             }

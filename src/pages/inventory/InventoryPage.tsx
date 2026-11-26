@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { UnderlineTabs } from '../../components/ui/Tabs'
 import { StockOverviewPage } from './StockOverviewPage'
 import { StockLedgerPage } from './StockLedgerPage'
@@ -14,8 +14,37 @@ const TABS = [
   { id: 'adjustments', label: 'Stock Adjustments' },
 ]
 
+interface InventoryFocus {
+  tab?: InventoryTab
+  itemId?: number
+  warehouseId?: number
+}
+
+function readFocus(): InventoryFocus | null {
+  try {
+    const raw = sessionStorage.getItem('plaan_inventory_focus')
+    if (!raw) return null
+    sessionStorage.removeItem('plaan_inventory_focus')
+    return JSON.parse(raw) as InventoryFocus
+  } catch {
+    return null
+  }
+}
+
 export function InventoryPage() {
   const [activeTab, setActiveTab] = useState<InventoryTab>('overview')
+  const [ledgerItemId, setLedgerItemId] = useState<number | null>(null)
+  const [ledgerWarehouseId, setLedgerWarehouseId] = useState<number | null>(null)
+
+  useEffect(() => {
+    const focus = readFocus()
+    if (!focus) return
+    if (focus.tab === 'ledger' || focus.itemId) {
+      setActiveTab('ledger')
+      setLedgerItemId(focus.itemId ?? null)
+      setLedgerWarehouseId(focus.warehouseId ?? null)
+    }
+  }, [])
 
   return (
     <div className="space-y-4">
@@ -37,7 +66,12 @@ export function InventoryPage() {
 
       <div>
         {activeTab === 'overview' && <StockOverviewPage showHeader={false} />}
-        {activeTab === 'ledger' && <StockLedgerPage />}
+        {activeTab === 'ledger' && (
+          <StockLedgerPage
+            initialItemId={ledgerItemId}
+            initialWarehouseId={ledgerWarehouseId}
+          />
+        )}
         {activeTab === 'transfers' && <StockTransfersPage />}
         {activeTab === 'adjustments' && <StockAdjustmentsPage />}
       </div>

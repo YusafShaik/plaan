@@ -16,6 +16,7 @@ import si.plaan.entity.*;
 import si.plaan.exception.ResourceNotFoundException;
 import si.plaan.repository.*;
 import si.plaan.service.GoodsReceiptService;
+import si.plaan.service.IncomingInspectionService;
 
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPCell;
@@ -40,6 +41,7 @@ public class GoodsReceiptServiceImpl implements GoodsReceiptService {
     private final StockMovementRepository stockMovementRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final OrganizationRepository organizationRepository;
+    private final IncomingInspectionService incomingInspectionService;
 
     private static final String GRN_PREFIX = "GRN-";
 
@@ -339,9 +341,26 @@ public class GoodsReceiptServiceImpl implements GoodsReceiptService {
             throw new IllegalStateException("Cannot post cancelled goods receipt " + grn.getGrnNumber());
         }
 
-        PurchaseOrder po = grn.getPurchaseOrder();
+        PurchaseOrder po = purchaseOrderRepository.findByIdAndOrganizationIdForUpdate(
+                        grn.getPurchaseOrder().getId(), orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found"));
         if (po.getStatus() == PurchaseOrderStatus.COMPLETED) {
             throw new IllegalStateException("Associated purchase order " + po.getPoNumber() + " is already completed");
+        }
+
+        // Re-validate remaining ordered qty at post time (drafts can go stale)
+        for (GoodsReceiptItem item : grn.getItems()) {
+            PurchaseOrderItem poItem = item.getPurchaseOrderItem();
+            BigDecimal ordered = poItem.getQuantity();
+            BigDecimal previouslyReceived = goodsReceiptItemRepository.sumPostedReceivedQuantityByPoItemId(poItem.getId());
+            if (previouslyReceived == null) previouslyReceived = BigDecimal.ZERO;
+            BigDecimal availableRemaining = ordered.subtract(previouslyReceived);
+            if (availableRemaining.compareTo(BigDecimal.ZERO) < 0) availableRemaining = BigDecimal.ZERO;
+            if (item.getReceivedQuantity().compareTo(availableRemaining) > 0) {
+                throw new IllegalArgumentException("Cannot post: receiving " + item.getReceivedQuantity()
+                        + " for '" + item.getItem().getName() + "' exceeds remaining ordered qty "
+                        + availableRemaining);
+            }
         }
 
         grn.setStatus(GoodsReceiptStatus.POSTED);
@@ -417,6 +436,9 @@ public class GoodsReceiptServiceImpl implements GoodsReceiptService {
 
         purchaseOrderRepository.save(po);
         log.info("Updated PO {} status to {}", po.getPoNumber(), po.getStatus());
+
+        // Hold stock for lines that require Incoming Quality Inspection
+        incomingInspectionService.createPendingFromPostedGrn(grn.getOrganization().getId(), grn, po);
     }
 
     @Override
@@ -452,6 +474,8 @@ public class GoodsReceiptServiceImpl implements GoodsReceiptService {
         if (orgId == null) {
             throw new AccessDeniedException("Organization context required");
         }
+        purchaseOrderRepository.findByIdAndOrganizationId(poId, orgId)
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with id: " + poId));
         return stockMovementRepository.findByPurchaseOrderIdOrderByCreatedAtDesc(poId)
                 .stream()
                 .map(this::mapMovementToResponse)

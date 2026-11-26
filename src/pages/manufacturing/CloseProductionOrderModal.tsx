@@ -256,11 +256,32 @@ export function CloseProductionOrderModal({
                     No pending draft transactions
                   </span>
                 </div>
+
+                <div className="flex items-center gap-2.5">
+                  {validation.allQualityInspectionsCompleted ? (
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                  )}
+                  <span
+                    className={
+                      validation.allQualityInspectionsCompleted
+                        ? 'text-foreground'
+                        : 'text-muted-foreground'
+                    }
+                  >
+                    All finished goods inspections completed
+                    {!validation.allQualityInspectionsCompleted &&
+                    validation.pendingQualityInspectionsCount > 0
+                      ? ` (${validation.pendingQualityInspectionsCount} pending)`
+                      : ''}
+                  </span>
+                </div>
               </div>
 
               {!validation.canClose && (
                 <p className="mt-3 text-xs text-destructive font-medium">
-                  Resolve outstanding transactions before closing.
+                  Resolve outstanding transactions and quality inspections before closing.
                 </p>
               )}
             </div>

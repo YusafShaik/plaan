@@ -2,10 +2,15 @@ export interface StockOverviewItem {
   itemId: number
   itemCode: string
   itemName: string
+  itemTypeId?: number | null
+  itemTypeName?: string | null
   warehouseId: number
   warehouseCode: string
   warehouseName: string
   onHandQuantity: number
+  pendingInspectionQuantity: number
+  rejectedQuantity: number
+  availableQuantity: number
   unitOfMeasure: string
 }
 

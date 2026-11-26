@@ -34,6 +34,7 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
 
     @Query("SELECT new si.plaan.dto.response.StockOverviewItemResponse(" +
            "sm.item.id, sm.item.itemCode, sm.item.name, " +
+           "sm.item.itemType.id, sm.item.itemType.name, " +
            "sm.warehouse.id, sm.warehouse.warehouseCode, sm.warehouse.name, " +
            "SUM(CASE WHEN sm.movementType LIKE 'OUTBOUND%' OR sm.movementType = 'TRANSFER_OUT' OR sm.movementType = 'ADJUSTMENT_OUT' OR sm.movementType = 'MATERIAL_ISSUE' OR sm.movementType LIKE '%ISSUE%' OR sm.movementType = 'SALES_DISPATCH' OR sm.movementType LIKE '%DISPATCH%' THEN -sm.quantity ELSE sm.quantity END), " +
            "sm.item.unitOfMeasure) " +
@@ -56,9 +57,9 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
            "       OR (pr IS NOT NULL AND pr.status = si.plaan.entity.ProductionReceiptStatus.POSTED) " +
            "       OR (do IS NOT NULL AND do.status = si.plaan.entity.DispatchOrderStatus.POSTED)) " +
            "GROUP BY sm.item.id, sm.item.itemCode, sm.item.name, " +
+           "         sm.item.itemType.id, sm.item.itemType.name, " +
            "         sm.warehouse.id, sm.warehouse.warehouseCode, sm.warehouse.name, " +
            "         sm.item.unitOfMeasure " +
-           "HAVING SUM(CASE WHEN sm.movementType LIKE 'OUTBOUND%' OR sm.movementType = 'TRANSFER_OUT' OR sm.movementType = 'ADJUSTMENT_OUT' OR sm.movementType = 'MATERIAL_ISSUE' OR sm.movementType LIKE '%ISSUE%' OR sm.movementType = 'SALES_DISPATCH' OR sm.movementType LIKE '%DISPATCH%' THEN -sm.quantity ELSE sm.quantity END) > 0 " +
            "ORDER BY sm.item.itemCode ASC, sm.warehouse.warehouseCode ASC")
     List<StockOverviewItemResponse> aggregateStockOverview(@Param("orgId") Long orgId);
 

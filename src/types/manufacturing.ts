@@ -125,6 +125,9 @@ export interface ProductionOrder {
   receivedQuantity?: number
   pendingProductionQuantity?: number
   productionProgress?: number
+  qualityPendingQuantity?: number
+  qualityAcceptedQuantity?: number
+  qualityRejectedQuantity?: number
   unitOfMeasure: string
   plannedStartDate?: string | null
   plannedEndDate?: string | null
@@ -464,8 +467,10 @@ export interface ProductionOrderClosureValidation {
   allPlannedQuantitiesReceived: boolean
   allMaterialsReconciled: boolean
   noPendingDraftTransactions: boolean
+  allQualityInspectionsCompleted: boolean
   canClose: boolean
   pendingDraftTransactionsCount: number
   unreconciledMaterialsCount: number
+  pendingQualityInspectionsCount: number
   materials: MaterialReconciliationItem[]
 }

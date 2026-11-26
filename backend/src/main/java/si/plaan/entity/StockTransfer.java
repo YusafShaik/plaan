@@ -59,4 +59,9 @@ public class StockTransfer extends BaseEntity {
     public void clearItems() {
         items.clear();
     }
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
 }

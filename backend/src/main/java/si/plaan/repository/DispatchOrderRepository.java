@@ -1,9 +1,11 @@
 package si.plaan.repository;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,6 +19,14 @@ import java.util.Optional;
 public interface DispatchOrderRepository extends JpaRepository<DispatchOrder, Long>, JpaSpecificationExecutor<DispatchOrder> {
 
     Optional<DispatchOrder> findByIdAndOrganizationId(Long id, Long organizationId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT d FROM DispatchOrder d WHERE d.id = :id AND d.organization.id = :orgId")
+    Optional<DispatchOrder> findByIdAndOrganizationIdForUpdate(@Param("id") Long id, @Param("orgId") Long orgId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT d FROM DispatchOrder d LEFT JOIN FETCH d.items WHERE d.id = :id AND d.organization.id = :orgId")
+    Optional<DispatchOrder> findByIdAndOrganizationIdWithItemsForUpdate(@Param("id") Long id, @Param("orgId") Long orgId);
 
     @Query("SELECT d FROM DispatchOrder d LEFT JOIN FETCH d.items WHERE d.id = :id AND d.organization.id = :orgId")
     Optional<DispatchOrder> findByIdAndOrganizationIdWithItems(@Param("id") Long id, @Param("orgId") Long orgId);

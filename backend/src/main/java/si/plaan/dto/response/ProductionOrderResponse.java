@@ -36,6 +36,12 @@ public class ProductionOrderResponse {
     private BigDecimal receivedQuantity;
     private BigDecimal pendingProductionQuantity;
     private BigDecimal productionProgress;
+    /** Quality-held manufactured qty awaiting FGI (PENDING/DRAFT). */
+    private BigDecimal qualityPendingQuantity;
+    /** Quality-accepted finished goods from completed FGIs. */
+    private BigDecimal qualityAcceptedQuantity;
+    /** Quality-rejected finished goods from completed FGIs. */
+    private BigDecimal qualityRejectedQuantity;
     private String unitOfMeasure;
 
     private LocalDate plannedStartDate;

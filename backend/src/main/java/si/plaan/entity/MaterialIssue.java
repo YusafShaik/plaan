@@ -1,6 +1,7 @@
 package si.plaan.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Version;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -64,4 +65,9 @@ public class MaterialIssue extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "materialIssue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MaterialIssueItem> items = new ArrayList<>();
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
 }

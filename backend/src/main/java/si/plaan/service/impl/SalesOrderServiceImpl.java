@@ -33,6 +33,7 @@ import si.plaan.repository.SalesOrderRepository;
 import si.plaan.repository.StockMovementRepository;
 import si.plaan.repository.WarehouseRepository;
 import si.plaan.service.SalesOrderService;
+import si.plaan.service.StockAvailabilityService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -52,6 +53,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
     private final WarehouseRepository warehouseRepository;
     private final ItemRepository itemRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final StockAvailabilityService stockAvailabilityService;
 
     private static final String SO_PREFIX = "SO-";
 
@@ -345,7 +347,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         List<SalesOrderStockAvailabilityItemResponse> items = new ArrayList<>();
 
         for (SalesOrderItem item : order.getItems()) {
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+            BigDecimal onHand = stockAvailabilityService.getAvailable(
                     orgId, item.getItem().getId(), dispatchWarehouseId
             );
             if (onHand == null) {

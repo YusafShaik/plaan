@@ -38,6 +38,8 @@ public class InventoryController {
                 userDetails.getOrganizationId(),
                 search,
                 warehouseId,
+                null,
+                null,
                 pageable
         );
 

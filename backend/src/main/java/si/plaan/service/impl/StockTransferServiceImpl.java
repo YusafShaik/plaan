@@ -21,6 +21,8 @@ import si.plaan.dto.response.StockTransferResponse;
 import si.plaan.entity.*;
 import si.plaan.exception.ResourceNotFoundException;
 import si.plaan.repository.*;
+import si.plaan.service.StockAvailabilityService;
+import si.plaan.service.StockLockService;
 import si.plaan.service.StockTransferService;
 
 import java.math.BigDecimal;
@@ -35,9 +37,11 @@ public class StockTransferServiceImpl implements StockTransferService {
     private final StockTransferRepository stockTransferRepository;
     private final StockTransferItemRepository stockTransferItemRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final StockAvailabilityService stockAvailabilityService;
     private final OrganizationRepository organizationRepository;
     private final WarehouseRepository warehouseRepository;
     private final ItemRepository itemRepository;
+    private final StockLockService stockLockService;
 
     private static final String ST_PREFIX = "ST-";
 
@@ -120,7 +124,7 @@ public class StockTransferServiceImpl implements StockTransferService {
         List<ItemOnHandStockResponse> result = new ArrayList<>();
 
         for (Item item : activeItems) {
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(orgId, item.getId(), wh.getId());
+            BigDecimal onHand = stockAvailabilityService.getAvailable(orgId, item.getId(), wh.getId());
             result.add(ItemOnHandStockResponse.builder()
                     .itemId(item.getId())
                     .itemCode(item.getItemCode())
@@ -278,7 +282,8 @@ public class StockTransferServiceImpl implements StockTransferService {
             if (!it.isActive()) {
                 throw new IllegalArgumentException("Item '" + it.getName() + "' is inactive");
             }
-            BigDecimal available = stockMovementRepository.getCurrentStockForItemAndWarehouse(orgId, it.getId(), fromWarehouse.getId());
+            stockLockService.lockItemWarehouse(transfer.getOrganization(), it, fromWarehouse);
+            BigDecimal available = stockAvailabilityService.getAvailable(orgId, it.getId(), fromWarehouse.getId());
             if (available.compareTo(item.getTransferQuantity()) < 0) {
                 throw new IllegalArgumentException("Insufficient stock for item " + it.getItemCode() + " (" + it.getName() + ") in " + fromWarehouse.getName() + ". Available: " + available + " " + item.getUnitOfMeasure() + ", Requested: " + item.getTransferQuantity() + " " + item.getUnitOfMeasure());
             }
@@ -375,7 +380,7 @@ public class StockTransferServiceImpl implements StockTransferService {
             }
 
             if (validateStockImmediately) {
-                BigDecimal available = stockMovementRepository.getCurrentStockForItemAndWarehouse(orgId, item.getId(), fromWarehouse.getId());
+                BigDecimal available = stockAvailabilityService.getAvailable(orgId, item.getId(), fromWarehouse.getId());
                 if (available.compareTo(itemReq.getTransferQuantity()) < 0) {
                     throw new IllegalArgumentException("Insufficient stock for item " + item.getItemCode() + " (" + item.getName() + ") in " + fromWarehouse.getName() + ". Available: " + available + " " + item.getUnitOfMeasure() + ", Requested: " + itemReq.getTransferQuantity() + " " + item.getUnitOfMeasure());
                 }
@@ -397,7 +402,7 @@ public class StockTransferServiceImpl implements StockTransferService {
 
         for (StockTransferItem item : st.getItems()) {
             totalQty = totalQty.add(item.getTransferQuantity());
-            BigDecimal onHand = stockMovementRepository.getCurrentStockForItemAndWarehouse(
+            BigDecimal onHand = stockAvailabilityService.getAvailable(
                     st.getOrganization().getId(),
                     item.getItem().getId(),
                     st.getFromWarehouse().getId()

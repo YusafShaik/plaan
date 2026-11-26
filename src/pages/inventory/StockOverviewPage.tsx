@@ -127,13 +127,26 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
 
   const handleExportCsv = () => {
     if (stockItems.length === 0) return
-    const headers = ['Item Code', 'Item Name', 'Warehouse Code', 'Warehouse Name', 'On Hand Quantity', 'UOM']
+    const headers = [
+      'Item Code',
+      'Item Name',
+      'Warehouse Code',
+      'Warehouse Name',
+      'On Hand',
+      'Pending Inspection',
+      'Rejected',
+      'Available',
+      'UOM',
+    ]
     const rows = stockItems.map((item) => [
       `"${item.itemCode.replace(/"/g, '""')}"`,
       `"${item.itemName.replace(/"/g, '""')}"`,
       `"${item.warehouseCode.replace(/"/g, '""')}"`,
       `"${item.warehouseName.replace(/"/g, '""')}"`,
       item.onHandQuantity,
+      item.pendingInspectionQuantity ?? 0,
+      item.rejectedQuantity ?? 0,
+      item.availableQuantity ?? item.onHandQuantity,
       `"${item.unitOfMeasure.replace(/"/g, '""')}"`,
     ])
 
@@ -406,11 +419,19 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                 <TH>Item name</TH>
                 <TH>Warehouse</TH>
                 <TH className="text-right">On hand</TH>
+                <TH className="text-right">Pending</TH>
+                <TH className="text-right">Rejected</TH>
+                <TH className="text-right">Available</TH>
                 <TH>UOM</TH>
               </tr>
             </THead>
             <TBody>
-                {stockItems.map((row) => (
+                {stockItems.map((row) => {
+                  const pending = row.pendingInspectionQuantity ?? 0
+                  const rejected = row.rejectedQuantity ?? 0
+                  const available = row.availableQuantity ?? row.onHandQuantity
+                  const hasHolds = pending > 0 || rejected > 0
+                  return (
                   <TR
                     key={`${row.itemId}-${row.warehouseId}`}
                     className="group"
@@ -439,11 +460,24 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                       {formatQuantity(row.onHandQuantity)}
                     </TD>
 
+                    <TD className={`text-right font-mono ${pending > 0 ? 'text-warning font-medium' : 'text-muted-foreground'}`}>
+                      {formatQuantity(pending)}
+                    </TD>
+
+                    <TD className={`text-right font-mono ${rejected > 0 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                      {formatQuantity(rejected)}
+                    </TD>
+
+                    <TD className={`text-right font-mono font-medium ${hasHolds ? 'text-success' : ''}`}>
+                      {formatQuantity(available)}
+                    </TD>
+
                     <TD className="font-normal text-muted-foreground">
                       {row.unitOfMeasure}
                     </TD>
                   </TR>
-                ))}
+                  )
+                })}
             </TBody>
           </Table>
         )}
@@ -487,7 +521,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
       <div className="flex items-center gap-2 rounded-md bg-secondary/60 border border-border/70 p-3 text-xs text-muted-foreground">
         <Info className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span>
-          Interactive UI prototype. Try searching for an item or filtering by warehouse. Stock is automatically aggregated from posted Goods Receipts (GRN) and Opening Stock entries.
+          Available stock excludes quantities pending quality inspection and rejected stock. On hand still reflects physical quantity in the warehouse.
         </span>
       </div>
 

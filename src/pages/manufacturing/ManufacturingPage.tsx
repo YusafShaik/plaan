@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { UnderlineTabs } from '../../components/ui/Tabs'
 import { BillOfMaterialsPage } from './BillOfMaterialsPage'
 import { ProductionOrdersPage } from './ProductionOrdersPage'
@@ -10,8 +10,22 @@ const TABS = [
   { id: 'production-orders', label: 'Production Orders' },
 ]
 
-export function ManufacturingPage() {
+export interface ManufacturingPageProps {
+  initialSection?: string | null
+  onInitialSectionConsumed?: () => void
+}
+
+export function ManufacturingPage({
+  initialSection = null,
+  onInitialSectionConsumed,
+}: ManufacturingPageProps = {}) {
   const [activeTab, setActiveTab] = useState<ManufacturingTab>('bom')
+
+  useEffect(() => {
+    if (initialSection !== 'production-orders' && initialSection !== 'bom') return
+    setActiveTab(initialSection)
+    onInitialSectionConsumed?.()
+  }, [initialSection, onInitialSectionConsumed])
 
   return (
     <div className="space-y-4">

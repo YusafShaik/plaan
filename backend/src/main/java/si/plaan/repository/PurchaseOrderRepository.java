@@ -1,7 +1,9 @@
 package si.plaan.repository;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,6 +19,10 @@ import java.util.Optional;
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long>, JpaSpecificationExecutor<PurchaseOrder> {
 
     Optional<PurchaseOrder> findByIdAndOrganizationId(Long id, Long organizationId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM PurchaseOrder p WHERE p.id = :id AND p.organization.id = :orgId")
+    Optional<PurchaseOrder> findByIdAndOrganizationIdForUpdate(@Param("id") Long id, @Param("orgId") Long orgId);
 
     boolean existsByOrganizationIdAndPoNumberIgnoreCase(Long organizationId, String poNumber);
 

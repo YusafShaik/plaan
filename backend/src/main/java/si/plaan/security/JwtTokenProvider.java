@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -20,18 +21,34 @@ public class JwtTokenProvider {
     private final long expirationMs;
 
     private static final String DEFAULT_DEV_SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    private static final Set<String> LOCAL_PROFILES = Set.of("default", "dev", "local", "test");
 
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expiration-ms}") long expirationMs,
             @Value("${spring.profiles.active:default}") String activeProfile) {
-        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
-            if (DEFAULT_DEV_SECRET.equals(secret)) {
-                throw new IllegalStateException("FATAL: Default JWT secret cannot be used in production environment. Configure JWT_SECRET!");
-            }
+        boolean local = isLocalProfile(activeProfile);
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("FATAL: JWT_SECRET is not configured. Set app.jwt.secret / JWT_SECRET.");
+        }
+        if (DEFAULT_DEV_SECRET.equals(secret) && !local) {
+            throw new IllegalStateException(
+                    "FATAL: Default JWT secret cannot be used outside local/dev/test. Set JWT_SECRET.");
         }
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.expirationMs = expirationMs;
+    }
+
+    private static boolean isLocalProfile(String activeProfile) {
+        if (activeProfile == null || activeProfile.isBlank()) {
+            return true;
+        }
+        for (String part : activeProfile.split(",")) {
+            if (!LOCAL_PROFILES.contains(part.trim().toLowerCase())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String generateToken(CustomUserDetails userDetails) {
