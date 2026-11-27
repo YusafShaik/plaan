@@ -149,7 +149,7 @@ export function CompleteMaintenanceModal({
 
         <div className="w-full">
           <div className="group relative flex min-h-[6rem] w-full flex-col justify-start px-3.5 py-2 rounded-md border bg-secondary border-border/80">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none">
               Work Performed *
             </span>
             <textarea
@@ -180,7 +180,7 @@ export function CompleteMaintenanceModal({
         </div>
 
         <div>
-          <p className="text-[11px] font-medium text-muted-foreground mb-2">
+          <p className="text-xs font-medium text-muted-foreground mb-2">
             Is the machine operational? *
           </p>
           <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export function CompleteMaintenanceModal({
 
         <div className="w-full">
           <div className="group relative flex min-h-[4.5rem] w-full flex-col justify-start px-3.5 py-2 rounded-md border bg-secondary border-border/80">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none">
               Remarks
             </span>
             <textarea
@@ -227,7 +227,7 @@ export function CompleteMaintenanceModal({
 
         {downtimePreview && (
           <div className="rounded-md border border-border/80 bg-secondary/50 px-4 py-3">
-            <p className="text-[11px] font-medium text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               Calculated downtime — breakdown
             </p>
             <p className="mt-1 text-lg font-semibold text-foreground tracking-tight">

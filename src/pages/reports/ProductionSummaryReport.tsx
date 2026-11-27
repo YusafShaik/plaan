@@ -344,9 +344,9 @@ export function ProductionSummaryReport({ onBack }: ProductionSummaryReportProps
                     >
                       <TD>
                         <div className="text-sm font-medium text-foreground">{row.productName}</div>
-                        <RefLink className="text-[11px]">{row.orderNumber}</RefLink>
+                        <RefLink className="text-xs">{row.orderNumber}</RefLink>
                         <div>
-                          <RefCode className="text-[11px] text-muted-foreground">
+                          <RefCode className="text-xs text-muted-foreground">
                             {row.productCode}
                           </RefCode>
                         </div>
@@ -354,17 +354,17 @@ export function ProductionSummaryReport({ onBack }: ProductionSummaryReportProps
                       <TD className="text-xs text-muted-foreground whitespace-nowrap">
                         {formatDate(row.orderDate)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums">
+                      <TD className="text-right tabular-nums text-xs tabular-nums">
                         {formatQty(row.plannedQuantity)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums">
+                      <TD className="text-right tabular-nums text-xs tabular-nums">
                         {formatQty(row.producedQuantity)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums">
+                      <TD className="text-right tabular-nums text-xs tabular-nums">
                         {formatQty(row.pendingQuantity)}
                       </TD>
                       <TD className="text-xs text-muted-foreground">{row.unitOfMeasure}</TD>
-                      <TD className="text-right font-mono text-xs tabular-nums">
+                      <TD className="text-right tabular-nums text-xs tabular-nums">
                         {formatPercent(row.completionPercent)}
                       </TD>
                       <TD className="text-xs text-muted-foreground whitespace-nowrap">

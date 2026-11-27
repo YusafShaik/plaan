@@ -68,7 +68,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
       <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-card/20">
-        <section className="flex-1 px-8 py-6 w-full">
+        <section className="flex-1 px-8 py-8 w-full">
           {children ? (
             children
           ) : activeTab === 'dashboard' ? (

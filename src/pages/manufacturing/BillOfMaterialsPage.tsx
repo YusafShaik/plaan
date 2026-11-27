@@ -247,16 +247,16 @@ export function BillOfMaterialsPage() {
 
                     <TD>
                       <p className="font-medium">{bom.productName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {bom.productCode}
                       </p>
                     </TD>
 
-                    <TD className="font-mono font-medium">
+                    <TD className="tabular-nums font-medium">
                       {formatQuantity(bom.outputQuantity)} {bom.unitOfMeasure}
                     </TD>
 
-                    <TD className="text-center font-mono">
+                    <TD className="text-center tabular-nums">
                       <span className="font-medium">{bom.totalComponents}</span>
                     </TD>
 

@@ -151,7 +151,7 @@ export function SalesOrdersPage() {
               placeholder="Search sales orders..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
@@ -263,12 +263,12 @@ export function SalesOrdersPage() {
 
                     <TD>
                       <p className="font-medium">{o.customerName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {o.customerCode} · WH: {o.warehouseName}
                       </p>
                     </TD>
 
-                    <TD className="font-mono font-medium">
+                    <TD className="tabular-nums font-medium">
                       {formatCurrency(o.totalAmount)}
                     </TD>
 
@@ -362,7 +362,7 @@ export function SalesOrdersPage() {
                   >
                     Previous
                   </Button>
-                  <span className="font-mono text-foreground">
+                  <span className="tabular-nums text-foreground">
                     {pageData.page + 1} / {pageData.totalPages}
                   </span>
                   <Button

@@ -201,7 +201,7 @@ export function CreateOrganizationModal({
             disabled={isLoading}
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            Initial password will be set to <code className="font-mono text-foreground">12345678</code>.
+            Initial password will be set to <code className="tabular-nums text-foreground">12345678</code>.
           </p>
         </div>
 

@@ -435,33 +435,33 @@ export function StockMovementsReport({ onBack }: StockMovementsReportProps) {
                       <TD className="whitespace-nowrap">
                         <div className="text-sm text-foreground">{formatDate(row.movementDate)}</div>
                         {row.openingBalanceRow ? (
-                          <span className="text-[11px] text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         ) : openable ? (
-                          <RefLink className="text-[11px] inline-flex items-center gap-1">
+                          <RefLink className="text-xs inline-flex items-center gap-1">
                             {row.referenceNumber || '—'}
                             {isRefLoading && (
                               <span className="h-3 w-3 animate-spin rounded-full border border-info border-t-transparent inline-block" />
                             )}
                           </RefLink>
                         ) : (
-                          <RefCode className="text-[11px] text-muted-foreground">
+                          <RefCode className="text-xs text-muted-foreground">
                             {row.referenceNumber || '—'}
                           </RefCode>
                         )}
                       </TD>
                       <TD>
                         <div className="text-sm font-medium text-foreground">{row.itemName}</div>
-                        <RefCode className="text-[11px] text-muted-foreground">{row.itemCode}</RefCode>
+                        <RefCode className="text-xs text-muted-foreground">{row.itemCode}</RefCode>
                       </TD>
                       <TD className="text-sm text-foreground">{row.warehouseName}</TD>
                       <TD className="text-sm text-foreground">{row.movementTypeLabel}</TD>
-                      <TD className="text-right font-mono text-xs tabular-nums text-success">
+                      <TD className="text-right tabular-nums text-xs tabular-nums text-success">
                         {row.quantityIn != null ? formatQty(row.quantityIn) : '—'}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums text-destructive">
+                      <TD className="text-right tabular-nums text-xs tabular-nums text-destructive">
                         {row.quantityOut != null ? formatQty(row.quantityOut) : '—'}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums font-medium text-foreground">
+                      <TD className="text-right tabular-nums text-xs tabular-nums font-medium text-foreground">
                         {formatQty(row.runningBalance)}
                       </TD>
                       <TD className="text-xs text-muted-foreground">{row.unitOfMeasure}</TD>

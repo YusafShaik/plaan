@@ -13,9 +13,11 @@ Read and follow **`Design.md`** at the repo root before changing UI. Tokens: `sr
 2. **Use primitives** — `Button`, `Input`, `Select`, `DateField`, `Badge`, `Table`/`TH`/`TD`/`TR`, `UnderlineTabs`, `Modal`, `fieldStyles`.
 3. **Stacked labels** — modal/form fields use `label` prop so the name sits **inside** the field chrome (like Create Purchase Order). No external `label` + `mb-1.5` above bare inputs.
 4. **Status** — `Badge` only (sharp pill). No green-dot + text status cells.
-5. **Refs** — non-clickable: `text-ref` / `RefCode`. Clickable only: `text-ref-link` / `RefLink`. Never blue non-links. Never bold mono codes.
-6. **Tables** — always `Table` primitives; `TR` has hover; clickable rows open detail via `onClick` with actions `stopPropagation`.
-7. **Tabs** — `UnderlineTabs` only (ink underline on hairline, width = label text). No segmented pills; no green/success underlines.
-8. **CTAs** — default Add/Save/New = `Button variant="primary"` (ink) to match tab underline. Brand green is not the default list CTA.
+5. **Refs** — non-clickable: `text-ref` / `RefCode`. Clickable only: `text-ref-link` / `RefLink`. Never blue non-links. Never bold codes. **Archivo only** (no JetBrains Mono); use `tabular-nums` for amounts/codes.
+6. **Type floor** — no `text-[10px]` / `text-[11px]`; captions ≥12px; table cells `14px` (`text-sm`).
+7. **Tables** — always `Table` primitives; `TR` has hover; clickable rows open detail via `onClick` with actions `stopPropagation`.
+8. **Tabs** — `UnderlineTabs` only (ink underline on hairline, width = label text). No segmented pills; no green/success underlines.
+9. **CTAs** — default Add/Save/New = `Button variant="primary"` (ink) to match tab underline. Brand green is not the default list CTA.
+10. **List composition** — max 4 ink KPIs (no rainbow status tones); toolbar = search/filter only (no muted “All…”); table primary cells foreground; muted only for stacked codes; no decorative row icons.
 
 If a screen diverges from Master Data / Create Purchase Order / Inventory underline tabs, fix it to match `Design.md`.

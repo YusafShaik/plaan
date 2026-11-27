@@ -278,11 +278,11 @@ export function ProductionOrderDetailsModal({
           {/* Header matching Screenshot 1 */}
           <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
             <div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
                 Manufacturing / Production Orders / {effectiveOrder.orderNumber}
               </p>
               <div className="flex items-center gap-2.5">
-                <span className="font-mono text-xl font-medium tracking-tight text-foreground">
+                <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
                   {effectiveOrder.orderNumber}
                 </span>
                 {effectiveOrder.status === 'RELEASED' && (
@@ -332,7 +332,7 @@ export function ProductionOrderDetailsModal({
           <div className="grid grid-cols-3 gap-3.5 pt-1">
             <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
               <p className="text-xs text-muted-foreground font-normal">Ordered</p>
-              <p className="mt-2 text-2xl font-medium text-foreground font-mono">
+              <p className="mt-2 text-2xl font-medium text-foreground tabular-nums">
                 {formatQuantity(orderedQty)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{effectiveOrder.unitOfMeasure}</p>
@@ -340,7 +340,7 @@ export function ProductionOrderDetailsModal({
 
             <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
               <p className="text-xs text-muted-foreground font-normal">Received</p>
-              <p className="mt-2 text-2xl font-medium text-success font-mono">
+              <p className="mt-2 text-2xl font-medium text-success tabular-nums">
                 {formatQuantity(receivedQty)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{effectiveOrder.unitOfMeasure}</p>
@@ -348,7 +348,7 @@ export function ProductionOrderDetailsModal({
 
             <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
               <p className="text-xs text-muted-foreground font-normal">Pending</p>
-              <p className="mt-2 text-2xl font-medium text-foreground font-mono">
+              <p className="mt-2 text-2xl font-medium text-foreground tabular-nums">
                 {formatQuantity(pendingQty)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{effectiveOrder.unitOfMeasure}</p>
@@ -362,19 +362,19 @@ export function ProductionOrderDetailsModal({
             <div className="grid grid-cols-3 gap-3.5">
               <div className="rounded-md border border-border/80 bg-secondary/30 p-3.5">
                 <p className="text-xs text-muted-foreground font-normal">Quality pending</p>
-                <p className="mt-1.5 text-lg font-medium text-warning font-mono">
+                <p className="mt-1.5 text-lg font-medium text-warning tabular-nums">
                   {formatQuantity(effectiveOrder.qualityPendingQuantity ?? 0)}
                 </p>
               </div>
               <div className="rounded-md border border-border/80 bg-secondary/30 p-3.5">
                 <p className="text-xs text-muted-foreground font-normal">Quality accepted</p>
-                <p className="mt-1.5 text-lg font-medium text-success font-mono">
+                <p className="mt-1.5 text-lg font-medium text-success tabular-nums">
                   {formatQuantity(effectiveOrder.qualityAcceptedQuantity ?? 0)}
                 </p>
               </div>
               <div className="rounded-md border border-border/80 bg-secondary/30 p-3.5">
                 <p className="text-xs text-muted-foreground font-normal">Quality rejected</p>
-                <p className="mt-1.5 text-lg font-medium text-destructive font-mono">
+                <p className="mt-1.5 text-lg font-medium text-destructive tabular-nums">
                   {formatQuantity(effectiveOrder.qualityRejectedQuantity ?? 0)}
                 </p>
               </div>
@@ -385,7 +385,7 @@ export function ProductionOrderDetailsModal({
           <div className="space-y-1.5 py-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground font-normal">Production progress</span>
-              <span className="font-medium text-foreground font-mono">{Math.round(progressPercent)}%</span>
+              <span className="font-medium text-foreground tabular-nums">{Math.round(progressPercent)}%</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
               <div
@@ -421,7 +421,7 @@ export function ProductionOrderDetailsModal({
                 <CheckCircle2 className="h-4 w-4 text-purple-400 shrink-0" />
                 <div>
                   <p className="text-xs font-semibold text-purple-300">Production Completed</p>
-                  <p className="text-[11px] text-purple-400/80">
+                  <p className="text-xs text-purple-400/80">
                     All planned products received. Reconcile remaining materials to finalize order.
                   </p>
                 </div>
@@ -444,11 +444,11 @@ export function ProductionOrderDetailsModal({
                 <CheckCircle2 className="h-4 w-4 text-zinc-400" />
                 <span>Order Finalized & Closed</span>
               </div>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs">
                 Closed{effectiveOrder.closedDate ? ` on ${formatDate(effectiveOrder.closedDate)}` : ''}{effectiveOrder.closedBy ? ` by ${effectiveOrder.closedBy}` : ''}.
               </p>
               {effectiveOrder.closureNotes && (
-                <p className="text-[11px] italic text-muted-foreground pt-0.5">
+                <p className="text-xs italic text-muted-foreground pt-0.5">
                   &ldquo;{effectiveOrder.closureNotes}&rdquo;
                 </p>
               )}
@@ -523,10 +523,10 @@ export function ProductionOrderDetailsModal({
                           pr.status === 'DRAFT' ? 'cursor-pointer' : ''
                         }`}
                       >
-                        <TD className="py-3 px-3.5 font-mono font-medium text-foreground">
+                        <TD className="py-3 px-3.5 tabular-nums font-medium text-foreground">
                           {pr.receiptNumber}
                         </TD>
-                        <TD className="py-3 px-3 font-mono font-medium text-foreground">
+                        <TD className="py-3 px-3 tabular-nums font-medium text-foreground">
                           {formatQuantity(pr.receiptQuantity)} {pr.unitOfMeasure}
                         </TD>
                         <TD className="py-3 px-3 text-muted-foreground font-medium">
@@ -534,11 +534,11 @@ export function ProductionOrderDetailsModal({
                         </TD>
                         <TD className="py-3 px-3.5 text-right">
                           {pr.status === 'POSTED' ? (
-                            <Badge variant="success" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                            <Badge variant="success" className="h-auto px-2 py-0.5 text-xs font-medium">
                               Posted
                             </Badge>
                           ) : (
-                            <Badge variant="neutral" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                            <Badge variant="neutral" className="h-auto px-2 py-0.5 text-xs font-medium">
                               Draft
                             </Badge>
                           )}
@@ -555,12 +555,12 @@ export function ProductionOrderDetailsModal({
             <div>
               <span className="text-muted-foreground">Source Warehouse: </span>
               <span className="font-semibold text-foreground">{effectiveOrder.sourceWarehouseName}</span>
-              <span className="font-mono text-muted-foreground ml-1.5">({effectiveOrder.sourceWarehouseCode})</span>
+              <span className="tabular-nums text-muted-foreground ml-1.5">({effectiveOrder.sourceWarehouseCode})</span>
             </div>
             <div>
               <span className="text-muted-foreground">Destination Warehouse: </span>
               <span className="font-semibold text-foreground">{effectiveOrder.finishedGoodsWarehouseName}</span>
-              <span className="font-mono text-muted-foreground ml-1.5">({effectiveOrder.finishedGoodsWarehouseCode})</span>
+              <span className="tabular-nums text-muted-foreground ml-1.5">({effectiveOrder.finishedGoodsWarehouseCode})</span>
             </div>
           </div>
 
@@ -648,19 +648,19 @@ export function ProductionOrderDetailsModal({
                         <TD className="py-3 px-3.5 font-medium text-foreground">
                           {it.materialName}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(it.requiredQuantity)}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-foreground font-medium">
+                        <TD className="py-3 px-3 text-right tabular-nums text-foreground font-medium">
                           {formatQuantity(it.issuedQuantity)}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-foreground font-medium">
+                        <TD className="py-3 px-3 text-right tabular-nums text-foreground font-medium">
                           {formatQuantity(it.consumedQuantity)}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(it.returnedQuantity)}
                         </TD>
-                        <TD className="py-3 px-3.5 text-right font-mono font-medium">
+                        <TD className="py-3 px-3.5 text-right tabular-nums font-medium">
                           <span className={it.remainingQuantity > 0 ? 'text-warning' : 'text-foreground'}>
                             {formatQuantity(it.remainingQuantity)}
                           </span>
@@ -679,7 +679,7 @@ export function ProductionOrderDetailsModal({
                 Material Transaction History
               </h3>
               {transactions.length > 0 && (
-                <span className="text-xs text-muted-foreground font-mono">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {transactions.length} {transactions.length === 1 ? 'transaction' : 'transactions'}
                 </span>
               )}
@@ -710,7 +710,7 @@ export function ProductionOrderDetailsModal({
                         <FileText className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="font-mono text-sm font-medium text-foreground">
+                        <p className="tabular-nums text-sm font-medium text-foreground">
                           {tx.referenceNumber}
                         </p>
                         <p className="text-xs text-muted-foreground">

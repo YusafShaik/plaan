@@ -6,14 +6,13 @@ import {
   ChevronRight,
   X,
   Package,
-  Warehouse as WarehouseIcon,
   Download,
   RotateCcw,
   Check,
-  Info,
   Plus,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
@@ -180,75 +179,49 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 1. Header with Tab Navigation (Rendered if showHeader is true) */}
       {showHeader && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3.5">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
-                Inventory
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Monitor stock across your warehouses.
-              </p>
-            </div>
-
-            {/* Segmented Tab Control: Stock Overview */}
-            <div className="hidden sm:flex items-center rounded-md bg-secondary p-1 border border-border/80">
-              <button
-                type="button"
-                className="rounded-md px-3.5 py-1.5 text-xs font-semibold bg-ink text-ink-foreground shadow-xs cursor-default"
-              >
-                Stock Overview
-              </button>
-            </div>
+          <div>
+            <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
+              Inventory
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Monitor stock across your warehouses.
+            </p>
           </div>
         </div>
       )}
 
-      {/* 2. Unified Metric Strip */}
-      <div className="flex flex-wrap items-center gap-6 py-1">
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Items in stock</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.itemsInStock ?? 0}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Warehouses with stock</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.warehousesWithStock ?? 0}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Stock balance records</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.totalStockRecords ?? stockItems.length}
-          </p>
-        </div>
-      </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard label="Items in stock" value={summary?.itemsInStock ?? 0} />
+        <KpiCard
+          label="Warehouses with stock"
+          value={summary?.warehousesWithStock ?? 0}
+        />
+        <KpiCard
+          label="Stock balance records"
+          value={summary?.totalStockRecords ?? stockItems.length}
+        />
+      </KpiCardGrid>
 
       {/* 3. Toolbar: Search, Warehouse filter, Export CSV */}
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
-          {selectedWarehouse ? (
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
+          {selectedWarehouse && (
+            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
               <span className="text-muted-foreground text-xs font-normal">Warehouse:</span>
               <span className="font-medium text-xs">{selectedWarehouse.name}</span>
               <button
                 type="button"
                 onClick={() => setSelectedWarehouseId(null)}
-                className="ml-1 rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="ml-1 rounded-md p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 title="Remove warehouse filter"
               >
                 <X className="h-3 w-3" />
               </button>
             </span>
-          ) : (
-            <span className="text-sm font-medium text-muted-foreground">All warehouses</span>
           )}
 
           {hasActiveFilters && (
@@ -264,7 +237,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
         </div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 ml-auto">
           {/* Search bar */}
           <div className="relative w-64 sm:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -300,7 +273,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                     <button
                       type="button"
                       onClick={() => setSelectedWarehouseId(null)}
-                      className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       Reset
                     </button>
@@ -343,7 +316,7 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                       >
                         <div className="text-left">
                           <p className="font-medium text-foreground">{wh.name}</p>
-                          <p className="text-[11px] text-muted-foreground font-mono">{wh.warehouseCode}</p>
+                          <p className="text-xs text-muted-foreground tabular-nums">{wh.warehouseCode}</p>
                         </div>
                         {isSelected && <Check className="h-3.5 w-3.5 text-foreground stroke-[2.5]" />}
                       </button>
@@ -430,7 +403,6 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                   const pending = row.pendingInspectionQuantity ?? 0
                   const rejected = row.rejectedQuantity ?? 0
                   const available = row.availableQuantity ?? row.onHandQuantity
-                  const hasHolds = pending > 0 || rejected > 0
                   return (
                   <TR
                     key={`${row.itemId}-${row.warehouseId}`}
@@ -445,34 +417,27 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
                     </TD>
 
                     <TD>
-                      <div className="flex items-center gap-2">
-                        <WarehouseIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <div>
-                          <span className="font-medium text-foreground">{row.warehouseName}</span>
-                          <span className="ml-2 text-[11px] text-ref text-muted-foreground">
-                            {row.warehouseCode}
-                          </span>
-                        </div>
-                      </div>
+                      <p className="font-medium text-foreground">{row.warehouseName}</p>
+                      <p className="text-xs text-ref text-muted-foreground">{row.warehouseCode}</p>
                     </TD>
 
-                    <TD className="text-right font-mono font-medium">
+                    <TD className="text-right tabular-nums font-medium">
                       {formatQuantity(row.onHandQuantity)}
                     </TD>
 
-                    <TD className={`text-right font-mono ${pending > 0 ? 'text-warning font-medium' : 'text-muted-foreground'}`}>
+                    <TD className="text-right tabular-nums font-normal">
                       {formatQuantity(pending)}
                     </TD>
 
-                    <TD className={`text-right font-mono ${rejected > 0 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                    <TD className="text-right tabular-nums font-normal">
                       {formatQuantity(rejected)}
                     </TD>
 
-                    <TD className={`text-right font-mono font-medium ${hasHolds ? 'text-success' : ''}`}>
+                    <TD className="text-right tabular-nums font-medium">
                       {formatQuantity(available)}
                     </TD>
 
-                    <TD className="font-normal text-muted-foreground">
+                    <TD className="font-normal">
                       {row.unitOfMeasure}
                     </TD>
                   </TR>
@@ -515,14 +480,6 @@ export function StockOverviewPage({ showHeader = true }: StockOverviewPageProps 
             </div>
           </div>
         )}
-      </div>
-
-      {/* Helpful footnote banner matching prototype */}
-      <div className="flex items-center gap-2 rounded-md bg-secondary/60 border border-border/70 p-3 text-xs text-muted-foreground">
-        <Info className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <span>
-          Available stock excludes quantities pending quality inspection and rejected stock. On hand still reflects physical quantity in the warehouse.
-        </span>
       </div>
 
       {/* Enter Opening Stock Modal */}

@@ -221,7 +221,7 @@ export function ReceiveFinishedGoodsModal({
                 type="text"
                 disabled
                 value={receiptNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
               />
             </div>
 
@@ -248,7 +248,7 @@ export function ReceiveFinishedGoodsModal({
                 type="text"
                 disabled
                 value={order.orderNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed font-medium"
               />
             </div>
 
@@ -285,19 +285,19 @@ export function ReceiveFinishedGoodsModal({
           <div className="space-y-1.5 text-xs">
             <div>
               <span className="text-muted-foreground">Ordered quantity</span>{' '}
-              <span className="font-medium text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground tabular-nums ml-2">
                 {formatQuantity(orderedQuantity)} {uom}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Previously received</span>{' '}
-              <span className="font-medium text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground tabular-nums ml-2">
                 {formatQuantity(previouslyReceived)} {uom}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Pending quantity</span>{' '}
-              <span className="font-medium text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground tabular-nums ml-2">
                 {formatQuantity(pendingQuantity)} {uom}
               </span>
             </div>
@@ -320,7 +320,7 @@ export function ReceiveFinishedGoodsModal({
                   setReceiptQuantity(isNaN(val as number) ? '' : val)
                 }}
                 placeholder={`Max ${formatQuantity(pendingQuantity)}`}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs tabular-nums text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
 
@@ -332,7 +332,7 @@ export function ReceiveFinishedGoodsModal({
                 type="text"
                 disabled
                 value={uom}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
               />
             </div>
           </div>
@@ -341,13 +341,13 @@ export function ReceiveFinishedGoodsModal({
           <div className="rounded-md border border-border/80 bg-secondary/20 p-4 space-y-2 text-xs">
             <div>
               <span className="text-muted-foreground">Total received after posting</span>{' '}
-              <span className="font-medium text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground tabular-nums ml-2">
                 {formatQuantity(totalAfterPosting)} {uom}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Remaining production quantity</span>{' '}
-              <span className="font-medium text-foreground font-mono ml-2">
+              <span className="font-medium text-foreground tabular-nums ml-2">
                 {formatQuantity(remainingQuantity)} {uom}
               </span>
             </div>

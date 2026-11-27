@@ -203,16 +203,16 @@ export function MaintenancePlansPage() {
                 >
                   <TD>
                     <div className="text-sm font-medium text-foreground">{plan.planName}</div>
-                    <RefLink className="text-[11px]">{plan.planNumber}</RefLink>
+                    <RefLink className="text-xs">{plan.planNumber}</RefLink>
                   </TD>
                   <TD>
                     <div className="text-sm text-foreground">{plan.equipmentName}</div>
-                    <div className="text-[11px] text-ref text-muted-foreground">
+                    <div className="text-xs text-ref text-muted-foreground">
                       {plan.equipmentCode}
                     </div>
                   </TD>
-                  <TD className="text-xs text-muted-foreground">{plan.frequencyDays} days</TD>
-                  <TD className="font-mono text-xs tabular-nums">
+                  <TD>{plan.frequencyDays} days</TD>
+                  <TD className="tabular-nums text-xs tabular-nums">
                     {formatDueDate(plan.nextDueDate)}
                   </TD>
                   <TD>

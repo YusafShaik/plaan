@@ -16,6 +16,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD, RefLink } from '../../components/ui/Table'
 import { NativeSelect } from '../../components/ui/NativeSelect'
 import { Alert } from '../../components/ui/Alert'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { CreateExpenseModal } from './CreateExpenseModal'
 import { ExpenseDetailsModal } from './ExpenseDetailsModal'
 import { ManageExpenseCategoriesModal } from './ManageExpenseCategoriesModal'
@@ -156,8 +157,8 @@ export function ExpensesPage() {
     overview?.byCategory.reduce((m, c) => Math.max(m, Number(c.amount) || 0), 0) || 0
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="relative w-56 sm:w-64">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -261,21 +262,22 @@ export function ExpensesPage() {
 
       {error && <Alert variant="destructive">{error}</Alert>}
 
-      <div className="rounded-md border border-border bg-card shadow-xs overflow-hidden">
-        <div className="px-5 pt-5 pb-4 border-b border-border/80">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold text-foreground">Expenses</h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Total posted expenses this month
-              </p>
-              <p className="text-2xl font-semibold tracking-tight text-foreground mt-0.5">
-                {formatCurrency(overview?.totalPostedThisMonth)}
-              </p>
-            </div>
-          </div>
-        </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard
+          label="Posted this month"
+          value={formatCurrency(overview?.totalPostedThisMonth)}
+        />
+        <KpiCard
+          label="Expense rows"
+          value={pageData?.totalElements ?? expenses.length}
+        />
+        <KpiCard
+          label="Categories with spend"
+          value={overview?.byCategory?.length ?? 0}
+        />
+      </KpiCardGrid>
 
+      <div className="rounded-md border border-border bg-card shadow-xs overflow-hidden">
         <Table className="border-0 rounded-none shadow-none bg-transparent">
           <THead>
             <tr>
@@ -318,11 +320,11 @@ export function ExpensesPage() {
                   </TD>
                   <TD>
                     <div className="text-sm font-medium text-foreground">{expense.categoryName}</div>
-                    <div className="text-[11px] text-muted-foreground truncate max-w-[220px]">
+                    <div className="text-xs text-muted-foreground truncate max-w-[220px]">
                       {expense.description}
                     </div>
                   </TD>
-                  <TD className="text-xs text-muted-foreground">
+                  <TD className="text-sm text-foreground">
                     {METHOD_LABEL[expense.paymentMethod]}
                   </TD>
                   <TD className="text-right font-medium text-foreground">

@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { ArrowLeft, Download } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 
 export interface ReportPageLayoutProps {
   categoryLabel: string
@@ -35,7 +37,7 @@ export function ReportPageLayout({
   footer,
 }: ReportPageLayoutProps) {
   return (
-    <div className="space-y-5">
+    <ContentCanvas className="space-y-6 pt-2">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <button
@@ -50,7 +52,9 @@ export function ReportPageLayout({
             {title}
           </h1>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{description}</p>
+            <p className="mt-1.5 text-sm text-muted-foreground max-w-2xl">
+              {description}
+            </p>
           )}
         </div>
         {showExport && (
@@ -74,7 +78,7 @@ export function ReportPageLayout({
       <div>{children}</div>
 
       {footer && <div>{footer}</div>}
-    </div>
+    </ContentCanvas>
   )
 }
 
@@ -85,25 +89,11 @@ export interface ReportSummaryCardsProps {
 /** Compact metric strip used by reports that need summary cards. */
 export function ReportSummaryCards({ items }: ReportSummaryCardsProps) {
   if (items.length === 0) return null
-  const cols =
-    items.length >= 4
-      ? 'lg:grid-cols-4'
-      : items.length === 3
-        ? 'lg:grid-cols-3'
-        : 'lg:grid-cols-2'
   return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 ${cols} gap-3`}>
+    <KpiCardGrid columns={items.length <= 3 ? 3 : 4}>
       {items.map((item) => (
-        <div
-          key={item.label}
-          className="rounded-md border border-border bg-card px-4 py-3.5 shadow-xs"
-        >
-          <p className="text-xs font-medium text-muted-foreground">{item.label}</p>
-          <p className="mt-1 text-xl font-semibold tracking-tight text-foreground tabular-nums">
-            {item.value}
-          </p>
-        </div>
+        <KpiCard key={item.label} label={item.label} value={item.value} />
       ))}
-    </div>
+    </KpiCardGrid>
   )
 }

@@ -325,7 +325,7 @@ export function PurchaseSummaryReport({ onBack }: PurchaseSummaryReportProps) {
                       <TD className="text-xs text-muted-foreground">
                         {formatDate(row.expectedDeliveryDate)}
                       </TD>
-                      <TD className="font-mono text-xs tabular-nums">
+                      <TD className="tabular-nums text-xs tabular-nums">
                         {formatMoney(row.orderValue, currency)}
                       </TD>
                       <TD>{statusBadge(row.status)}</TD>

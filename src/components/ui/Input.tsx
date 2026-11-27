@@ -46,7 +46,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       return (
         <div className="w-full">
           {label && (
-            <span className="mb-1 block text-[11px] font-medium text-muted-foreground">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
               {label}
             </span>
           )}
@@ -59,7 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             onFocus={onFocus}
             onBlur={onBlur}
             className={cn(
-              'flex h-9 w-full rounded-md border border-border/80 bg-secondary px-2.5 text-xs font-medium text-foreground',
+              'flex h-9 w-full rounded-md border border-border/80 bg-secondary px-2.5 text-sm font-medium text-foreground',
               'placeholder:text-muted-foreground/60 focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground',
               'disabled:cursor-not-allowed disabled:opacity-60',
               error && 'border-destructive ring-1 ring-destructive',
@@ -90,7 +90,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             )}
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+              <span className="text-xs font-medium text-muted-foreground select-none leading-none">
                 {label}
               </span>
               {rightElement && (
@@ -116,7 +116,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             />
           </div>
           {hint && !error && (
-            <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
           )}
           {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
         </div>
@@ -144,7 +144,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {hint && !error && (
-          <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
         )}
         {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
       </div>

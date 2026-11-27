@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { StockOverviewPage } from './StockOverviewPage'
 import { StockLedgerPage } from './StockLedgerPage'
 import { StockTransfersPage } from './StockTransfersPage'
@@ -47,14 +48,14 @@ export function InventoryPage() {
   }, [])
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="pb-3">
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div>
           <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Inventory
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage and track inventory across warehouses.
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Stock across warehouses.
           </p>
         </div>
         <UnderlineTabs
@@ -62,7 +63,7 @@ export function InventoryPage() {
           value={activeTab}
           onChange={(id) => setActiveTab(id as InventoryTab)}
         />
-      </div>
+      </header>
 
       <div>
         {activeTab === 'overview' && <StockOverviewPage showHeader={false} />}
@@ -75,6 +76,6 @@ export function InventoryPage() {
         {activeTab === 'transfers' && <StockTransfersPage />}
         {activeTab === 'adjustments' && <StockAdjustmentsPage />}
       </div>
-    </div>
+    </ContentCanvas>
   )
 }

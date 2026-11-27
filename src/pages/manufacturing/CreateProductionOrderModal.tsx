@@ -311,7 +311,7 @@ export function CreateProductionOrderModal({
         {/* Header matching design standard */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Manufacturing / Production Orders / {initialDraft ? 'Edit Draft' : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -362,9 +362,9 @@ export function CreateProductionOrderModal({
                 type="text"
                 disabled
                 value={orderNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
+              <p className="mt-1 text-xs text-muted-foreground">Auto-generated</p>
             </div>
 
             <div>
@@ -438,7 +438,7 @@ export function CreateProductionOrderModal({
                           >
                             <div className="text-left">
                               <p className="font-medium text-foreground">{it.name}</p>
-                              <p className="text-[10px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground tabular-nums">
                                 {it.itemCode} · {it.unitOfMeasure}
                               </p>
                             </div>
@@ -463,13 +463,13 @@ export function CreateProductionOrderModal({
                 type="text"
                 disabled
                 value={activeBomCode || (selectedProduct ? 'No active BOM found' : '—')}
-                className={`flex h-10 w-full rounded-md border px-3.5 text-xs font-mono cursor-not-allowed ${
+                className={`flex h-10 w-full rounded-md border px-3.5 text-xs tabular-nums cursor-not-allowed ${
                   activeBomCode
                     ? 'border-border/80 bg-secondary/50 text-foreground font-semibold'
                     : 'border-border/80 bg-secondary/30 text-muted-foreground'
                 }`}
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {activeBomCode ? 'Automatically linked active recipe' : 'Requires an active BOM for product'}
               </p>
             </div>
@@ -491,7 +491,7 @@ export function CreateProductionOrderModal({
                   const val = e.target.value
                   setProductionQuantity(val === '' ? '' : Math.max(0, parseFloat(val) || 0))
                 }}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs tabular-nums text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
 
@@ -512,7 +512,7 @@ export function CreateProductionOrderModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-foreground mb-1.5">
-                Planned Start Date <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
+                Planned Start Date <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
               </label>
               <input
                 type="date"
@@ -524,7 +524,7 @@ export function CreateProductionOrderModal({
 
             <div>
               <label className="block text-xs font-medium text-foreground mb-1.5">
-                Planned End Date <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
+                Planned End Date <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
               </label>
               <input
                 type="date"
@@ -588,7 +588,7 @@ export function CreateProductionOrderModal({
                         >
                           <div className="text-left">
                             <p className="font-medium text-foreground">{w.name}</p>
-                            <p className="text-[10px] text-muted-foreground font-mono">
+                            <p className="text-xs text-muted-foreground tabular-nums">
                               {w.warehouseCode}
                             </p>
                           </div>
@@ -654,7 +654,7 @@ export function CreateProductionOrderModal({
                         >
                           <div className="text-left">
                             <p className="font-medium text-foreground">{w.name}</p>
-                            <p className="text-[10px] text-muted-foreground font-mono">
+                            <p className="text-xs text-muted-foreground tabular-nums">
                               {w.warehouseCode}
                             </p>
                           </div>
@@ -678,12 +678,12 @@ export function CreateProductionOrderModal({
                   Required materials
                 </h3>
                 {activeBomCode && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Automatically calculated from <span className="font-mono font-medium text-foreground">{activeBomCode}</span>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically calculated from <span className="tabular-nums font-medium text-foreground">{activeBomCode}</span>
                   </p>
                 )}
               </div>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {requiredItems.length} components
               </span>
             </div>
@@ -710,14 +710,14 @@ export function CreateProductionOrderModal({
                       <TR key={it.materialId} className="hover:bg-secondary/30 transition-colors">
                         <TD className="py-2.5 px-3.5">
                           <p className="font-medium text-foreground">{it.materialName}</p>
-                          <p className="text-[10px] text-muted-foreground font-mono">
+                          <p className="text-xs text-muted-foreground tabular-nums">
                             {it.materialCode}
                           </p>
                         </TD>
-                        <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(it.bomQuantity)}
                         </TD>
-                        <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                        <TD className="py-2.5 px-3 text-right tabular-nums font-medium text-foreground">
                           {formatQuantity(it.requiredQuantity)}
                         </TD>
                         <TD className="py-2.5 px-3.5 text-muted-foreground">
@@ -733,7 +733,7 @@ export function CreateProductionOrderModal({
           {/* Notes */}
           <div>
             <label className="block text-xs font-medium text-foreground mb-1.5">
-              Notes <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
+              Notes <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
             </label>
             <textarea
               rows={2}

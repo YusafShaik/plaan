@@ -179,7 +179,7 @@ export function CreateMaintenanceWorkOrderModal({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Maintenance / Work Orders / New
             </p>
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
@@ -198,7 +198,7 @@ export function CreateMaintenanceWorkOrderModal({
         {error && <Alert variant="destructive">{error}</Alert>}
 
         <div>
-          <p className="text-[11px] font-medium text-muted-foreground mb-2">Maintenance Type *</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Maintenance Type *</p>
           <div className="flex items-center gap-2">
             {([
               { value: 'PREVENTIVE', label: 'Preventive' },
@@ -310,7 +310,7 @@ export function CreateMaintenanceWorkOrderModal({
             </div>
             <div className="w-full">
               <div className="group relative flex min-h-[6rem] w-full flex-col justify-start px-3.5 py-2 rounded-md border bg-secondary border-border/80">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                <span className="text-xs font-medium text-muted-foreground select-none leading-none">
                   Problem Description *
                 </span>
                 <textarea
@@ -328,7 +328,7 @@ export function CreateMaintenanceWorkOrderModal({
 
         <div className="w-full">
           <div className="group relative flex min-h-[4.5rem] w-full flex-col justify-start px-3.5 py-2 rounded-md border bg-secondary border-border/80">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none">
               Notes
             </span>
             <textarea

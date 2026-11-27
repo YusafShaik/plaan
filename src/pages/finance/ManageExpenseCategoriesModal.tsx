@@ -87,7 +87,7 @@ export function ManageExpenseCategoriesModal({
       <div className="space-y-4">
         <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Expenses
             </p>
             <h2 className="text-lg font-bold tracking-tight text-foreground">Manage Categories</h2>
@@ -141,7 +141,7 @@ export function ManageExpenseCategoriesModal({
                 <button
                   type="button"
                   onClick={() => handleToggleActive(cat)}
-                  className="text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer shrink-0"
+                  className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer shrink-0"
                 >
                   {cat.active ? 'Deactivate' : 'Activate'}
                 </button>

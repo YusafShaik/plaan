@@ -331,28 +331,28 @@ export function PendingPurchaseOrdersReport({ onBack }: PendingPurchaseOrdersRep
                     <TD className="text-sm text-foreground">{row.supplierName}</TD>
                     <TD>
                       <div className="text-sm text-foreground">{row.itemName}</div>
-                      <div className="text-[11px] text-ref text-muted-foreground">
+                      <div className="text-xs text-ref text-muted-foreground">
                         {row.itemCode}
                       </div>
                     </TD>
                     <TD className="text-xs text-muted-foreground">{row.warehouseName}</TD>
-                    <TD className="font-mono text-xs tabular-nums">
+                    <TD className="tabular-nums text-xs tabular-nums">
                       {formatQty(row.orderedQuantity)} {row.unitOfMeasure}
                     </TD>
-                    <TD className="font-mono text-xs tabular-nums">
+                    <TD className="tabular-nums text-xs tabular-nums">
                       {formatQty(row.receivedQuantity)} {row.unitOfMeasure}
                     </TD>
-                    <TD className="font-mono text-xs tabular-nums font-medium text-foreground">
+                    <TD className="tabular-nums text-xs tabular-nums font-medium text-foreground">
                       {formatQty(row.pendingQuantity)} {row.unitOfMeasure}
                     </TD>
-                    <TD className="font-mono text-xs tabular-nums">
+                    <TD className="tabular-nums text-xs tabular-nums">
                       {formatMoney(row.pendingValue, currency)}
                     </TD>
                     <TD className="text-xs text-muted-foreground">
                       {formatDate(row.expectedDeliveryDate)}
                     </TD>
                     <TD>{deliveryBadge(row.deliveryStatus)}</TD>
-                    <TD className="font-mono text-xs tabular-nums text-muted-foreground">
+                    <TD className="tabular-nums text-xs tabular-nums text-muted-foreground">
                       {row.daysOverdue != null ? row.daysOverdue : '—'}
                     </TD>
                   </TR>

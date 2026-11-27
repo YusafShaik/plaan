@@ -30,7 +30,7 @@ export function DateField({
           disabled && 'opacity-60'
         )}
       >
-        <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+        <span className="text-xs font-medium text-muted-foreground select-none leading-none">
           {label}
         </span>
         <input

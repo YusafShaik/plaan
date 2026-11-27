@@ -133,7 +133,7 @@ export function MaintenanceWorkOrderDetailsModal({
         <div className="space-y-5">
           <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
             <div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
                 Maintenance / Work Orders / {current.workOrderNumber}
               </p>
               <div className="flex items-center gap-2.5 flex-wrap">
@@ -198,7 +198,7 @@ export function MaintenanceWorkOrderDetailsModal({
 
           {current.problemDescription && (
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-1">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
                 {current.maintenanceType === 'BREAKDOWN' ? 'Problem Description' : 'Activity'}
               </p>
               <p className="text-sm text-foreground whitespace-pre-wrap">
@@ -209,7 +209,7 @@ export function MaintenanceWorkOrderDetailsModal({
 
           {current.instructions && (
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-1">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
                 Maintenance Instructions
               </p>
               <div className="rounded-md border border-border/80 bg-secondary/40 px-3.5 py-3 text-sm text-foreground whitespace-pre-wrap">
@@ -220,21 +220,21 @@ export function MaintenanceWorkOrderDetailsModal({
 
           {current.workPerformed && (
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-1">Work Performed</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Work Performed</p>
               <p className="text-sm text-foreground whitespace-pre-wrap">{current.workPerformed}</p>
             </div>
           )}
 
           {current.notes && (
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-1">Notes</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Notes</p>
               <p className="text-sm text-foreground whitespace-pre-wrap">{current.notes}</p>
             </div>
           )}
 
           {current.completionRemarks && (
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-1">Remarks</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Remarks</p>
               <p className="text-sm text-foreground whitespace-pre-wrap">
                 {current.completionRemarks}
               </p>
@@ -299,7 +299,7 @@ export function MaintenanceWorkOrderDetailsModal({
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
     </div>
   )

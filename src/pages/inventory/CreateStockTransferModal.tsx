@@ -388,7 +388,7 @@ export function CreateStockTransferModal({
         {/* Header matching screenshot: Inventory / Stock Transfers / New -> Create Stock Transfer */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Inventory / Stock Transfers / {initialDraft ? 'Edit Draft' : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -429,7 +429,7 @@ export function CreateStockTransferModal({
               value={transferNumber}
               disabled
               hint="Auto-generated"
-              className="[&_input]:font-mono [&_input]:text-muted-foreground"
+              className="[&_input]:tabular-nums [&_input]:text-muted-foreground"
             />
 
             <DateField
@@ -452,7 +452,7 @@ export function CreateStockTransferModal({
                   isFromWhOpen ? fieldChromeFocus : fieldChromeIdle
                 )}
               >
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                <span className="text-xs font-medium text-muted-foreground select-none leading-none">
                   From Warehouse <span className="text-destructive">*</span>
                 </span>
                 <span className="mt-1 flex w-full items-center justify-between gap-2 text-sm font-medium min-w-0">
@@ -510,7 +510,7 @@ export function CreateStockTransferModal({
                           >
                             <div className="text-left">
                               <p className="font-medium text-foreground">{w.name}</p>
-                              <p className="text-[10px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground tabular-nums">
                                 {w.warehouseCode}
                               </p>
                             </div>
@@ -537,7 +537,7 @@ export function CreateStockTransferModal({
                   isToWhOpen ? fieldChromeFocus : fieldChromeIdle
                 )}
               >
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                <span className="text-xs font-medium text-muted-foreground select-none leading-none">
                   To Warehouse <span className="text-destructive">*</span>
                 </span>
                 <span className="mt-1 flex w-full items-center justify-between gap-2 text-sm font-medium min-w-0">
@@ -601,7 +601,7 @@ export function CreateStockTransferModal({
                               <p className="font-medium text-foreground">
                                 {w.name} {isSameAsFrom && '(Source Warehouse)'}
                               </p>
-                              <p className="text-[10px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground tabular-nums">
                                 {w.warehouseCode}
                               </p>
                             </div>
@@ -625,7 +625,7 @@ export function CreateStockTransferModal({
                 Transfer items
               </h3>
               {!fromWarehouseId && (
-                <span className="text-[11px] text-warning font-medium">
+                <span className="text-xs text-warning font-medium">
                   Select a source warehouse to see on-hand stock
                 </span>
               )}
@@ -715,7 +715,7 @@ export function CreateStockTransferModal({
                                   >
                                     <div className="text-left">
                                       <p className="font-medium text-foreground">{it.name}</p>
-                                      <p className="text-[10px] text-muted-foreground font-mono">
+                                      <p className="text-xs text-muted-foreground tabular-nums">
                                         {it.itemCode}
                                         {itemStock !== null && (
                                           <span className="ml-1 text-success font-medium">
@@ -738,7 +738,7 @@ export function CreateStockTransferModal({
 
                     {/* On Hand Column */}
                     <div className="w-20 shrink-0 text-center">
-                      <span className="text-xs font-mono font-medium text-foreground">
+                      <span className="text-xs tabular-nums font-medium text-foreground">
                         {typeof row.onHand === 'number' ? row.onHand : '—'}
                       </span>
                     </div>
@@ -754,7 +754,7 @@ export function CreateStockTransferModal({
                         value={row.transferQuantity}
                         onChange={(e) => handleQuantityChange(row.id, e.target.value)}
                         className={cn(
-                          '[&_input]:font-mono',
+                          '[&_input]:tabular-nums',
                           isOverStock &&
                             '[&_input]:border-destructive [&_input]:bg-destructive/10 [&_input]:text-destructive [&_input]:focus:ring-destructive'
                         )}
@@ -805,7 +805,7 @@ export function CreateStockTransferModal({
               fieldChromeIdle
             )}
           >
-            <span className="text-[11px] font-medium text-muted-foreground leading-none">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
               Notes <span className="font-normal">(Optional)</span>
             </span>
             <textarea

@@ -412,10 +412,10 @@ export function ExpenseReport({ onBack }: ExpenseReportProps) {
                         <TD className="text-sm text-foreground">
                           {METHOD_LABEL[row.paymentMethod]}
                         </TD>
-                        <TD className="text-[11px] text-ref text-muted-foreground">
+                        <TD className="text-xs text-ref text-muted-foreground">
                           {row.paymentReference?.trim() ? row.paymentReference : '—'}
                         </TD>
-                        <TD className="font-mono text-xs tabular-nums font-medium text-foreground">
+                        <TD className="tabular-nums text-xs tabular-nums font-medium text-foreground">
                           {formatMoney(row.amount, currency)}
                         </TD>
                       </TR>
@@ -424,7 +424,7 @@ export function ExpenseReport({ onBack }: ExpenseReportProps) {
                       <TD colSpan={5} className="text-sm font-semibold text-foreground">
                         Total
                       </TD>
-                      <TD className="font-mono text-xs tabular-nums font-semibold text-foreground">
+                      <TD className="tabular-nums text-xs tabular-nums font-semibold text-foreground">
                         {formatMoney(report.summary.totalExpenses, currency)}
                       </TD>
                     </TR>

@@ -200,7 +200,7 @@ export function CreateCustomerModal({
                 onChange={(e) => setCustomerCode(e.target.value)}
                 placeholder="CUS-001"
                 disabled={isEditing}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground disabled:opacity-60"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs tabular-nums font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground disabled:opacity-60"
               />
             </div>
 
@@ -270,7 +270,7 @@ export function CreateCustomerModal({
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
                 placeholder="Tax registration number"
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground uppercase font-mono focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground placeholder:text-muted-foreground uppercase tabular-nums focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
             </div>
           </div>

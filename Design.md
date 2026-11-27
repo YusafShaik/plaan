@@ -48,20 +48,27 @@ This document is the contract for product UI. Agents and humans must follow it w
 
 ## 3. Typography
 
+**One family only: Archivo.** Do not load or use JetBrains Mono (or any second face).  
+`font-mono` is aliased to Archivo — prefer `tabular-nums` for amounts/codes, not a mono face.
+
+Readable floor (Mercury / Stripe pattern): **12px minimum**. Table body & primary UI copy = **14px**. Page titles = **26px**.
+
 | Utility / role | Spec |
 |----------------|------|
-| Font sans | **Archivo** (`font-sans`) |
-| Font mono | **JetBrains Mono** (`font-mono`) |
-| `.text-display` | 28/32 · 600 · −0.03em — rare page heroes |
-| `.text-title` | 22/28 · 600 — page titles (`text-[26px]` acceptable for module H1) |
+| Font | **Archivo** only (`font-sans`; `font-mono` → same) |
+| `.text-display` | 30/36 · 600 · −0.03em — rare heroes |
+| `.text-title` | 26/32 · 600 — module H1 |
 | `.text-subtitle` | 16/24 · 600 |
-| `.text-body` | 14/20 · 500 |
-| `.text-body-sm` | 13/18 · 500 |
-| `.text-label` | 12/16 · 600 — buttons / pills |
-| `.text-caption` | 11/14 · 500 — hints |
-| `.text-section` | 11 · 600 · uppercase — section eyebrows |
-| `.text-ref` | mono 12 · **500** · foreground — **non-clickable** codes |
-| `.text-ref-link` | mono 12 · 500 · **info blue** — **clickable** codes only |
+| `.text-body` | 14/22 · 500 — default UI / table cells |
+| `.text-body-sm` | 13/20 · 500 |
+| `.text-label` | 13/18 · 600 — buttons / badges |
+| `.text-caption` | 12/16 · 500 — hints / stacked field labels |
+| `.text-section` | 12 · 600 · uppercase — section eyebrows |
+| `.text-ref` | 13 · **500** · Archivo + tabular-nums — **non-clickable** codes |
+| `.text-ref-link` | 13 · 500 · **info blue** + tabular-nums — **clickable** codes only |
+| Muted text | `muted-foreground` `#5c5c66` — keep secondary text readable |
+
+**Forbidden:** `text-[10px]`, `text-[11px]` in product UI — use `text-caption` / `text-xs` (12px) or larger.
 
 ### Reference codes (critical)
 
@@ -69,7 +76,8 @@ This document is the contract for product UI. Agents and humans must follow it w
 |-----------|--------|
 | Code does **not** open anything | `text-ref text-foreground` or `<RefCode>` |
 | Code / row opens detail | `text-ref-link` or `<RefLink>` + row `onClick` |
-| Secondary code under a name | `text-ref text-muted-foreground` (or `text-[11px]`) |
+| Secondary code under a name | `text-ref text-muted-foreground` |
+| Money / qty columns | `tabular-nums` (optionally `text-body`) — not a mono font |
 
 Never style a non-interactive code blue. Never bold reference codes (`font-semibold` / `font-bold` forbidden on refs).
 
@@ -127,7 +135,7 @@ Sizes: `sm` · `md` (default) · `lg` · `icon`.
 <DateField label="Order date *" value={...} onChange={...} />
 ```
 
-- Label is muted `11px` **inside** the grey field box; value below.
+- Label is muted `12px` **inside** the grey field box; value below (`14px`).
 - Dense table cells: `dense` prop or `NativeSelect dense`.
 - Custom searchable dropdowns: reuse `fieldChrome` + `fieldChromeIdle` / `fieldChromeFocus` from `fieldStyles.ts` with the same stacked label markup.
 
@@ -177,8 +185,8 @@ Use `UnderlineTabs` only — do not build segmented pill tab bars.
 
 | Piece | Spec |
 |-------|------|
-| `TH` | `11px` · medium · `muted-foreground` · never bold ink |
-| `TD` | `12px` · medium · foreground |
+| `TH` | `12px` · medium · `muted-foreground` · never bold ink |
+| `TD` | `14px` · medium · foreground |
 | `TR` | Always `hover:bg-secondary/50`; `clickable` adds pointer |
 | Row click | Opens detail when the entity is viewable; action cells `stopPropagation` |
 
@@ -206,13 +214,25 @@ Use `Modal`. Stacked fields inside. Footer: outline Cancel + ink primary Save. M
 ```
 [ Page title + optional primary action ]
 [ UnderlineTabs ]
+[ Metrics if needed — max 4, ink ]
 [ Toolbar: search / filters / export ]
-[ Metrics if needed ]
 [ Table ]
 [ Pagination ]
 ```
 
 Do not place segmented tab pills next to the title.
+
+### List composition (Mercury-calm)
+
+| Band | Rule |
+|------|------|
+| Title | 26px H1 + **one-line** subtitle + one primary CTA |
+| Tabs | `UnderlineTabs` only — no nested tabs when module tabs already exist unless a true sub-ledger needs it |
+| KPIs | **Max 4** cards; values default **ink** (`tone` only for rare emphasis). Do **not** mirror every status as a colored KPI — status lives in `Badge` / filters |
+| Toolbar | Search + filter/export only. No muted “All …” / “Showing n …” pseudo-title (KPIs already own totals) |
+| Table | Primary cells use default `TD` (foreground). Muted only for stacked codes under a name (`text-ref text-muted-foreground`) |
+| Row chrome | Prefer plain name + optional code; skip decorative leading icons when the column already names the entity |
+| Status | `Badge` in the row — not rainbow KPI values |
 
 ---
 
@@ -220,7 +240,7 @@ Do not place segmented tab pills next to the title.
 
 - [ ] Colors from tokens only  
 - [ ] Radius 2px (no soft pills except avatars)  
-- [ ] Archivo / JetBrains Mono  
+- [ ] Archivo only (no JetBrains Mono) · type floor ≥12px · tables 14px body
 - [ ] Forms use stacked `label` on Input/Select/DateField  
 - [ ] Status uses `Badge`  
 - [ ] Tables use `Table`/`TH`/`TD`  

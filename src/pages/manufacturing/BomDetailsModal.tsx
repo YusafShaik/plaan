@@ -76,7 +76,7 @@ export function BomDetailsModal({
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
+              <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
                 {bom.bomCode}
               </span>
               {bom.status === 'ACTIVE' && (
@@ -92,7 +92,7 @@ export function BomDetailsModal({
 
             <div className="mt-1 flex items-center gap-2 text-xs">
               <span className="font-semibold text-foreground">{bom.productName}</span>
-              <span className="font-mono text-muted-foreground">({bom.productCode})</span>
+              <span className="tabular-nums text-muted-foreground">({bom.productCode})</span>
               <span className="text-muted-foreground">·</span>
               <span className="text-muted-foreground">Output: {formatQuantity(bom.outputQuantity)} {bom.unitOfMeasure}</span>
             </div>
@@ -111,7 +111,7 @@ export function BomDetailsModal({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-md border border-border/80 bg-secondary/30 p-3.5 text-xs">
           <div>
             <p className="text-muted-foreground">Output Batch</p>
-            <p className="mt-0.5 font-medium text-foreground font-mono">
+            <p className="mt-0.5 font-medium text-foreground tabular-nums">
               {formatQuantity(bom.outputQuantity)} {bom.unitOfMeasure}
             </p>
           </div>
@@ -149,7 +149,7 @@ export function BomDetailsModal({
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Bill of Materials Components
             </h4>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {bom.items.length} items required per {formatQuantity(bom.outputQuantity)} {bom.unitOfMeasure}
             </span>
           </div>
@@ -167,11 +167,11 @@ export function BomDetailsModal({
                   <TR key={it.id} className="hover:bg-secondary/30 transition-colors">
                     <TD className="py-2.5 px-3.5">
                       <p className="font-medium text-foreground">{it.materialName}</p>
-                      <p className="text-[10px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {it.materialCode}
                       </p>
                     </TD>
-                    <TD className="py-2.5 px-3.5 text-right font-mono font-medium text-foreground">
+                    <TD className="py-2.5 px-3.5 text-right tabular-nums font-medium text-foreground">
                       {formatQuantity(it.quantity)}
                     </TD>
                     <TD className="py-2.5 px-3.5 text-muted-foreground">
@@ -194,7 +194,7 @@ export function BomDetailsModal({
                 <h4 className="text-xs font-semibold text-foreground">
                   BOM Quantity Calculator
                 </h4>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Calculate material requirements for planned production batches.
                 </p>
               </div>
@@ -215,7 +215,7 @@ export function BomDetailsModal({
                     const val = e.target.value
                     setPlannedQty(val === '' ? '' : Math.max(0, parseFloat(val) || 0))
                   }}
-                  className="flex h-8 w-24 rounded-md border border-border/80 bg-background px-2.5 text-center text-xs font-mono font-medium text-foreground focus:outline-none focus:border-foreground"
+                  className="flex h-8 w-24 rounded-md border border-border/80 bg-background px-2.5 text-center text-xs tabular-nums font-medium text-foreground focus:outline-none focus:border-foreground"
                 />
                 <span className="text-xs font-medium text-muted-foreground">
                   {bom.unitOfMeasure}
@@ -242,13 +242,13 @@ export function BomDetailsModal({
                       <TD className="py-2 px-3">
                         <span className="font-medium text-foreground">{it.materialName}</span>
                       </TD>
-                      <TD className="py-2 px-3 text-right font-mono text-muted-foreground">
+                      <TD className="py-2 px-3 text-right tabular-nums text-muted-foreground">
                         {formatQuantity(it.quantity)}
                       </TD>
-                      <TD className="py-2 px-3 text-right font-mono font-medium text-foreground">
+                      <TD className="py-2 px-3 text-right tabular-nums font-medium text-foreground">
                         {formatQuantity(requiredQty)}
                       </TD>
-                      <TD className="py-2 px-3 text-muted-foreground text-[11px]">
+                      <TD className="py-2 px-3 text-muted-foreground text-xs">
                         {it.unitOfMeasure}
                       </TD>
                     </TR>

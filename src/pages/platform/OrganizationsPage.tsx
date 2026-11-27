@@ -1,9 +1,11 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { Plus, Search, Building2, CheckCircle2, AlertCircle, Power } from 'lucide-react'
+import { Plus, Search, Power, Building2 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Input } from '../../components/ui/Input'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { CreateOrganizationModal } from './CreateOrganizationModal'
 import { platformService } from '../../services/platformService'
 import type { OrganizationItem, CreateOrganizationPayload } from '../../types/platform'
@@ -94,65 +96,28 @@ export function OrganizationsPage() {
   }, [organizations])
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header with Title and Action Button */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <ContentCanvas className="space-y-8 pt-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Organizations
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Provision, monitor, and manage customer workspaces and tenant access.
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Tenant workspaces and access.
           </p>
         </div>
 
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="gap-2 bg-brand-deep text-brand-foreground hover:opacity-90"
-        >
+        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
           <Plus className="h-4 w-4" />
-          <span>Create Organization</span>
+          Create Organization
         </Button>
       </div>
 
-      {/* 2. Quick Metrics Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-md border border-border bg-card p-5 shadow-xs">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">
-              Total Workspaces
-            </span>
-            <Building2 className="h-4 w-4" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-card-foreground">
-            {stats.total}
-          </p>
-        </div>
-
-        <div className="rounded-md border border-border bg-card p-5 shadow-xs">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">
-              Active
-            </span>
-            <CheckCircle2 className="h-4 w-4 text-brand-deep" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-card-foreground">
-            {stats.active}
-          </p>
-        </div>
-
-        <div className="rounded-md border border-border bg-card p-5 shadow-xs">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">
-              Suspended
-            </span>
-            <AlertCircle className="h-4 w-4 text-destructive" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-card-foreground">
-            {stats.suspended}
-          </p>
-        </div>
-      </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard label="Total workspaces" value={stats.total} />
+        <KpiCard label="Active" value={stats.active} />
+        <KpiCard label="Suspended" value={stats.suspended} />
+      </KpiCardGrid>
 
       {/* 3. Search Bar */}
       <div className="flex items-center gap-3">
@@ -208,7 +173,7 @@ export function OrganizationsPage() {
                       <div className="font-medium text-card-foreground">
                         {org.name}
                       </div>
-                      <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                      <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
                         slug: {org.slug}
                       </div>
                     </TD>
@@ -217,7 +182,7 @@ export function OrganizationsPage() {
                       <div className="text-card-foreground font-medium">
                         {org.country || 'Global'}
                       </div>
-                      <div className="text-muted-foreground mt-0.5">
+                      <div className="text-foreground mt-0.5">
                         {org.baseCurrency || 'USD'} · {org.timeZone || 'UTC'}
                       </div>
                     </TD>
@@ -226,7 +191,7 @@ export function OrganizationsPage() {
                       <div className="font-medium text-card-foreground">
                         {org.adminName}
                       </div>
-                      <div className="text-muted-foreground mt-0.5">
+                      <div className="text-foreground mt-0.5">
                         {org.adminEmail}
                       </div>
                     </TD>
@@ -266,6 +231,6 @@ export function OrganizationsPage() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreate}
       />
-    </div>
+    </ContentCanvas>
   )
 }

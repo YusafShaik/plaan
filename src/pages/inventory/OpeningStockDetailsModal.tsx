@@ -60,7 +60,7 @@ export function OpeningStockDetailsModal({
         <div className="flex items-center justify-between pb-3.5 border-b border-border/80">
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="text-xl font-bold tracking-tight text-foreground font-mono">
+              <h2 className="text-xl font-bold tracking-tight text-foreground tabular-nums">
                 {openingStock.openingStockNumber}
               </h2>
               {openingStock.status === 'POSTED' && (
@@ -92,11 +92,11 @@ export function OpeningStockDetailsModal({
           <div className="flex items-start gap-2.5">
             <WarehouseIcon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground">Warehouse</p>
+              <p className="text-xs font-medium text-muted-foreground">Warehouse</p>
               <p className="text-sm font-semibold text-foreground">
                 {openingStock.warehouseName}
               </p>
-              <p className="text-[11px] text-muted-foreground font-mono">
+              <p className="text-xs text-muted-foreground tabular-nums">
                 {openingStock.warehouseCode}
               </p>
             </div>
@@ -105,11 +105,11 @@ export function OpeningStockDetailsModal({
           <div className="flex items-start gap-2.5">
             <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground">Opening Date</p>
+              <p className="text-xs font-medium text-muted-foreground">Opening Date</p>
               <p className="text-sm font-semibold text-foreground">
                 {formatDate(openingStock.openingDate)}
               </p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Total Items: {openingStock.totalItems}
               </p>
             </div>
@@ -119,7 +119,7 @@ export function OpeningStockDetailsModal({
             <div className="sm:col-span-2 flex items-start gap-2.5 pt-2 border-t border-border/40">
               <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               <div>
-                <p className="text-[11px] font-medium text-muted-foreground">Notes</p>
+                <p className="text-xs font-medium text-muted-foreground">Notes</p>
                 <p className="text-xs text-foreground mt-0.5">{openingStock.notes}</p>
               </div>
             </div>
@@ -147,16 +147,16 @@ export function OpeningStockDetailsModal({
               <TBody className="divide-y divide-border/60">
                 {openingStock.items.map((item, idx) => (
                   <TR key={item.id} className="hover:bg-secondary/30 transition-colors">
-                    <TD className="py-2.5 px-3.5 text-muted-foreground font-mono text-[11px]">
+                    <TD className="py-2.5 px-3.5 text-muted-foreground tabular-nums text-xs">
                       {idx + 1}
                     </TD>
                     <TD className="py-2.5 px-3.5">
                       <p className="font-medium text-foreground">{item.itemName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {item.itemCode}
                       </p>
                     </TD>
-                    <TD className="py-2.5 px-3.5 text-right font-mono font-medium text-success">
+                    <TD className="py-2.5 px-3.5 text-right tabular-nums font-medium text-success">
                       +{formatQuantity(item.quantity)}
                     </TD>
                     <TD className="py-2.5 px-3.5 text-muted-foreground">

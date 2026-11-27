@@ -199,10 +199,10 @@ export function GoodsReceiptDetailsModal({
                         </TD>
                         <TD className="py-2.5 px-3">
                           <p className="text-xs font-semibold text-foreground">{item.itemName}</p>
-                          <p className="text-[11px] text-ref text-muted-foreground">{item.itemCode}</p>
+                          <p className="text-xs text-ref text-muted-foreground">{item.itemCode}</p>
                         </TD>
                         <TD className="py-2.5 px-2 text-center">
-                          <span className="inline-block px-1.5 py-0.5 rounded bg-secondary text-[10px] font-semibold text-muted-foreground uppercase">
+                          <span className="inline-block px-1.5 py-0.5 rounded bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             {item.unitOfMeasure}
                           </span>
                         </TD>

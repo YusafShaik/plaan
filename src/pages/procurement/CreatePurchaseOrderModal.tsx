@@ -309,7 +309,7 @@ export function CreatePurchaseOrderModal({
               onChange={(e) => setPoNumber(e.target.value.toUpperCase())}
               disabled={isLoading}
               rightElement={
-                <span className="text-[11px] font-medium text-brand flex items-center gap-1">
+                <span className="text-xs font-medium text-brand flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               }
@@ -355,14 +355,14 @@ export function CreatePurchaseOrderModal({
             />
 
             <div className="group relative flex min-h-14 w-full flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2 select-none">
-              <span className="text-[11px] font-medium text-muted-foreground leading-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
                 Currency
               </span>
               <div className="mt-1 flex items-center justify-between">
                 <span className="text-sm font-medium text-foreground">
                   {organization?.baseCurrency || 'INR'} ({currencySymbol})
                 </span>
-                <span className="text-[10px] text-muted-foreground">Org default</span>
+                <span className="text-xs text-muted-foreground">Org default</span>
               </div>
             </div>
           </div>
@@ -440,7 +440,7 @@ export function CreatePurchaseOrderModal({
                             </div>
                             {selectedItem && (
                               <span
-                                className="shrink-0 px-2 py-1 rounded-md bg-secondary text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+                                className="shrink-0 px-2 py-1 rounded-md bg-secondary text-xs font-medium text-muted-foreground uppercase tracking-wider"
                                 title={`Unit of Measure: ${selectedItem.unitOfMeasure}`}
                               >
                                 {selectedItem.unitOfMeasure}
@@ -459,7 +459,7 @@ export function CreatePurchaseOrderModal({
                             value={row.quantity}
                             onChange={(e) => handleRowChange(row.rowId, 'quantity', e.target.value)}
                             disabled={isLoading}
-                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs font-mono font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs tabular-nums font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                           />
                         </TD>
 
@@ -473,13 +473,13 @@ export function CreatePurchaseOrderModal({
                             value={row.unitPrice}
                             onChange={(e) => handleRowChange(row.rowId, 'unitPrice', e.target.value)}
                             disabled={isLoading}
-                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs font-mono font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs tabular-nums font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                           />
                         </TD>
 
                         {/* Amount Column */}
                         <TD className="py-2.5 px-3 text-right">
-                          <div className="h-9 flex items-center justify-end font-mono text-xs font-medium text-foreground">
+                          <div className="h-9 flex items-center justify-end tabular-nums text-xs font-medium text-foreground">
                             {amount.toLocaleString('en-IN', {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
@@ -521,7 +521,7 @@ export function CreatePurchaseOrderModal({
                 <Plus className="h-3.5 w-3.5" />
                 Add Item
               </Button>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {orderItems.length} {orderItems.length === 1 ? 'line item' : 'line items'}
               </span>
             </div>
@@ -532,7 +532,7 @@ export function CreatePurchaseOrderModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           {/* Notes */}
           <div className="group relative flex min-h-14 w-full flex-col rounded-md border border-border/80 bg-secondary px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-            <span className="text-[11px] font-medium text-muted-foreground leading-none">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
               Notes & Instructions
             </span>
             <textarea
@@ -552,7 +552,7 @@ export function CreatePurchaseOrderModal({
               <span>{orderItems.filter((r) => r.itemId).length} items</span>
             </div>
             <div className="text-right mt-1">
-              <span className="text-2xl font-medium font-mono tracking-tight text-foreground">
+              <span className="text-2xl font-medium tabular-nums tracking-tight text-foreground">
                 {currencySymbol}
                 {orderTotal.toLocaleString('en-IN', {
                   minimumFractionDigits: 2,

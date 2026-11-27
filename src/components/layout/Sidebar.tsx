@@ -62,9 +62,9 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </div>
 
       {/* 2. Profile Summary Card (Matching Reference Style) */}
-      <div className="my-6 flex flex-col items-center text-center">
+      <div className="my-4 flex flex-col items-center text-center">
         <div className="relative">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-deep text-brand-foreground text-2xl font-semibold shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-deep text-brand-foreground text-lg font-semibold shadow-sm">
             {userInitial}
           </div>
           <button
@@ -76,7 +76,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </button>
         </div>
 
-        <h3 className="mt-3 text-sm font-semibold tracking-tight text-foreground">
+        <h3 className="mt-2 text-sm font-semibold tracking-tight text-foreground">
           {user?.fullName || 'User'}
         </h3>
         <p className="max-w-[220px] truncate text-xs text-muted-foreground">
@@ -135,7 +135,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </button>
         </div>
 
-        <nav aria-label="Footer links" className="flex items-center gap-4 text-[11px] text-muted-foreground">
+        <nav aria-label="Footer links" className="flex items-center gap-4 text-xs text-muted-foreground">
           <a href="#terms" className="hover:text-foreground transition-colors">
             Terms
           </a>

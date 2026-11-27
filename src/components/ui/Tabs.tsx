@@ -42,7 +42,7 @@ export function UnderlineTabs({
             onClick={() => onChange(item.id)}
             className={cn(
               'relative -mb-px inline-flex flex-col items-stretch px-0 pb-3 pt-0',
-              'bg-transparent border-0 text-sm font-medium transition-colors cursor-pointer',
+              'bg-transparent border-0 text-[15px] leading-5 font-medium transition-colors cursor-pointer',
               active
                 ? 'text-foreground'
                 : 'text-muted-foreground hover:text-foreground'

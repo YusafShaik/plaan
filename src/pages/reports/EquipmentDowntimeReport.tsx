@@ -327,7 +327,7 @@ export function EquipmentDowntimeReport({ onBack }: EquipmentDowntimeReportProps
                         <div className="text-sm text-foreground">{row.equipmentName}</div>
                         <div className="mt-0.5 flex flex-wrap items-center gap-2">
                           <RefLink>{row.workOrderNumber}</RefLink>
-                          <span className="text-[11px] text-ref text-muted-foreground">
+                          <span className="text-xs text-ref text-muted-foreground">
                             {row.equipmentCode}
                           </span>
                         </div>
@@ -346,10 +346,10 @@ export function EquipmentDowntimeReport({ onBack }: EquipmentDowntimeReportProps
                       <TD className="text-xs text-muted-foreground">
                         {formatDateTime(row.restorationAt)}
                       </TD>
-                      <TD className="font-mono text-xs tabular-nums">
+                      <TD className="tabular-nums text-xs tabular-nums">
                         {formatDuration(row.downtimeMinutes)}
                       </TD>
-                      <TD className="font-mono text-xs tabular-nums">
+                      <TD className="tabular-nums text-xs tabular-nums">
                         {formatDuration(row.downtimeInPeriodMinutes)}
                       </TD>
                       <TD

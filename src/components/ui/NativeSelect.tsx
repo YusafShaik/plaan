@@ -40,7 +40,7 @@ export const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
             id={selectId}
             disabled={disabled}
             className={cn(
-              'h-10 w-full rounded-md border border-border/80 bg-secondary pl-3.5 pr-9 text-xs font-medium text-foreground',
+              'h-10 w-full rounded-md border border-border/80 bg-secondary pl-3.5 pr-9 text-sm font-medium text-foreground',
               'focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground',
               'cursor-pointer appearance-none disabled:opacity-50 disabled:cursor-not-allowed',
               error && 'border-destructive ring-1 ring-destructive'
@@ -67,7 +67,7 @@ export const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
         >
           <label
             htmlFor={selectId}
-            className="text-[11px] font-medium text-muted-foreground select-none leading-none"
+            className="text-xs font-medium text-muted-foreground select-none leading-none"
           >
             {label}
           </label>
@@ -85,7 +85,7 @@ export const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
           </div>
         </div>
         {hint && !error && (
-          <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
         )}
         {error && <p className="mt-1.5 text-xs text-destructive">{error}</p>}
       </div>

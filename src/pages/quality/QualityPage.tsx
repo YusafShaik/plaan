@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { InspectionTemplatesPage } from './InspectionTemplatesPage'
 import { IncomingInspectionsPage } from './IncomingInspectionsPage'
 import { FinishedGoodsInspectionsPage } from './FinishedGoodsInspectionsPage'
@@ -19,14 +20,14 @@ export function QualityPage() {
   const [activeTab, setActiveTab] = useState<QualityTab>('inspection-templates')
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="pb-3">
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div>
           <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Quality
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage quality standards and inspections.
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Templates and inspections.
           </p>
         </div>
 
@@ -35,13 +36,15 @@ export function QualityPage() {
           value={activeTab}
           onChange={(id) => setActiveTab(id as QualityTab)}
         />
-      </div>
+      </header>
 
       <div>
         {activeTab === 'inspection-templates' && <InspectionTemplatesPage />}
         {activeTab === 'incoming-inspections' && <IncomingInspectionsPage />}
-        {activeTab === 'finished-goods-inspections' && <FinishedGoodsInspectionsPage />}
+        {activeTab === 'finished-goods-inspections' && (
+          <FinishedGoodsInspectionsPage />
+        )}
       </div>
-    </div>
+    </ContentCanvas>
   )
 }

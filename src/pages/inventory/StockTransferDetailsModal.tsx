@@ -60,7 +60,7 @@ export function StockTransferDetailsModal({
         <div className="flex items-center justify-between pb-3.5 border-b border-border/80">
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="text-xl font-bold tracking-tight text-foreground font-mono">
+              <h2 className="text-xl font-bold tracking-tight text-foreground tabular-nums">
                 {transfer.transferNumber}
               </h2>
               {transfer.status === 'POSTED' && (
@@ -94,11 +94,11 @@ export function StockTransferDetailsModal({
             <div className="rounded-md border border-border/60 bg-card p-3 text-center sm:text-left">
               <div className="flex items-center gap-2 mb-1">
                 <WarehouseIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[11px] font-medium text-muted-foreground">Source Warehouse</span>
+                <span className="text-xs font-medium text-muted-foreground">Source Warehouse</span>
               </div>
               <p className="text-sm font-semibold text-foreground">{transfer.fromWarehouseName}</p>
-              <p className="text-[11px] font-mono text-muted-foreground">{transfer.fromWarehouseCode}</p>
-              <p className="mt-2 text-xs font-medium text-destructive font-mono">
+              <p className="text-xs tabular-nums text-muted-foreground">{transfer.fromWarehouseCode}</p>
+              <p className="mt-2 text-xs font-medium text-destructive tabular-nums">
                 −{formatQuantity(transfer.totalQuantity)} Total Out
               </p>
             </div>
@@ -107,11 +107,11 @@ export function StockTransferDetailsModal({
             <div className="rounded-md border border-border/60 bg-card p-3 text-center sm:text-left">
               <div className="flex items-center gap-2 mb-1">
                 <WarehouseIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[11px] font-medium text-muted-foreground">Destination Warehouse</span>
+                <span className="text-xs font-medium text-muted-foreground">Destination Warehouse</span>
               </div>
               <p className="text-sm font-semibold text-foreground">{transfer.toWarehouseName}</p>
-              <p className="text-[11px] font-mono text-muted-foreground">{transfer.toWarehouseCode}</p>
-              <p className="mt-2 text-xs font-medium text-success font-mono">
+              <p className="text-xs tabular-nums text-muted-foreground">{transfer.toWarehouseCode}</p>
+              <p className="mt-2 text-xs font-medium text-success tabular-nums">
                 +{formatQuantity(transfer.totalQuantity)} Total In
               </p>
             </div>
@@ -158,16 +158,16 @@ export function StockTransferDetailsModal({
               <TBody className="divide-y divide-border/60">
                 {transfer.items.map((item, idx) => (
                   <TR key={item.id} className="hover:bg-secondary/30 transition-colors">
-                    <TD className="py-2.5 px-3.5 text-muted-foreground font-mono text-[11px]">
+                    <TD className="py-2.5 px-3.5 text-muted-foreground tabular-nums text-xs">
                       {idx + 1}
                     </TD>
                     <TD className="py-2.5 px-3.5">
                       <p className="font-medium text-foreground">{item.itemName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {item.itemCode}
                       </p>
                     </TD>
-                    <TD className="py-2.5 px-3.5 text-right font-mono font-medium text-foreground">
+                    <TD className="py-2.5 px-3.5 text-right tabular-nums font-medium text-foreground">
                       {formatQuantity(item.transferQuantity)}
                     </TD>
                     <TD className="py-2.5 px-3.5 text-muted-foreground">

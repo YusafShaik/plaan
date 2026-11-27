@@ -159,7 +159,7 @@ export function DueOverdueMaintenanceReport({ onBack }: DueOverdueMaintenanceRep
         filters={
           <div className="space-y-4">
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-2">Due Status</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Due Status</p>
               <UnderlineTabs
                 items={[
                   { id: 'all', label: 'All' },
@@ -309,7 +309,7 @@ export function DueOverdueMaintenanceReport({ onBack }: DueOverdueMaintenanceRep
                       <div className="text-sm text-muted-foreground mt-0.5">{row.planName}</div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-2">
                         <RefLink>{row.planNumber}</RefLink>
-                        <span className="text-[11px] text-ref text-muted-foreground">
+                        <span className="text-xs text-ref text-muted-foreground">
                           {row.equipmentCode}
                         </span>
                       </div>
@@ -327,7 +327,7 @@ export function DueOverdueMaintenanceReport({ onBack }: DueOverdueMaintenanceRep
                       <div className="space-y-1">
                         {dueBadge(row.dueStatus)}
                         {row.daysOverdue != null && (
-                          <div className="text-[11px] text-destructive">
+                          <div className="text-xs text-destructive">
                             {row.daysOverdue}d overdue
                           </div>
                         )}
@@ -343,7 +343,7 @@ export function DueOverdueMaintenanceReport({ onBack }: DueOverdueMaintenanceRep
                           >
                             {row.workOrderNumber}
                           </button>
-                          <div className="text-[11px] text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             {workOrderStatusLabel(row)}
                           </div>
                         </div>

@@ -195,11 +195,11 @@ export function EquipmentPage() {
                   <TD>
                     <RefLink>{row.equipmentCode}</RefLink>
                     {row.recordStatus === 'INACTIVE' && (
-                      <span className="ml-2 text-[10px] text-muted-foreground">Inactive</span>
+                      <span className="ml-2 text-xs text-muted-foreground">Inactive</span>
                     )}
                   </TD>
                   <TD className="font-medium text-foreground">{row.equipmentName}</TD>
-                  <TD className="text-xs text-muted-foreground">{row.location || '—'}</TD>
+                  <TD>{row.location || '—'}</TD>
                   <TD>{operationalBadge(row.operationalStatus)}</TD>
                   <TD className="text-right">
                     <div

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { PurchaseOrdersPage } from './PurchaseOrdersPage'
 import { GoodsReceiptsPage } from './GoodsReceiptsPage'
 
@@ -18,12 +19,17 @@ export function ProcurementPage() {
   const [isGrnModalOpen, setIsGrnModalOpen] = useState(false)
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between pb-3">
-          <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
-            Procurement
-          </h1>
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
+              Procurement
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+              Orders, receipts, and inbound stock.
+            </p>
+          </div>
 
           {activeTab === 'orders' && (
             <Button variant="primary" onClick={() => setIsPoModalOpen(true)}>
@@ -44,7 +50,7 @@ export function ProcurementPage() {
           value={activeTab}
           onChange={(id) => setActiveTab(id as ProcurementTab)}
         />
-      </div>
+      </header>
 
       <div>
         {activeTab === 'orders' && (
@@ -62,6 +68,6 @@ export function ProcurementPage() {
           />
         )}
       </div>
-    </div>
+    </ContentCanvas>
   )
 }

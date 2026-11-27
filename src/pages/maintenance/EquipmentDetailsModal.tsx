@@ -197,7 +197,7 @@ export function EquipmentDetailsModal({
 
           {equipment.description && (
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground">Description</p>
+              <p className="text-xs font-medium text-muted-foreground">Description</p>
               <p className="mt-1 text-sm text-foreground">{equipment.description}</p>
             </div>
           )}
@@ -235,7 +235,7 @@ export function EquipmentDetailsModal({
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{plan.planName}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Every {plan.frequencyDays} days · Next {formatDate(plan.nextDueDate)}
                       </p>
                     </div>
@@ -285,7 +285,7 @@ export function EquipmentDetailsModal({
                         </TD>
                         <TD>
                           <div className="text-sm text-foreground">{item.activity}</div>
-                          <RefLink className="text-[11px]">{item.workOrderNumber}</RefLink>
+                          <RefLink className="text-xs">{item.workOrderNumber}</RefLink>
                         </TD>
                         <TD className="text-xs text-muted-foreground">
                           {TYPE_LABEL[item.type]}
@@ -377,7 +377,7 @@ export function EquipmentDetailsModal({
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
     </div>
   )

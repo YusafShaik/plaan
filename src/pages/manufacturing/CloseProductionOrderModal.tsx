@@ -104,7 +104,7 @@ export function CloseProductionOrderModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-medium text-muted-foreground">
+            <span className="tabular-nums text-sm font-medium text-muted-foreground">
               {order.orderNumber}
             </span>
             <button
@@ -147,13 +147,13 @@ export function CloseProductionOrderModal({
               <div className="space-y-1.5 text-xs">
                 <div>
                   <span className="text-muted-foreground">Planned quantity</span>{' '}
-                  <span className="font-medium text-foreground font-mono ml-2">
+                  <span className="font-medium text-foreground tabular-nums ml-2">
                     {formatQuantity(validation.plannedQuantity)} {validation.unitOfMeasure}
                   </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Received quantity</span>{' '}
-                  <span className="font-medium text-foreground font-mono ml-2">
+                  <span className="font-medium text-foreground tabular-nums ml-2">
                     {formatQuantity(validation.receivedQuantity)} {validation.unitOfMeasure}
                   </span>
                 </div>
@@ -184,16 +184,16 @@ export function CloseProductionOrderModal({
                         <TD className="py-3 px-3.5 font-medium text-foreground">
                           {mat.materialName}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(mat.issuedQuantity)}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(mat.consumedQuantity)}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(mat.returnedQuantity)}
                         </TD>
-                        <TD className="py-3 px-3.5 text-right font-mono font-medium">
+                        <TD className="py-3 px-3.5 text-right tabular-nums font-medium">
                           <span className={mat.remainingQuantity > 0 ? 'text-destructive' : 'text-foreground'}>
                             {formatQuantity(mat.remainingQuantity)}
                           </span>

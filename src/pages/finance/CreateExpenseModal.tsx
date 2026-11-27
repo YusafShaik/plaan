@@ -222,7 +222,7 @@ export function CreateExpenseModal({
       <form onSubmit={(e) => handleSubmit('DRAFT', e)} className="space-y-5">
         <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Finance / Expenses / {isEditing ? expenseNumber : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -246,10 +246,10 @@ export function CreateExpenseModal({
             value={expenseNumber}
             readOnly
             disabled
-            className="font-mono text-sm"
+            className="tabular-nums text-sm"
             rightElement={
               !isEditing ? (
-                <span className="text-[11px] font-medium text-brand flex items-center gap-1 select-none">
+                <span className="text-xs font-medium text-brand flex items-center gap-1 select-none">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               ) : undefined
@@ -320,7 +320,7 @@ export function CreateExpenseModal({
         </div>
 
         <div className="space-y-1.5">
-          <span className="block text-[11px] font-medium text-muted-foreground">
+          <span className="block text-xs font-medium text-muted-foreground">
             Bill / Receipt Attachment
           </span>
           <input
@@ -336,7 +336,7 @@ export function CreateExpenseModal({
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs font-medium text-foreground">{attachmentFileName}</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {attachmentSize
                       ? `${(attachmentSize / 1024).toFixed(1)} KB`
                       : isEditing
@@ -364,14 +364,14 @@ export function CreateExpenseModal({
               <p className="text-xs font-medium text-foreground">
                 Upload supporting document (optional)
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">PDF or image</p>
+              <p className="text-xs text-muted-foreground mt-0.5">PDF or image</p>
             </div>
           )}
         </div>
 
         <div className="w-full">
           <div className="group relative flex min-h-[76px] w-full flex-col justify-start px-3.5 py-2.5 rounded-md border border-border/80 bg-secondary focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none mb-1">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1">
               Notes
             </span>
             <textarea

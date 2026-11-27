@@ -3,13 +3,13 @@ import {
   ChevronDown,
   Download,
   Package,
-  History,
   Search,
   X,
   Check,
   Warehouse as WarehouseIcon,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
@@ -308,7 +308,7 @@ export function StockLedgerPage({
   const currentUom = ledgerData?.unitOfMeasure || 'units'
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* 1. Styled Searchable Item & Warehouse Selectors */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Searchable Item Dropdown */}
@@ -335,7 +335,7 @@ export function StockLedgerPage({
                   <>
                     <span className="text-foreground">{selectedItem.name}</span>
                     {selectedItem.itemCode && (
-                      <span className="ml-2 font-mono text-xs text-muted-foreground font-normal">
+                      <span className="ml-2 tabular-nums text-xs text-muted-foreground font-normal">
                         ({selectedItem.itemCode})
                       </span>
                     )}
@@ -404,7 +404,7 @@ export function StockLedgerPage({
                       >
                         <div className="text-left">
                           <p className="font-medium text-foreground">{it.name}</p>
-                          <p className="text-[11px] text-muted-foreground font-mono">
+                          <p className="text-xs text-muted-foreground tabular-nums">
                             {it.itemCode} {it.unitOfMeasure ? `· ${it.unitOfMeasure}` : ''}
                           </p>
                         </div>
@@ -443,7 +443,7 @@ export function StockLedgerPage({
                 {selectedWarehouse ? (
                   <>
                     <span className="text-foreground">{selectedWarehouse.name}</span>
-                    <span className="ml-2 font-mono text-xs text-muted-foreground font-normal">
+                    <span className="ml-2 tabular-nums text-xs text-muted-foreground font-normal">
                       ({selectedWarehouse.warehouseCode})
                     </span>
                   </>
@@ -532,7 +532,7 @@ export function StockLedgerPage({
                       >
                         <div className="text-left">
                           <p className="font-medium text-foreground">{wh.name}</p>
-                          <p className="text-[11px] text-muted-foreground font-mono">
+                          <p className="text-xs text-muted-foreground tabular-nums">
                             {wh.warehouseCode}
                           </p>
                         </div>
@@ -549,42 +549,23 @@ export function StockLedgerPage({
         </div>
       </div>
 
-      {/* 2. Metric Cards Strip (Total In, Total Out, Closing balance) */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {/* Total In */}
-        <div className="rounded-md border border-border/80 bg-card p-4 shadow-xs">
-          <span className="text-xs font-medium text-muted-foreground">Total In</span>
-          <p className="mt-1 text-2xl font-semibold tracking-tight text-success font-mono">
-            {formatQuantity(ledgerData?.totalIn ?? 0)} {currentUom}
-          </p>
-        </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard
+          label="Total In"
+          value={`${formatQuantity(ledgerData?.totalIn ?? 0)} ${currentUom}`}
+        />
+        <KpiCard
+          label="Total Out"
+          value={`${formatQuantity(ledgerData?.totalOut ?? 0)} ${currentUom}`}
+        />
+        <KpiCard
+          label="Closing balance"
+          value={`${formatQuantity(ledgerData?.closingBalance ?? 0)} ${currentUom}`}
+        />
+      </KpiCardGrid>
 
-        {/* Total Out */}
-        <div className="rounded-md border border-border/80 bg-card p-4 shadow-xs">
-          <span className="text-xs font-medium text-muted-foreground">Total Out</span>
-          <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground font-mono">
-            {formatQuantity(ledgerData?.totalOut ?? 0)} {currentUom}
-          </p>
-        </div>
-
-        {/* Closing balance */}
-        <div className="rounded-md border border-border/80 bg-card p-4 shadow-xs">
-          <span className="text-xs font-medium text-muted-foreground">Closing balance</span>
-          <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground font-mono">
-            {formatQuantity(ledgerData?.closingBalance ?? 0)} {currentUom}
-          </p>
-        </div>
-      </div>
-
-      {/* 3. Toolbar (Export CSV, Movement Count) */}
-      <div className="flex items-center justify-between border-b border-border/70 pb-3">
-        <div className="flex items-center gap-2">
-          <History className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs font-medium text-muted-foreground">
-            Transaction history & running balances
-          </span>
-        </div>
-
+      {/* 3. Toolbar (Export CSV) */}
+      <div className="flex items-center justify-end border-b border-border/70 pb-3">
         <button
           type="button"
           onClick={handleExportCsv}
@@ -684,21 +665,21 @@ export function StockLedgerPage({
                             {entry.referenceNumber}
                           </span>
                         )}
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {entry.transactionType}
                         </p>
                       </div>
                     </TD>
 
-                    <TD className="text-right font-mono font-medium text-success">
+                    <TD className="text-right tabular-nums font-medium text-success">
                       {entry.quantityIn ? `+${formatQuantity(entry.quantityIn)}` : '—'}
                     </TD>
 
-                    <TD className="text-right font-mono font-medium text-destructive">
+                    <TD className="text-right tabular-nums font-medium text-destructive">
                       {entry.quantityOut ? `-${formatQuantity(entry.quantityOut)}` : '—'}
                     </TD>
 
-                    <TD className="text-right font-mono font-medium">
+                    <TD className="text-right tabular-nums font-medium">
                       {formatQuantity(entry.runningBalance)}
                     </TD>
                   </TR>

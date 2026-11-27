@@ -152,15 +152,15 @@ export function IncomingInspectionsPage() {
                 >
                   <TD>
                     <RefLink>{row.grnNumber}</RefLink>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{row.inspectionNumber}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{row.inspectionNumber}</p>
                   </TD>
                   <TD className="font-medium">
                     {row.itemName}
-                    <p className="text-[11px] text-ref text-muted-foreground mt-0.5">{row.itemCode}</p>
+                    <p className="text-xs text-ref text-muted-foreground mt-0.5">{row.itemCode}</p>
                   </TD>
-                  <TD className="text-right font-mono tabular-nums">
+                  <TD className="text-right tabular-nums">
                     {formatQty(row.receivedQuantity)}
-                    <span className="ml-1 text-muted-foreground font-sans text-[11px]">
+                    <span className="ml-1 text-muted-foreground font-sans text-xs">
                       {row.unitOfMeasure}
                     </span>
                   </TD>

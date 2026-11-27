@@ -12,11 +12,10 @@ import {
   Plus,
   Send,
   Ban,
-  Building2,
-  Warehouse as WarehouseIcon,
   Eye,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreatePurchaseOrderModal } from './CreatePurchaseOrderModal'
@@ -182,111 +181,76 @@ export function PurchaseOrdersPage({
 
   const totalCount = pageData?.totalElements ?? orders.length
 
+  const openPipeline =
+    (summary?.draftCount ?? orders.filter((o) => o.status === 'DRAFT').length) +
+    (summary?.issuedCount ?? orders.filter((o) => o.status === 'ISSUED').length) +
+    (summary?.partiallyReceivedCount ??
+      orders.filter((o) => o.status === 'PARTIALLY_RECEIVED').length)
+  const committedValue = (
+    summary?.totalValue ??
+    orders.reduce(
+      (acc, o) => (o.status !== 'CANCELLED' ? acc + o.totalAmount : acc),
+      0
+    )
+  ).toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
   return (
-    <div className="space-y-4">
-      {/* 1. Procurement Header with Action Button (rendered only if showHeader is true) */}
+    <div className="space-y-6">
       {showHeader && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3.5">
           <div>
             <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
               Purchase Orders
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Manage procurement orders, vendor commitments, and delivery schedules.
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Vendor commitments and inbound deliveries.
             </p>
           </div>
 
-          <Button
-            onClick={() => setCreateOpen(true)}
-            className="gap-2 bg-ink text-ink-foreground hover:opacity-90 font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
-          >
+          <Button variant="primary" onClick={() => setCreateOpen(true)}>
             <Plus className="h-4 w-4" />
-            <span>Create purchase order</span>
+            Create purchase order
           </Button>
         </div>
       )}
 
-      {/* 2. Unified Metric Strip */}
-      <div className="flex flex-wrap items-center gap-6 py-1">
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Total orders</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.totalOrders ?? orders.length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Drafts</span>
-          <p className="text-xl font-semibold text-muted-foreground tracking-tight mt-0.5">
-            {summary?.draftCount ?? orders.filter((o) => o.status === 'DRAFT').length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Issued</span>
-          <p className="text-xl font-semibold text-success tracking-tight mt-0.5">
-            {summary?.issuedCount ?? orders.filter((o) => o.status === 'ISSUED').length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Partially received</span>
-          <p className="text-xl font-semibold text-warning tracking-tight mt-0.5">
-            {summary?.partiallyReceivedCount ?? orders.filter((o) => o.status === 'PARTIALLY_RECEIVED').length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Completed</span>
-          <p className="text-xl font-semibold text-info tracking-tight mt-0.5">
-            {summary?.completedCount ?? orders.filter((o) => o.status === 'COMPLETED').length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Cancelled</span>
-          <p className="text-xl font-semibold text-destructive tracking-tight mt-0.5">
-            {summary?.cancelledCount ?? orders.filter((o) => o.status === 'CANCELLED').length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Committed value</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5 font-mono">
-            {currencySymbol}
-            {(summary?.totalValue ?? orders.reduce((acc, o) => o.status !== 'CANCELLED' ? acc + o.totalAmount : acc, 0)).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </p>
-        </div>
-      </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard
+          label="Total orders"
+          value={summary?.totalOrders ?? orders.length}
+        />
+        <KpiCard label="Open pipeline" value={openPipeline} />
+        <KpiCard
+          label="Committed value"
+          value={`${currencySymbol}${committedValue}`}
+        />
+      </KpiCardGrid>
 
-      {/* 3. Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2.5">
-          {selectedStatusFilter !== 'all' ? (
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
+          {selectedStatusFilter !== 'all' && (
+            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
               <span className="text-muted-foreground text-xs font-normal">Status:</span>
               <span className="font-medium text-xs uppercase">{selectedStatusFilter}</span>
               <button
                 type="button"
                 onClick={() => setSelectedStatusFilter('all')}
-                className="ml-1 rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="ml-1 rounded-md p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 title="Remove filter"
               >
                 <X className="h-3 w-3" />
               </button>
             </span>
-          ) : (
-            <span className="text-sm font-medium text-muted-foreground">All purchase orders</span>
           )}
 
           {hasActiveFilters && (
             <button
               type="button"
               onClick={clearAllFilters}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer ml-1"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer"
             >
               <RotateCcw className="h-3 w-3" />
               Reset all
@@ -294,8 +258,7 @@ export function PurchaseOrdersPage({
           )}
         </div>
 
-        {/* Right side controls */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 ml-auto">
           {/* Search bar */}
           <div className="relative w-64 sm:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -331,7 +294,7 @@ export function PurchaseOrdersPage({
                     <button
                       type="button"
                       onClick={() => setSelectedStatusFilter('all')}
-                      className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       Reset
                     </button>
@@ -465,31 +428,19 @@ export function PurchaseOrdersPage({
                     </TD>
 
                     <TD>
-                      <div className="flex items-center gap-2.5">
-                        <Building2 className="h-4 w-4 text-muted-foreground/80 shrink-0" />
-                        <div>
-                          <p className="font-medium">{po.supplierName}</p>
-                          <p className="text-[11px] text-ref text-muted-foreground">{po.supplierCode}</p>
-                        </div>
-                      </div>
+                      <p className="font-medium text-foreground">{po.supplierName}</p>
+                      <p className="text-ref text-muted-foreground">{po.supplierCode}</p>
                     </TD>
+
+                    <TD>{po.warehouseName}</TD>
+
+                    <TD>{po.orderDate}</TD>
 
                     <TD>
-                      <div className="flex items-center gap-2">
-                        <WarehouseIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <span>{po.warehouseName}</span>
-                      </div>
-                    </TD>
-
-                    <TD className="font-normal text-muted-foreground">
-                      {po.orderDate}
-                    </TD>
-
-                    <TD className="font-normal text-muted-foreground">
                       {po.itemsCount} {po.itemsCount === 1 ? 'item' : 'items'}
                     </TD>
 
-                    <TD className="text-right font-mono font-medium">
+                    <TD className="text-right tabular-nums font-medium">
                       {currencySymbol}{po.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </TD>
 

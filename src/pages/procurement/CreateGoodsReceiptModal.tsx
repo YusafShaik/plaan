@@ -263,7 +263,7 @@ export function CreateGoodsReceiptModal({
               disabled={isLoading}
               className="font-semibold"
               rightElement={
-                <span className="text-[11px] font-sans font-medium text-brand-deep flex items-center gap-1">
+                <span className="text-xs font-sans font-medium text-brand-deep flex items-center gap-1">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               }
@@ -290,7 +290,7 @@ export function CreateGoodsReceiptModal({
                 }))}
               />
               {eligiblePos.length === 0 && (
-                <p className="mt-1 text-[11px] text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   No pending purchase orders available for receiving. Issue a new purchase order first.
                 </p>
               )}
@@ -298,7 +298,7 @@ export function CreateGoodsReceiptModal({
 
             {/* Field 4: Supplier (Auto-populated from PO) */}
             <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2 select-none">
-              <span className="text-[11px] font-medium text-muted-foreground leading-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
                 Supplier
               </span>
               <div className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground truncate">
@@ -311,7 +311,7 @@ export function CreateGoodsReceiptModal({
 
             {/* Field 5: Receiving Warehouse (Auto-populated from PO) */}
             <div className="group relative flex min-h-[56px] w-full flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2 select-none">
-              <span className="text-[11px] font-medium text-muted-foreground leading-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
                 Receiving Warehouse
               </span>
               <div className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground truncate">
@@ -341,7 +341,7 @@ export function CreateGoodsReceiptModal({
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Received Items
             </span>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {receiptItems.length} {receiptItems.length === 1 ? 'item line' : 'item lines'}
             </span>
           </div>
@@ -373,7 +373,7 @@ export function CreateGoodsReceiptModal({
                           {/* Item Column */}
                           <TD className="py-2.5 px-3">
                             <p className="text-xs font-semibold text-foreground truncate">{row.itemName}</p>
-                            <span className="inline-block px-1.5 py-0.5 rounded bg-secondary text-[10px] font-semibold text-muted-foreground uppercase mt-0.5">
+                            <span className="inline-block px-1.5 py-0.5 rounded bg-secondary text-xs font-semibold text-muted-foreground uppercase mt-0.5">
                               {row.unitOfMeasure}
                             </span>
                           </TD>
@@ -427,7 +427,7 @@ export function CreateGoodsReceiptModal({
         {currentPo && receiptItems.length > 0 && (
           <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/30 p-4 space-y-3">
             <div>
-              <span className="text-[11px] font-medium text-muted-foreground select-none block">
+              <span className="text-xs font-medium text-muted-foreground select-none block">
                 Purchase Order status after posting
               </span>
               <div className="mt-1 flex items-center gap-2">
@@ -441,7 +441,7 @@ export function CreateGoodsReceiptModal({
 
             {activeMovements.length > 0 && (
               <div className="pt-2 border-t border-border/60">
-                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
                   Expected Inventory Inbound Movements
                 </span>
                 <div className="flex flex-wrap items-center gap-2">
@@ -452,7 +452,7 @@ export function CreateGoodsReceiptModal({
                     >
                       <PackageCheck className="h-3.5 w-3.5 text-success" />
                       <span>{m.itemName}:</span>
-                      <strong className="font-medium font-mono">+{m.qty} {m.uom}</strong>
+                      <strong className="font-medium tabular-nums">+{m.qty} {m.uom}</strong>
                     </span>
                   ))}
                 </div>
@@ -463,7 +463,7 @@ export function CreateGoodsReceiptModal({
 
         {/* Section 4: Notes */}
         <div>
-          <label className="block text-[11px] font-medium text-muted-foreground mb-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
             Notes & Remarks
           </label>
           <textarea

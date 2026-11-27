@@ -298,10 +298,10 @@ export function CreateItemModal({
                 setIsManualCodeEdit(true)
               }}
               disabled={isLoading || (!isManualCodeEdit && !isNewPrefixMode && prefixes.length > 0)}
-              className="font-mono text-sm font-medium tracking-wider bg-secondary"
+              className="tabular-nums text-sm font-medium tracking-wider bg-secondary"
               rightElement={
                 isManualCodeEdit ? (
-                  <span className="text-[11px] text-muted-foreground italic">Manual override</span>
+                  <span className="text-xs text-muted-foreground italic">Manual override</span>
                 ) : undefined
               }
             />

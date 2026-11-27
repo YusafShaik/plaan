@@ -399,7 +399,7 @@ export function EnterOpeningStockModal({
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-border/80">
             <div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Inventory / Opening Stock / {editingDraftId ? 'Edit Draft' : 'New'}
               </p>
               <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -441,7 +441,7 @@ export function EnterOpeningStockModal({
                   value={openingStockNumber}
                   disabled
                   hint="Auto-generated"
-                  className="[&_input]:font-mono [&_input]:text-muted-foreground"
+                  className="[&_input]:tabular-nums [&_input]:text-muted-foreground"
                 />
 
                 <DateField
@@ -462,7 +462,7 @@ export function EnterOpeningStockModal({
                     isWarehouseDropdownOpen ? fieldChromeFocus : fieldChromeIdle
                   )}
                 >
-                  <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                  <span className="text-xs font-medium text-muted-foreground select-none leading-none">
                     Warehouse <span className="text-destructive">*</span>
                   </span>
                   <span className="mt-1 flex w-full items-center justify-between gap-2 text-sm font-medium min-w-0">
@@ -520,7 +520,7 @@ export function EnterOpeningStockModal({
                             >
                               <div className="text-left">
                                 <p className="font-medium text-foreground">{w.name}</p>
-                                <p className="text-[10px] text-muted-foreground font-mono">
+                                <p className="text-xs text-muted-foreground tabular-nums">
                                   {w.warehouseCode}
                                 </p>
                               </div>
@@ -622,7 +622,7 @@ export function EnterOpeningStockModal({
                                       >
                                         <div className="text-left">
                                           <p className="font-medium text-foreground">{it.name}</p>
-                                          <p className="text-[10px] text-muted-foreground font-mono">
+                                          <p className="text-xs text-muted-foreground tabular-nums">
                                             {it.itemCode} · UOM: {it.unitOfMeasure}
                                           </p>
                                         </div>
@@ -648,7 +648,7 @@ export function EnterOpeningStockModal({
                             placeholder="e.g. 500"
                             value={row.quantity}
                             onChange={(e) => handleQuantityChange(row.id, e.target.value)}
-                            className="[&_input]:font-mono"
+                            className="[&_input]:tabular-nums"
                           />
                         </div>
 
@@ -696,7 +696,7 @@ export function EnterOpeningStockModal({
                   fieldChromeIdle
                 )}
               >
-                <span className="text-[11px] font-medium text-muted-foreground leading-none">
+                <span className="text-xs font-medium text-muted-foreground leading-none">
                   Notes <span className="font-normal">(Optional)</span>
                 </span>
                 <textarea
@@ -775,7 +775,7 @@ export function EnterOpeningStockModal({
               ) : historyList.length === 0 ? (
                 <div className="py-12 text-center rounded-md border border-border/60 bg-secondary/20">
                   <p className="text-xs font-medium text-foreground">No opening stock records found</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Use the 'Enter Stock' tab to initialize materials.
                   </p>
                 </div>
@@ -794,7 +794,7 @@ export function EnterOpeningStockModal({
                     <TBody className="divide-y divide-border/60">
                       {historyList.map((stock) => (
                         <TR key={stock.id} className="hover:bg-secondary/20 transition-colors">
-                          <TD className="py-2.5 px-3.5 font-mono font-medium text-foreground">
+                          <TD className="py-2.5 px-3.5 tabular-nums font-medium text-foreground">
                             {stock.openingStockNumber}
                           </TD>
                           <TD className="py-2.5 px-3.5 text-muted-foreground">
@@ -803,7 +803,7 @@ export function EnterOpeningStockModal({
                           <TD className="py-2.5 px-3.5 text-foreground">
                             {stock.warehouseName}
                           </TD>
-                          <TD className="py-2.5 px-3.5 text-center font-mono">
+                          <TD className="py-2.5 px-3.5 text-center tabular-nums">
                             {stock.totalItems}
                           </TD>
                           <TD className="py-2.5 px-3.5">
@@ -824,14 +824,14 @@ export function EnterOpeningStockModal({
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleEditDraft(stock)}
-                                  className="h-7 px-2.5 text-[11px] cursor-pointer"
+                                  className="h-7 px-2.5 text-xs cursor-pointer"
                                 >
                                   Edit / Post
                                 </Button>
                                 <button
                                   type="button"
                                   onClick={() => handleCancelDraft(stock.id)}
-                                  className="text-[11px] text-destructive hover:underline cursor-pointer"
+                                  className="text-xs text-destructive hover:underline cursor-pointer"
                                 >
                                   Cancel
                                 </button>
@@ -844,7 +844,7 @@ export function EnterOpeningStockModal({
                                   setDetailsStock(stock)
                                   setIsDetailsOpen(true)
                                 }}
-                                className="h-7 px-2.5 text-[11px] cursor-pointer inline-flex items-center gap-1"
+                                className="h-7 px-2.5 text-xs cursor-pointer inline-flex items-center gap-1"
                               >
                                 <Eye className="h-3 w-3" />
                                 <span>View</span>

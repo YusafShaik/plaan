@@ -263,7 +263,7 @@ export function RecordMaterialConsumptionModal({
                 type="text"
                 disabled
                 value={consumptionNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
               />
             </div>
 
@@ -289,7 +289,7 @@ export function RecordMaterialConsumptionModal({
               type="text"
               disabled
               value={order.orderNumber}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed font-medium"
             />
           </div>
 
@@ -315,7 +315,7 @@ export function RecordMaterialConsumptionModal({
                         <TD className="py-2.5 px-3.5 font-medium text-foreground">
                           {r.materialName}
                         </TD>
-                        <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(r.availableInProduction)}
                         </TD>
                         <TD className="py-2.5 px-3 text-right">
@@ -326,14 +326,14 @@ export function RecordMaterialConsumptionModal({
                             placeholder="0"
                             value={r.consumeQuantity}
                             onChange={(e) => handleRowQuantityChange(r.materialId, e.target.value)}
-                            className={`flex h-8 w-28 ml-auto rounded-md border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
+                            className={`flex h-8 w-28 ml-auto rounded-md border px-2.5 text-right tabular-nums text-xs focus:outline-none transition-colors ${
                               isExceeding
                                 ? 'border-destructive bg-destructive/10 text-destructive focus:border-destructive'
                                 : 'border-border/80 bg-secondary/40 text-foreground focus:border-foreground focus:ring-1 focus:ring-foreground'
                             }`}
                           />
                         </TD>
-                        <TD className="py-2.5 px-3.5 text-right font-mono font-medium">
+                        <TD className="py-2.5 px-3.5 text-right tabular-nums font-medium">
                           <span className={remaining === 0 ? 'text-success font-semibold' : 'text-foreground'}>
                             {formatQuantity(remaining)}
                           </span>

@@ -12,12 +12,11 @@ import {
   Plus,
   Send,
   Ban,
-  Building2,
-  Warehouse as WarehouseIcon,
   Eye,
   History,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { UnderlineTabs } from '../../components/ui/Tabs'
@@ -241,8 +240,7 @@ export function GoodsReceiptsPage({
   const totalCount = pageData?.totalElements ?? receipts.length
 
   return (
-    <div className="space-y-4">
-      {/* 1. Header (rendered only if showHeader is true) */}
+    <div className="space-y-6">
       {showHeader && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3.5">
           <div>
@@ -264,38 +262,28 @@ export function GoodsReceiptsPage({
         </div>
       )}
 
-      {/* 2. Unified Metric Strip */}
-      <div className="flex flex-wrap items-center gap-6 py-1">
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Total receipts</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.totalGrns ?? receipts.length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Draft receipts</span>
-          <p className="text-xl font-semibold text-muted-foreground tracking-tight mt-0.5">
-            {summary?.draftCount ?? receipts.filter((r) => r.status === 'DRAFT').length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Posted receipts</span>
-          <p className="text-xl font-semibold text-success tracking-tight mt-0.5">
-            {summary?.postedCount ?? receipts.filter((r) => r.status === 'POSTED').length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Items received</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.totalItemsReceived ?? receipts.reduce((acc, r) => acc + r.itemsCount, 0)}
-          </p>
-        </div>
-      </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard
+          label="Total receipts"
+          value={summary?.totalGrns ?? receipts.length}
+        />
+        <KpiCard
+          label="Posted"
+          value={
+            summary?.postedCount ??
+            receipts.filter((r) => r.status === 'POSTED').length
+          }
+        />
+        <KpiCard
+          label="Items received"
+          value={
+            summary?.totalItemsReceived ??
+            receipts.reduce((acc, r) => acc + r.itemsCount, 0)
+          }
+        />
+      </KpiCardGrid>
 
-      <div className="pt-1">
+      <div className="space-y-3">
         <UnderlineTabs
           items={[
             { id: 'receipts', label: 'Goods receipts' },
@@ -315,7 +303,7 @@ export function GoodsReceiptsPage({
           }}
         />
         {subTab === 'movements' && (
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Inbound inventory movement ledger against purchase orders
           </p>
         )}
@@ -327,21 +315,19 @@ export function GoodsReceiptsPage({
           {/* Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              {selectedStatusFilter !== 'all' ? (
-                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
+              {selectedStatusFilter !== 'all' && (
+                <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
                   <span className="text-muted-foreground text-xs font-normal">Status:</span>
                   <span className="font-medium text-xs uppercase">{selectedStatusFilter}</span>
                   <button
                     type="button"
                     onClick={() => setSelectedStatusFilter('all')}
-                    className="ml-1 rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                    className="ml-1 rounded-md p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                     title="Remove filter"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </span>
-              ) : (
-                <span className="text-sm font-medium text-muted-foreground">All goods receipts</span>
               )}
 
               {hasActiveFilters && (
@@ -357,7 +343,7 @@ export function GoodsReceiptsPage({
             </div>
 
             {/* Right side controls */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 ml-auto">
               {/* Search bar */}
               <div className="relative w-64 sm:w-72">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -393,7 +379,7 @@ export function GoodsReceiptsPage({
                         <button
                           type="button"
                           onClick={() => setSelectedStatusFilter('all')}
-                          className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                          className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                           Reset
                         </button>
@@ -520,31 +506,19 @@ export function GoodsReceiptsPage({
                         </TD>
 
                         <TD>
-                          <div className="flex items-center gap-2.5">
-                            <Building2 className="h-4 w-4 text-muted-foreground/80 shrink-0" />
-                            <div>
-                              <p className="font-medium">{grn.supplierName}</p>
-                              <p className="text-[11px] text-ref text-muted-foreground">{grn.supplierCode}</p>
-                            </div>
-                          </div>
+                          <p className="font-medium">{grn.supplierName}</p>
+                          <p className="text-xs text-ref text-muted-foreground">{grn.supplierCode}</p>
                         </TD>
 
-                        <TD>
-                          <div className="flex items-center gap-2">
-                            <WarehouseIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                            <span>{grn.warehouseName}</span>
-                          </div>
-                        </TD>
+                        <TD>{grn.warehouseName}</TD>
 
-                        <TD className="font-normal text-muted-foreground">
-                          {grn.receiptDate}
-                        </TD>
+                        <TD className="font-normal">{grn.receiptDate}</TD>
 
-                        <TD className="text-ref text-muted-foreground font-normal">
+                        <TD className="text-ref font-normal">
                           {grn.deliveryNoteNumber || '—'}
                         </TD>
 
-                        <TD className="font-normal text-muted-foreground">
+                        <TD className="font-normal">
                           {grn.itemsCount} {grn.itemsCount === 1 ? 'item' : 'items'}
                         </TD>
 
@@ -712,14 +686,14 @@ export function GoodsReceiptsPage({
                           {m.referenceNumber}
                         </TD>
 
-                        <TD className="text-ref text-muted-foreground font-normal">
+                        <TD className="text-ref font-normal">
                           {m.poNumber}
                         </TD>
 
                         <TD>
                           <div>
                             <span className="font-medium">{m.itemName}</span>
-                            <span className="ml-2 text-[11px] text-ref text-muted-foreground">
+                            <span className="ml-2 text-xs text-ref text-muted-foreground">
                               {m.itemCode}
                             </span>
                           </div>
@@ -730,16 +704,16 @@ export function GoodsReceiptsPage({
                           <span className="ml-1 text-muted-foreground font-normal">({m.warehouseName})</span>
                         </TD>
 
-                        <TD className="font-mono font-medium text-success">
+                        <TD className="tabular-nums font-medium text-success">
                           +{m.quantity} {m.unitOfMeasure}
                         </TD>
 
-                        <TD className="font-normal text-muted-foreground">
+                        <TD className="font-normal">
                           {new Date(m.createdAt).toLocaleDateString()} {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </TD>
 
                         <TD>
-                          <Badge variant="success" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                          <Badge variant="success" className="h-auto px-2 py-0.5 text-xs font-medium">
                             Inbound Receipt
                           </Badge>
                         </TD>

@@ -201,9 +201,9 @@ export function InspectionTemplatesPage() {
                   </TD>
                   <TD>
                     <div className="text-sm font-medium text-foreground">{template.itemName}</div>
-                    <div className="text-[11px] text-muted-foreground">{template.templateName}</div>
+                    <div className="text-xs text-muted-foreground">{template.templateName}</div>
                   </TD>
-                  <TD className="text-xs text-muted-foreground">
+                  <TD>
                     {TYPE_LABEL[template.inspectionType]}
                   </TD>
                   <TD>

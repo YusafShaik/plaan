@@ -179,7 +179,7 @@ export function PendingDispatchesReport({ onBack }: PendingDispatchesReportProps
         filters={
           <div className="space-y-4">
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2">
                 Delivery Status
               </p>
               <UnderlineTabs
@@ -365,27 +365,27 @@ export function PendingDispatchesReport({ onBack }: PendingDispatchesReportProps
                       <div className="text-sm text-foreground">{row.itemName}</div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-2">
                         <RefLink>{row.orderNumber}</RefLink>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           · {row.customerName}
                         </span>
                         {deliveryBadge(row.deliveryStatus)}
                       </div>
-                      <div className="text-[11px] text-ref text-muted-foreground mt-0.5">
+                      <div className="text-xs text-ref text-muted-foreground mt-0.5">
                         {row.itemCode}
                       </div>
                     </TD>
                     <TD className="text-xs text-muted-foreground">{row.warehouseName}</TD>
-                    <TD className="font-mono text-xs tabular-nums">
+                    <TD className="tabular-nums text-xs tabular-nums">
                       {formatQty(row.orderedQuantity)} {row.unitOfMeasure}
                     </TD>
-                    <TD className="font-mono text-xs tabular-nums">
+                    <TD className="tabular-nums text-xs tabular-nums">
                       {formatQty(row.dispatchedQuantity)} {row.unitOfMeasure}
                     </TD>
-                    <TD className="font-mono text-xs tabular-nums font-medium text-foreground">
+                    <TD className="tabular-nums text-xs tabular-nums font-medium text-foreground">
                       {formatQty(row.pendingQuantity)} {row.unitOfMeasure}
                     </TD>
                     <TD
-                      className={`font-mono text-xs tabular-nums ${
+                      className={`tabular-nums text-xs tabular-nums ${
                         row.availableStock >= row.pendingQuantity
                           ? 'text-success'
                           : 'text-destructive'
@@ -394,19 +394,19 @@ export function PendingDispatchesReport({ onBack }: PendingDispatchesReportProps
                       {formatQty(row.availableStock)}
                     </TD>
                     <TD
-                      className={`font-mono text-xs tabular-nums ${
+                      className={`tabular-nums text-xs tabular-nums ${
                         row.shortageQuantity > 0 ? 'text-warning' : 'text-muted-foreground'
                       }`}
                     >
                       {row.shortageQuantity > 0 ? formatQty(row.shortageQuantity) : '—'}
                     </TD>
-                    <TD className="font-mono text-xs tabular-nums">
+                    <TD className="tabular-nums text-xs tabular-nums">
                       {formatMoney(row.pendingValue, currency)}
                     </TD>
                     <TD className="text-xs text-muted-foreground">
                       {formatDate(row.expectedDeliveryDate)}
                     </TD>
-                    <TD className="font-mono text-xs tabular-nums text-muted-foreground">
+                    <TD className="tabular-nums text-xs tabular-nums text-muted-foreground">
                       {row.daysOverdue != null ? row.daysOverdue : '—'}
                     </TD>
                   </TR>

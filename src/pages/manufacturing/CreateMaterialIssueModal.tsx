@@ -238,7 +238,7 @@ export function CreateMaterialIssueModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Manufacturing / Production Orders / {order.orderNumber}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -282,9 +282,9 @@ export function CreateMaterialIssueModal({
                 type="text"
                 disabled
                 value={issueNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
+              <p className="mt-1 text-xs text-muted-foreground">Auto-generated</p>
             </div>
 
             <div>
@@ -310,7 +310,7 @@ export function CreateMaterialIssueModal({
                 type="text"
                 disabled
                 value={`${order.orderNumber} (${order.productName})`}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed font-medium truncate"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed font-medium truncate"
               />
             </div>
 
@@ -334,11 +334,11 @@ export function CreateMaterialIssueModal({
                 <h3 className="text-sm font-semibold text-foreground">
                   Materials to issue
                 </h3>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Specify issue quantities against remaining order requirements.
                 </p>
               </div>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {rows.length} components
               </span>
             </div>
@@ -363,14 +363,14 @@ export function CreateMaterialIssueModal({
                       <TR key={r.materialId} className="hover:bg-secondary/30 transition-colors">
                         <TD className="py-2.5 px-3.5">
                           <p className="font-medium text-foreground">{r.materialName}</p>
-                          <p className="text-[10px] text-muted-foreground font-mono">
+                          <p className="text-xs text-muted-foreground tabular-nums">
                             {r.materialCode}
                           </p>
                         </TD>
-                        <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(r.pendingQuantity)}
                         </TD>
-                        <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                        <TD className="py-2.5 px-3 text-right tabular-nums font-medium text-foreground">
                           {formatQuantity(r.onHandQuantity)}
                         </TD>
                         <TD className="py-2.5 px-3 text-right">
@@ -381,7 +381,7 @@ export function CreateMaterialIssueModal({
                             placeholder="0"
                             value={r.issueQuantity}
                             onChange={(e) => handleRowQuantityChange(r.materialId, e.target.value)}
-                            className={`flex h-8 w-28 ml-auto rounded-md border px-2.5 text-right font-mono text-xs focus:outline-none transition-colors ${
+                            className={`flex h-8 w-28 ml-auto rounded-md border px-2.5 text-right tabular-nums text-xs focus:outline-none transition-colors ${
                               isExceedingPending || isExceedingOnHand
                                 ? 'border-destructive bg-destructive/10 text-destructive focus:border-destructive'
                                 : 'border-border/80 bg-secondary/40 text-foreground focus:border-foreground focus:ring-1 focus:ring-foreground'
@@ -413,7 +413,7 @@ export function CreateMaterialIssueModal({
           {/* Notes */}
           <div>
             <label className="block text-xs font-medium text-foreground mb-1.5">
-              Notes <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
+              Notes <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
             </label>
             <textarea
               rows={2}

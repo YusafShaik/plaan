@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { SalesOrdersPage } from './SalesOrdersPage'
 
 export type SalesTab = 'orders'
@@ -10,14 +11,14 @@ export function SalesPage() {
   const [activeTab, setActiveTab] = useState<SalesTab>('orders')
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="pb-3">
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div>
           <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Sales
           </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Manage customer orders and fulfillment.
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Customer orders and fulfillment.
           </p>
         </div>
         <UnderlineTabs
@@ -25,9 +26,9 @@ export function SalesPage() {
           value={activeTab}
           onChange={(id) => setActiveTab(id as SalesTab)}
         />
-      </div>
+      </header>
 
       <div>{activeTab === 'orders' && <SalesOrdersPage />}</div>
-    </div>
+    </ContentCanvas>
   )
 }

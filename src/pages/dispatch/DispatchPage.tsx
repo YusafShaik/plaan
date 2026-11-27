@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { dispatchService } from '../../services/dispatchService'
 import { CreateDispatchModal } from './CreateDispatchModal'
 import { DispatchDetailsModal } from './DispatchDetailsModal'
@@ -73,14 +74,14 @@ export function DispatchPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="pb-3">
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div>
           <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Dispatch
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage outgoing goods and customer shipments.
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Outbound shipments against sales orders.
           </p>
         </div>
         <UnderlineTabs
@@ -88,7 +89,7 @@ export function DispatchPage() {
           value={activeSubTab}
           onChange={() => {}}
         />
-      </div>
+      </header>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
@@ -154,8 +155,10 @@ export function DispatchPage() {
                         {d.dispatchNumber}
                       </span>
                     </TD>
-                    <TD className="text-ref text-muted-foreground">
-                      {d.salesOrderNumber}
+                    <TD>
+                      <span className="text-ref text-foreground">
+                        {d.salesOrderNumber}
+                      </span>
                     </TD>
                     <TD className="font-medium">
                       {d.customerName}
@@ -189,7 +192,7 @@ export function DispatchPage() {
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <span className="px-2 text-muted-foreground font-mono">
+              <span className="px-2 text-muted-foreground tabular-nums">
                 {page + 1} / {totalPages}
               </span>
               <Button
@@ -235,6 +238,6 @@ export function DispatchPage() {
           fetchDispatches()
         }}
       />
-    </div>
+    </ContentCanvas>
   )
 }

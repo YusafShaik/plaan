@@ -419,7 +419,7 @@ export function CreateStockAdjustmentModal({
         {/* Header matching Stock Transfer */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Inventory / Stock Adjustments / {initialDraft ? 'Edit Draft' : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -460,7 +460,7 @@ export function CreateStockAdjustmentModal({
               value={adjustmentNumber}
               disabled
               hint="Auto-generated"
-              className="[&_input]:font-mono [&_input]:text-muted-foreground"
+              className="[&_input]:tabular-nums [&_input]:text-muted-foreground"
             />
 
             <DateField
@@ -483,7 +483,7 @@ export function CreateStockAdjustmentModal({
                   isWarehouseOpen ? fieldChromeFocus : fieldChromeIdle
                 )}
               >
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                <span className="text-xs font-medium text-muted-foreground select-none leading-none">
                   Warehouse <span className="text-destructive">*</span>
                 </span>
                 <span className="mt-1 flex w-full items-center justify-between gap-2 text-sm font-medium min-w-0">
@@ -541,7 +541,7 @@ export function CreateStockAdjustmentModal({
                           >
                             <div className="text-left">
                               <p className="font-medium text-foreground">{w.name}</p>
-                              <p className="text-[10px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground tabular-nums">
                                 {w.warehouseCode}
                               </p>
                             </div>
@@ -573,7 +573,7 @@ export function CreateStockAdjustmentModal({
                 Adjustment items
               </h3>
               {!warehouseId && (
-                <span className="text-[11px] text-warning font-medium">
+                <span className="text-xs text-warning font-medium">
                   Select a warehouse to see system stock
                 </span>
               )}
@@ -660,7 +660,7 @@ export function CreateStockAdjustmentModal({
                                   >
                                     <div className="text-left">
                                       <p className="font-medium text-foreground">{it.name}</p>
-                                      <p className="text-[10px] text-muted-foreground font-mono">
+                                      <p className="text-xs text-muted-foreground tabular-nums">
                                         {it.itemCode}
                                         {itemStock !== null && (
                                           <span className="ml-1 text-success font-medium">
@@ -683,7 +683,7 @@ export function CreateStockAdjustmentModal({
 
                     {/* System Qty Column */}
                     <div className="w-20 shrink-0 text-center">
-                      <span className="text-xs font-mono font-medium text-foreground">
+                      <span className="text-xs tabular-nums font-medium text-foreground">
                         {sysQty !== null ? sysQty : '—'}
                       </span>
                     </div>
@@ -698,12 +698,12 @@ export function CreateStockAdjustmentModal({
                         placeholder="0"
                         value={row.physicalQuantity}
                         onChange={(e) => handlePhysicalQtyChange(row.id, e.target.value)}
-                        className="[&_input]:font-mono [&_input]:text-center"
+                        className="[&_input]:tabular-nums [&_input]:text-center"
                       />
                     </div>
 
                     {/* Difference Column */}
-                    <div className="w-20 shrink-0 text-center font-mono text-xs font-medium">
+                    <div className="w-20 shrink-0 text-center tabular-nums text-xs font-medium">
                       {diff === null ? (
                         <span className="text-muted-foreground">—</span>
                       ) : diff > 0 ? (
@@ -752,7 +752,7 @@ export function CreateStockAdjustmentModal({
               fieldChromeIdle
             )}
           >
-            <span className="text-[11px] font-medium text-muted-foreground leading-none">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
               Notes{' '}
               {reason === 'Other' ? (
                 <span className="text-destructive">*</span>

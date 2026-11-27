@@ -261,23 +261,23 @@ export function ProductionOrdersPage() {
 
                     <TD>
                       <p className="font-medium">{o.productName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {o.productCode} · BOM: {o.bomCode}
                       </p>
                     </TD>
 
-                    <TD className="font-mono font-medium">
+                    <TD className="tabular-nums font-medium">
                       {formatQuantity(o.productionQuantity)} {o.unitOfMeasure}
                     </TD>
 
                     <TD>
                       <p className="font-medium">{o.sourceWarehouseName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">{o.sourceWarehouseCode}</p>
+                      <p className="text-xs text-ref text-muted-foreground">{o.sourceWarehouseCode}</p>
                     </TD>
 
                     <TD>
                       <p className="font-medium">{o.finishedGoodsWarehouseName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">{o.finishedGoodsWarehouseCode}</p>
+                      <p className="text-xs text-ref text-muted-foreground">{o.finishedGoodsWarehouseCode}</p>
                     </TD>
 
                     <TD>

@@ -332,7 +332,7 @@ export function CreateSalesOrderModal({
         {/* Header matching Screenshot 0 */}
         <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Sales / Sales Orders / {isEditing ? orderNumber : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -368,7 +368,7 @@ export function CreateSalesOrderModal({
                 value={orderNumber}
                 readOnly
                 disabled
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground font-mono focus:outline-none opacity-80 cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground tabular-nums focus:outline-none opacity-80 cursor-not-allowed"
               />
             </div>
 
@@ -506,7 +506,7 @@ export function CreateSalesOrderModal({
                             )
                           }
                           placeholder="1"
-                          className="flex h-9 w-full rounded-md border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-foreground"
+                          className="flex h-9 w-full rounded-md border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground"
                         />
                       </TD>
 
@@ -530,12 +530,12 @@ export function CreateSalesOrderModal({
                             )
                           }
                           placeholder="0.00"
-                          className="flex h-9 w-full rounded-md border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground font-mono focus:outline-none focus:border-foreground"
+                          className="flex h-9 w-full rounded-md border border-border/80 bg-secondary/40 px-2.5 text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground"
                         />
                       </TD>
 
                       {/* Line Amount */}
-                      <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                      <TD className="py-2.5 px-3 text-right tabular-nums font-medium text-foreground">
                         {formatCurrency(lineAmount)}
                       </TD>
 
@@ -571,7 +571,7 @@ export function CreateSalesOrderModal({
         {/* Order Total matching Screenshot 0 */}
         <div className="flex items-center justify-between p-3.5 rounded-md border border-border/80 bg-secondary/30">
           <span className="text-sm font-semibold text-foreground">Order Total</span>
-          <span className="text-xl font-medium font-mono text-foreground">
+          <span className="text-xl font-medium tabular-nums text-foreground">
             {formatCurrency(calculatedTotal)}
           </span>
         </div>

@@ -13,6 +13,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD, RefLink } from '../../components/ui/Table'
 import { NativeSelect } from '../../components/ui/NativeSelect'
 import { Alert } from '../../components/ui/Alert'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { CreateMaintenanceWorkOrderModal } from './CreateMaintenanceWorkOrderModal'
 import { MaintenanceWorkOrderDetailsModal } from './MaintenanceWorkOrderDetailsModal'
 import { maintenanceService } from '../../services/maintenanceService'
@@ -113,29 +114,18 @@ export function WorkOrdersPage() {
   const hasFilters = Boolean(search || statusFilter || typeFilter)
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-6 py-1">
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Open</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.openCount ?? 0}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">In Progress</span>
-          <p className="text-xl font-semibold text-warning tracking-tight mt-0.5">
-            {summary?.inProgressCount ?? 0}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Completed</span>
-          <p className="text-xl font-semibold text-success tracking-tight mt-0.5">
-            {summary?.completedCount ?? 0}
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <KpiCardGrid columns={3}>
+        <KpiCard label="Open" value={summary?.openCount ?? 0} />
+        <KpiCard
+          label="In Progress"
+          value={summary?.inProgressCount ?? 0}
+        />
+        <KpiCard
+          label="Completed"
+          value={summary?.completedCount ?? 0}
+        />
+      </KpiCardGrid>
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
@@ -186,7 +176,7 @@ export function WorkOrdersPage() {
             </button>
           )}
         </div>
-        <Button type="button" variant="primary" onClick={() => setIsCreateOpen(true)}>
+        <Button type="button" variant="primary" className="ml-auto" onClick={() => setIsCreateOpen(true)}>
           <Plus className="h-4 w-4" />
           New Work Order
         </Button>
@@ -233,12 +223,12 @@ export function WorkOrdersPage() {
                 >
                   <TD>
                     <RefLink>{wo.workOrderNumber}</RefLink>
-                    <div className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[14rem]">
+                    <div className="text-xs text-muted-foreground mt-0.5 truncate max-w-[14rem]">
                       {wo.activityName}
                     </div>
                   </TD>
                   <TD className="text-sm text-foreground">{wo.equipmentName}</TD>
-                  <TD className="text-xs text-muted-foreground">
+                  <TD className="text-sm text-foreground">
                     {TYPE_LABEL[wo.maintenanceType]}
                   </TD>
                   <TD>{statusBadge(wo.status)}</TD>

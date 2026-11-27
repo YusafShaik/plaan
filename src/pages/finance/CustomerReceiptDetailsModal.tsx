@@ -86,11 +86,11 @@ export function CustomerReceiptDetailsModal({
       <div className="space-y-5">
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Finance / Receipts / {payment.receiptNumber}
             </p>
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
+              <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
                 {payment.receiptNumber}
               </span>
               {isPosted ? (

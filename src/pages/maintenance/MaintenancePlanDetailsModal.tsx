@@ -72,7 +72,7 @@ export function MaintenancePlanDetailsModal({
       <div className="space-y-5">
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Maintenance / Maintenance Plans / {plan.planNumber}
             </p>
             <div className="flex items-center gap-2.5 flex-wrap">
@@ -115,7 +115,7 @@ export function MaintenancePlanDetailsModal({
         </div>
 
         <div>
-          <p className="text-[11px] font-medium text-muted-foreground mb-1">
+          <p className="text-xs font-medium text-muted-foreground mb-1">
             Maintenance Instructions
           </p>
           <div className="rounded-md border border-border/80 bg-secondary/40 px-3.5 py-3 text-sm text-foreground whitespace-pre-wrap">
@@ -125,7 +125,7 @@ export function MaintenancePlanDetailsModal({
 
         {plan.notes && (
           <div>
-            <p className="text-[11px] font-medium text-muted-foreground mb-1">Notes</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Notes</p>
             <p className="text-sm text-foreground whitespace-pre-wrap">{plan.notes}</p>
           </div>
         )}
@@ -205,7 +205,7 @@ export function MaintenancePlanDetailsModal({
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
     </div>
   )

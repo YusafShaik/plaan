@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { PurchaseInvoicesPage } from './PurchaseInvoicesPage'
 import { SalesInvoicesPage } from './SalesInvoicesPage'
 import { SupplierPaymentsPage } from './SupplierPaymentsPage'
@@ -47,14 +48,14 @@ export function FinancePage({
   }, [initialSection, onInitialSectionConsumed])
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="pb-3">
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div>
           <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Finance
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage invoices, payments and expenses.
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Invoices, payments, and expenses.
           </p>
         </div>
 
@@ -63,7 +64,7 @@ export function FinancePage({
           value={activeTab}
           onChange={(id) => setActiveTab(id as FinanceTab)}
         />
-      </div>
+      </header>
 
       <div>
         {activeTab === 'purchase-invoices' && <PurchaseInvoicesPage />}
@@ -72,6 +73,6 @@ export function FinancePage({
         {activeTab === 'receipts' && <CustomerReceiptsPage />}
         {activeTab === 'expenses' && <ExpensesPage />}
       </div>
-    </div>
+    </ContentCanvas>
   )
 }

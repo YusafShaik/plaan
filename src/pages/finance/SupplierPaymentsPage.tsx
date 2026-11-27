@@ -125,7 +125,7 @@ export function SupplierPaymentsPage({
               placeholder="Search payments..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
           <NativeSelect
@@ -213,7 +213,7 @@ export function SupplierPaymentsPage({
                     </TD>
                     <TD className="font-medium">{p.supplierName}</TD>
                     <TD className="text-muted-foreground">{METHOD_LABEL[p.paymentMethod]}</TD>
-                    <TD className="text-right font-mono font-medium">{formatCurrency(p.amount)}</TD>
+                    <TD className="text-right tabular-nums font-medium">{formatCurrency(p.amount)}</TD>
                     <TD>
                       {isPosted ? (
                         <Badge variant="success">Posted</Badge>
@@ -279,7 +279,7 @@ export function SupplierPaymentsPage({
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <span className="px-2 text-muted-foreground font-mono">
+              <span className="px-2 text-muted-foreground tabular-nums">
                 {currentPage + 1} / {pageData.totalPages}
               </span>
               <Button

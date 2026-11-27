@@ -173,7 +173,7 @@ export function SupplierOutstandingReport({ onBack }: SupplierOutstandingReportP
         filters={
           <div className="space-y-4">
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-2">Due Status</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Due Status</p>
               <UnderlineTabs
                 items={[
                   { id: 'all', label: 'All' },
@@ -386,27 +386,27 @@ export function SupplierOutstandingReport({ onBack }: SupplierOutstandingReportP
                           {dueBadge(row.dueStatus)}
                         </div>
                         <div className="text-sm text-foreground mt-0.5">{row.supplierName}</div>
-                        <div className="text-[11px] text-ref text-muted-foreground mt-0.5">
+                        <div className="text-xs text-ref text-muted-foreground mt-0.5">
                           {row.supplierInvoiceNumber}
                         </div>
                       </TD>
                       <TD className="text-xs text-muted-foreground">
                         {formatDate(row.invoiceDate)}
                       </TD>
-                      <TD className="font-mono text-xs tabular-nums">
+                      <TD className="tabular-nums text-xs tabular-nums">
                         {formatMoney(row.invoiceAmount, currency)}
                       </TD>
-                      <TD className="font-mono text-xs tabular-nums">
+                      <TD className="tabular-nums text-xs tabular-nums">
                         {formatMoney(row.paidAmount, currency)}
                       </TD>
-                      <TD className="font-mono text-xs tabular-nums font-medium text-foreground">
+                      <TD className="tabular-nums text-xs tabular-nums font-medium text-foreground">
                         {formatMoney(row.outstandingAmount, currency)}
                       </TD>
                       <TD className="text-xs text-muted-foreground">
                         {formatDate(row.dueDate)}
                       </TD>
                       <TD>{paymentBadge(row.paymentStatus)}</TD>
-                      <TD className="font-mono text-xs tabular-nums text-muted-foreground">
+                      <TD className="tabular-nums text-xs tabular-nums text-muted-foreground">
                         {row.daysOverdue != null ? row.daysOverdue : '—'}
                       </TD>
                     </TR>

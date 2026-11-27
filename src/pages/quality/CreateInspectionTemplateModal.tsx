@@ -206,7 +206,7 @@ export function CreateInspectionTemplateModal({
       <form onSubmit={(e) => handleSubmit(false, e)} className="space-y-5">
         <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Quality / Inspection Templates / {isEditing ? templateCode : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -230,10 +230,10 @@ export function CreateInspectionTemplateModal({
             value={templateCode}
             readOnly
             disabled
-            className="font-mono text-sm"
+            className="tabular-nums text-sm"
             rightElement={
               !isEditing ? (
-                <span className="text-[11px] font-medium text-brand flex items-center gap-1 select-none">
+                <span className="text-xs font-medium text-brand flex items-center gap-1 select-none">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               ) : undefined
@@ -269,7 +269,7 @@ export function CreateInspectionTemplateModal({
         <div className="space-y-2.5">
           <p className="text-sm font-semibold text-foreground">Inspection Parameters</p>
           <div className="rounded-md border border-border/80 overflow-hidden">
-            <div className="grid grid-cols-[2.5rem_1fr_1fr_2.5rem] gap-0 bg-surface-muted border-b border-border/80 px-3 py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <div className="grid grid-cols-[2.5rem_1fr_1fr_2.5rem] gap-0 bg-surface-muted border-b border-border/80 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <span>#</span>
               <span>Parameter</span>
               <span>Acceptance Criteria</span>
@@ -315,7 +315,7 @@ export function CreateInspectionTemplateModal({
 
         <div className="w-full">
           <div className="group relative flex min-h-[76px] w-full flex-col justify-start px-3.5 py-2.5 rounded-md border border-border/80 bg-secondary focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none mb-1">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1">
               Notes
             </span>
             <textarea

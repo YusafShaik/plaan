@@ -238,25 +238,25 @@ export function StockTransfersPage() {
 
                     <TD>
                       <p className="font-medium">{t.fromWarehouseName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {t.fromWarehouseCode}
                       </p>
                     </TD>
 
                     <TD>
                       <p className="font-medium">{t.toWarehouseName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {t.toWarehouseCode}
                       </p>
                     </TD>
 
-                    <TD className="font-normal text-muted-foreground whitespace-nowrap">
+                    <TD className="whitespace-nowrap">
                       {formatDate(t.transferDate)}
                     </TD>
 
-                    <TD className="text-center font-mono">
+                    <TD className="text-center tabular-nums">
                       <span className="font-medium text-foreground">{t.totalItems}</span>
-                      <span className="text-[11px] text-muted-foreground ml-1">
+                      <span className="text-xs text-muted-foreground ml-1">
                         ({formatQuantity(t.totalQuantity)})
                       </span>
                     </TD>

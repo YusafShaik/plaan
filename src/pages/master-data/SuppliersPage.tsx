@@ -7,14 +7,12 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Truck,
   Download,
   RotateCcw,
   Check,
-  Phone,
-  Mail,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateSupplierModal } from './CreateSupplierModal'
@@ -173,10 +171,8 @@ export function SuppliersPage({
     setSearch('')
   }
 
-  const totalCount = pageData?.totalElements ?? suppliers.length
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Optional Standalone Header (skipped when rendered inside MasterDataPage) */}
       {showHeader && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -198,39 +194,26 @@ export function SuppliersPage({
         </div>
       )}
 
-      {/* 2. Summary KPI Metrics Strip (Horizontal data hierarchy EXACTLY matching ItemsPage) */}
-      <div className="flex flex-wrap items-center gap-10 py-3 border-b border-border">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Total suppliers</p>
-          <p className="text-[24px] font-semibold tracking-tight text-foreground mt-1">
-            {summary?.totalSuppliers ?? suppliers.length}
-          </p>
-        </div>
-
-        <div className="h-9 w-px bg-border" />
-
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Active in procurement</p>
-          <p className="text-[24px] font-semibold tracking-tight text-success mt-1">
-            {summary?.activeSuppliers ?? suppliers.filter((s) => s.active).length}
-          </p>
-        </div>
-
-        <div className="h-9 w-px bg-border" />
-
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Inactive / Suspended</p>
-          <p className="text-[24px] font-semibold tracking-tight text-muted-foreground mt-1">
-            {summary?.inactiveSuppliers ?? suppliers.filter((s) => !s.active).length}
-          </p>
-        </div>
-      </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard
+          label="Total suppliers"
+          value={summary?.totalSuppliers ?? suppliers.length}
+        />
+        <KpiCard
+          label="Active in procurement"
+          value={summary?.activeSuppliers ?? suppliers.filter((s) => s.active).length}
+        />
+        <KpiCard
+          label="Inactive / Suspended"
+          value={summary?.inactiveSuppliers ?? suppliers.filter((s) => !s.active).length}
+        />
+      </KpiCardGrid>
 
       {/* 3. Toolbar: Active filter chip on Left, Right Search + Filter + Export */}
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
-          {selectedStatusFilter !== 'all' ? (
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
+          {selectedStatusFilter !== 'all' && (
+            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
               <span className="text-muted-foreground text-xs font-normal">Status:</span>
               <span className="font-medium">
                 {selectedStatusFilter === 'active' ? 'Active' : 'Inactive'}
@@ -238,15 +221,11 @@ export function SuppliersPage({
               <button
                 type="button"
                 onClick={() => setSelectedStatusFilter('all')}
-                className="p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="p-0.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 title="Clear status filter"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
-            </span>
-          ) : (
-            <span className="text-sm text-muted-foreground font-normal">
-              Showing {totalCount} suppliers
             </span>
           )}
 
@@ -262,7 +241,7 @@ export function SuppliersPage({
         </div>
 
         {/* Right side controls: Search bar, Filter Dropdown button, Export */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 ml-auto">
           {/* Search bar */}
           <div className="relative w-64 sm:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -410,36 +389,18 @@ export function SuppliersPage({
                   </TD>
 
                   <TD>
-                    <div className="flex items-center gap-3">
-                      <Truck className="h-4 w-4 text-muted-foreground/80 shrink-0 group-hover:text-foreground transition-colors" />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{supplier.name}</p>
-                        {supplier.address && (
-                          <p className="text-xs font-normal text-muted-foreground mt-0.5 line-clamp-1 max-w-xs">
-                            {supplier.address}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <p className="text-sm font-medium text-foreground">{supplier.name}</p>
                   </TD>
 
                   <TD className="font-normal">
                     {supplier.contactPerson || '—'}
                   </TD>
 
-                  <TD className="font-normal text-muted-foreground">
+                  <TD className="font-normal">
                     <div className="space-y-0.5">
-                      {supplier.phone && (
-                        <p className="flex items-center gap-1.5 text-foreground">
-                          <Phone className="h-3 w-3 text-muted-foreground" />
-                          <span>{supplier.phone}</span>
-                        </p>
-                      )}
+                      {supplier.phone && <p>{supplier.phone}</p>}
                       {supplier.email && (
-                        <p className="flex items-center gap-1.5">
-                          <Mail className="h-3 w-3 text-muted-foreground" />
-                          <span className="truncate max-w-[180px]">{supplier.email}</span>
-                        </p>
+                        <p className="truncate max-w-[180px]">{supplier.email}</p>
                       )}
                       {!supplier.phone && !supplier.email && <span>—</span>}
                     </div>

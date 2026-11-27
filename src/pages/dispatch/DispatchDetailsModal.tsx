@@ -96,11 +96,11 @@ export function DispatchDetailsModal({
         {/* Header */}
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Dispatch / Dispatch Orders / {dispatch.dispatchNumber}
             </p>
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
+              <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
                 {dispatch.dispatchNumber}
               </span>
               {dispatch.status === 'POSTED' && (
@@ -142,7 +142,7 @@ export function DispatchDetailsModal({
 
           <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
             <span className="text-muted-foreground font-normal">Sales Order</span>
-            <p className="mt-1 font-medium text-foreground font-mono">{dispatch.salesOrderNumber}</p>
+            <p className="mt-1 font-medium text-foreground tabular-nums">{dispatch.salesOrderNumber}</p>
           </div>
 
           <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
@@ -152,7 +152,7 @@ export function DispatchDetailsModal({
 
           <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
             <span className="text-muted-foreground font-normal">Total Dispatched</span>
-            <p className="mt-1 font-medium text-foreground font-mono">
+            <p className="mt-1 font-medium text-foreground tabular-nums">
               {formatQuantity(dispatch.totalQuantityDispatched)} Items
             </p>
           </div>
@@ -203,18 +203,18 @@ export function DispatchDetailsModal({
                   <TR key={it.id} className="hover:bg-secondary/20 transition-colors">
                     <TD className="py-3 px-3.5 font-medium text-foreground">
                       <p>{it.itemName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">{it.itemCode}</p>
+                      <p className="text-xs text-ref text-muted-foreground">{it.itemCode}</p>
                     </TD>
-                    <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                    <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                       {formatQuantity(it.orderedQuantity)}
                     </TD>
-                    <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                    <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                       {formatQuantity(it.previouslyDispatchedQuantity)}
                     </TD>
-                    <TD className="py-3 px-3 text-right font-mono font-medium text-success">
+                    <TD className="py-3 px-3 text-right tabular-nums font-medium text-success">
                       {formatQuantity(it.dispatchQuantity)}
                     </TD>
-                    <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                    <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                       {formatQuantity(it.remainingQuantity)}
                     </TD>
                     <TD className="py-3 px-3.5 text-muted-foreground">{it.unitOfMeasure}</TD>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { ItemsPage } from './ItemsPage'
 import { SuppliersPage } from './SuppliersPage'
 import { WarehousesPage } from './WarehousesPage'
@@ -24,15 +25,15 @@ export function MasterDataPage() {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between pb-3">
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
               Master Data
             </h1>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Manage your organization&apos;s master records.
+            <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+              Items, suppliers, customers, and warehouses.
             </p>
           </div>
 
@@ -76,7 +77,7 @@ export function MasterDataPage() {
           value={activeTab}
           onChange={(id) => setActiveTab(id as MasterDataTab)}
         />
-      </div>
+      </header>
 
       <div>
         {activeTab === 'items' && (
@@ -108,6 +109,6 @@ export function MasterDataPage() {
           />
         )}
       </div>
-    </div>
+    </ContentCanvas>
   )
 }

@@ -324,7 +324,7 @@ export function CreateBomModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Manufacturing / Bill of Materials / {initialDraft ? 'Edit Draft' : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
@@ -369,9 +369,9 @@ export function CreateBomModal({
                 type="text"
                 disabled
                 value={bomCode}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs font-mono text-muted-foreground cursor-not-allowed"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">Auto-generated</p>
+              <p className="mt-1 text-xs text-muted-foreground">Auto-generated</p>
             </div>
 
             {/* Product * */}
@@ -430,7 +430,7 @@ export function CreateBomModal({
                           >
                             <div className="text-left">
                               <p className="font-medium text-foreground">{it.name}</p>
-                              <p className="text-[10px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground tabular-nums">
                                 {it.itemCode} · {it.unitOfMeasure}
                               </p>
                             </div>
@@ -464,9 +464,9 @@ export function CreateBomModal({
                   const val = e.target.value
                   setOutputQuantity(val === '' ? '' : Math.max(0, parseFloat(val) || 0))
                 }}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs font-mono text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs tabular-nums text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Batch size / finished units per recipe
               </p>
             </div>
@@ -482,7 +482,7 @@ export function CreateBomModal({
                 value={selectedProduct ? selectedProduct.unitOfMeasure : '—'}
                 className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">From Product Master</p>
+              <p className="mt-1 text-xs text-muted-foreground">From Product Master</p>
             </div>
           </div>
 
@@ -493,7 +493,7 @@ export function CreateBomModal({
                 Component materials
               </h3>
               {!productId && (
-                <span className="text-[11px] text-warning font-medium">
+                <span className="text-xs text-warning font-medium">
                   Select a product to begin building the BOM recipe
                 </span>
               )}
@@ -578,7 +578,7 @@ export function CreateBomModal({
                                   >
                                     <div className="text-left">
                                       <p className="font-medium text-foreground">{it.name}</p>
-                                      <p className="text-[10px] text-muted-foreground font-mono">
+                                      <p className="text-xs text-muted-foreground tabular-nums">
                                         {it.itemCode} · {it.unitOfMeasure}
                                       </p>
                                     </div>
@@ -603,7 +603,7 @@ export function CreateBomModal({
                         placeholder="e.g. 1"
                         value={row.quantity}
                         onChange={(e) => handleQuantityChange(row.id, e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3 text-center text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:border-foreground focus:ring-foreground"
+                        className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3 text-center text-xs tabular-nums text-foreground focus:outline-none focus:ring-1 focus:border-foreground focus:ring-foreground"
                       />
                     </div>
 
@@ -646,7 +646,7 @@ export function CreateBomModal({
           {/* Notes */}
           <div>
             <label className="block text-xs font-medium text-foreground mb-1.5">
-              Notes <span className="text-[11px] text-muted-foreground font-normal">(Optional)</span>
+              Notes <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
             </label>
             <textarea
               rows={2}

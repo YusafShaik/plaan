@@ -16,6 +16,7 @@ import { ExpenseReport } from './ExpenseReport'
 import { MaintenanceHistoryReport } from './MaintenanceHistoryReport'
 import { DueOverdueMaintenanceReport } from './DueOverdueMaintenanceReport'
 import { EquipmentDowntimeReport } from './EquipmentDowntimeReport'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import {
   REPORT_CATEGORIES,
   REPORTS,
@@ -114,13 +115,13 @@ export function ReportsPage({
   }
 
   return (
-    <div className="space-y-6">
+    <ContentCanvas className="space-y-8 pt-2">
       <div>
         <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
           Reports
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Track and analyze your business operations.
+        <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+          Operational and financial reports.
         </p>
       </div>
 
@@ -178,6 +179,6 @@ export function ReportsPage({
           })}
         </div>
       )}
-    </div>
+    </ContentCanvas>
   )
 }

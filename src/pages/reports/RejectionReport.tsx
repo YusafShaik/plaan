@@ -257,7 +257,7 @@ export function RejectionReport({ onBack }: RejectionReportProps) {
               />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground mb-2">Inspection Type</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Inspection Type</p>
               <UnderlineTabs
                 items={[
                   { id: 'all', label: 'All Types' },
@@ -362,18 +362,18 @@ export function RejectionReport({ onBack }: RejectionReportProps) {
                     >
                       <TD>
                         <div className="text-sm font-medium text-foreground">{row.itemName}</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          <RefLink className="text-[11px]">{row.inspectionNumber}</RefLink>
+                        <div className="text-xs text-muted-foreground">
+                          <RefLink className="text-xs">{row.inspectionNumber}</RefLink>
                           <span> · {sourceParty(row)}</span>
                         </div>
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums">
+                      <TD className="text-right tabular-nums text-xs tabular-nums">
                         {formatQty(row.inspectedQuantity)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums text-destructive">
+                      <TD className="text-right tabular-nums text-xs tabular-nums text-destructive">
                         {formatQty(row.rejectedQuantity)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums text-destructive">
+                      <TD className="text-right tabular-nums text-xs tabular-nums text-destructive">
                         {formatPercent(row.rejectionRate)}
                       </TD>
                     </TR>
@@ -411,8 +411,8 @@ export function RejectionReport({ onBack }: RejectionReportProps) {
                             Failed: {row.failedParameters.join(', ')}
                           </p>
                         )}
-                        <p className="mt-1 text-[11px] text-muted-foreground">
-                          <RefCode className="text-[11px]">{row.inspectionNumber}</RefCode>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          <RefCode className="text-xs">{row.inspectionNumber}</RefCode>
                           {row.sourceReference ? ` · ${row.sourceReference}` : ''}
                         </p>
                       </div>

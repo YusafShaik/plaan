@@ -241,7 +241,7 @@ export function CustomersPage({
                     <TD>
                       {c.name}
                       {c.taxId && (
-                        <span className="block text-[11px] text-ref text-muted-foreground mt-0.5">
+                        <span className="block text-xs text-ref text-muted-foreground mt-0.5">
                           GSTIN: {c.taxId}
                         </span>
                       )}
@@ -250,7 +250,7 @@ export function CustomersPage({
                     <TD className="text-muted-foreground font-normal">
                       <p className="text-foreground">{c.contactPerson || '—'}</p>
                       {c.phone && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {c.phone}
                         </p>
                       )}
@@ -320,7 +320,7 @@ export function CustomersPage({
                   >
                     Previous
                   </Button>
-                  <span className="font-mono text-foreground">
+                  <span className="tabular-nums text-foreground">
                     {pageData.page + 1} / {pageData.totalPages}
                   </span>
                   <Button

@@ -209,11 +209,11 @@ export function SalesOrderDetailsModal({
         {/* Header */}
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Sales / Sales Orders / {displayOrder.orderNumber}
             </p>
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
+              <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
                 {displayOrder.orderNumber}
               </span>
               {displayOrder.status === 'CONFIRMED' && (
@@ -271,7 +271,7 @@ export function SalesOrderDetailsModal({
 
           <div className="rounded-md border border-border/80 bg-secondary/30 p-3">
             <span className="text-muted-foreground font-normal">PO Reference</span>
-            <p className="mt-1 font-medium text-foreground font-mono">
+            <p className="mt-1 font-medium text-foreground tabular-nums">
               {displayOrder.customerPoReference || '—'}
             </p>
           </div>
@@ -316,7 +316,7 @@ export function SalesOrderDetailsModal({
                 <div key={it.id} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-foreground">{it.itemName}</span>
-                    <span className="font-mono text-muted-foreground">
+                    <span className="tabular-nums text-muted-foreground">
                       {formatQuantity(dispatched)} / {formatQuantity(ordered)} {it.unitOfMeasure}
                     </span>
                   </div>
@@ -328,7 +328,7 @@ export function SalesOrderDetailsModal({
                     />
                   </div>
 
-                  <p className="text-[11px]">
+                  <p className="text-xs">
                     {isFullyDispatched ? (
                       <span className="text-success font-medium">Fully dispatched</span>
                     ) : (
@@ -361,13 +361,13 @@ export function SalesOrderDetailsModal({
                       <TD className="py-2.5 px-3.5 font-medium text-foreground">
                         {it.itemName}
                       </TD>
-                      <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                      <TD className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
                         {formatQuantity(ordered)}
                       </TD>
-                      <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                      <TD className="py-2.5 px-3 text-right tabular-nums font-medium text-foreground">
                         {formatQuantity(dispatched)}
                       </TD>
-                      <TD className={`py-2.5 px-3.5 text-right font-mono font-medium ${
+                      <TD className={`py-2.5 px-3.5 text-right tabular-nums font-medium ${
                         pending > 0 ? 'text-orange-400' : 'text-muted-foreground'
                       }`}>
                         {formatQuantity(pending)}
@@ -419,8 +419,8 @@ export function SalesOrderDetailsModal({
                       <Truck className="h-4 w-4 text-success" />
                     </div>
                     <div>
-                      <p className="font-mono font-medium text-foreground text-xs">{d.dispatchNumber}</p>
-                      <p className="text-[11px] text-muted-foreground">{formatDate(d.dispatchDate)}</p>
+                      <p className="tabular-nums font-medium text-foreground text-xs">{d.dispatchNumber}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(d.dispatchDate)}</p>
                     </div>
                   </div>
 
@@ -487,32 +487,32 @@ export function SalesOrderDetailsModal({
                         <TR key={it.itemId} className="hover:bg-secondary/20 transition-colors">
                           <TD className="py-3 px-3.5 font-medium text-foreground">
                             <p>{it.itemName}</p>
-                            <p className="text-[11px] text-ref text-muted-foreground">{it.itemCode}</p>
+                            <p className="text-xs text-ref text-muted-foreground">{it.itemCode}</p>
                           </TD>
-                          <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
+                          <TD className="py-3 px-3 text-right tabular-nums font-medium text-foreground">
                             {formatQuantity(it.orderedQuantity)}
                           </TD>
-                          <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
+                          <TD className="py-3 px-3 text-right tabular-nums font-medium text-foreground">
                             {formatQuantity(it.onHandQuantity)}
                           </TD>
-                          <TD className={`py-3 px-3 text-right font-mono font-medium ${
+                          <TD className={`py-3 px-3 text-right tabular-nums font-medium ${
                             it.shortageQuantity > 0 ? 'text-destructive' : 'text-foreground'
                           }`}>
                             {formatQuantity(it.shortageQuantity)}
                           </TD>
                           <TD className="py-3 px-3.5 text-right">
                             {it.status === 'AVAILABLE' && (
-                              <Badge variant="success" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                              <Badge variant="success" className="h-auto px-2 py-0.5 text-xs font-medium">
                                 Available
                               </Badge>
                             )}
                             {it.status === 'PARTIALLY_AVAILABLE' && (
-                              <Badge variant="warning" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                              <Badge variant="warning" className="h-auto px-2 py-0.5 text-xs font-medium">
                                 Partial
                               </Badge>
                             )}
                             {it.status === 'NOT_AVAILABLE' && (
-                              <Badge variant="destructive" className="h-auto px-2 py-0.5 text-[11px] font-medium">
+                              <Badge variant="destructive" className="h-auto px-2 py-0.5 text-xs font-medium">
                                 Unavailable
                               </Badge>
                             )}
@@ -575,16 +575,16 @@ export function SalesOrderDetailsModal({
                   <TR key={it.id} className="hover:bg-secondary/20 transition-colors">
                     <TD className="py-3 px-3.5 font-medium text-foreground">
                       <p>{it.itemName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">{it.itemCode}</p>
+                      <p className="text-xs text-ref text-muted-foreground">{it.itemCode}</p>
                     </TD>
-                    <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
+                    <TD className="py-3 px-3 text-right tabular-nums font-medium text-foreground">
                       {formatQuantity(it.orderedQuantity)}
                     </TD>
                     <TD className="py-3 px-3 text-muted-foreground">{it.unitOfMeasure}</TD>
-                    <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                    <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                       {formatCurrency(it.unitPrice)}
                     </TD>
-                    <TD className="py-3 px-3.5 text-right font-mono font-medium text-foreground">
+                    <TD className="py-3 px-3.5 text-right tabular-nums font-medium text-foreground">
                       {formatCurrency(it.lineAmount)}
                     </TD>
                   </TR>
@@ -596,7 +596,7 @@ export function SalesOrderDetailsModal({
         {/* Order Total Card */}
         <div className="flex items-center justify-between p-3.5 rounded-md border border-border/80 bg-secondary/30">
           <span className="text-sm font-semibold text-foreground">Total Order Amount</span>
-          <span className="text-xl font-medium font-mono text-foreground">
+          <span className="text-xl font-medium tabular-nums text-foreground">
             {formatCurrency(displayOrder.totalAmount)}
           </span>
         </div>

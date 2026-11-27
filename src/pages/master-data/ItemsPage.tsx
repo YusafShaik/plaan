@@ -7,12 +7,12 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Package,
   Download,
   RotateCcw,
   Check,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateItemModal } from './CreateItemModal'
@@ -188,15 +188,13 @@ export function ItemsPage({
     setIsFilterOpen(false)
   }
 
-  const totalCount = pageData?.totalElements ?? items.length
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 1. Optional Standalone Header (skipped when rendered inside MasterDataPage) */}
       {showHeader && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-[28px] leading-[29.12px] font-semibold tracking-tight text-foreground">
+            <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
               Items
             </h1>
             <p className="text-sm font-normal text-muted-foreground mt-1">
@@ -213,59 +211,39 @@ export function ItemsPage({
         </div>
       )}
 
-      {/* 2. Summary KPI Metrics Strip (Horizontal data hierarchy, 14px labels & 24px semibold values) */}
-      <div className="flex flex-wrap items-center gap-10 py-3 border-b border-border">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Total items</p>
-          <p className="text-[24px] font-semibold tracking-tight text-foreground mt-1">
-            {summary?.totalItems ?? items.length}
-          </p>
-        </div>
-
-        <div className="h-9 w-px bg-border" />
-
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Active items</p>
-          <p className="text-[24px] font-semibold tracking-tight text-success mt-1">
-            {summary?.activeItems ?? items.filter((i) => i.active).length}
-          </p>
-        </div>
-
-        <div className="h-9 w-px bg-border" />
-
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Inactive items</p>
-          <p className="text-[24px] font-semibold tracking-tight text-muted-foreground mt-1">
-            {summary?.inactiveItems ?? items.filter((i) => !i.active).length}
-          </p>
-        </div>
-      </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard label="Total items" value={summary?.totalItems ?? items.length} />
+        <KpiCard
+          label="Active items"
+          value={summary?.activeItems ?? items.filter((i) => i.active).length}
+        />
+        <KpiCard
+          label="Inactive items"
+          value={summary?.inactiveItems ?? items.filter((i) => !i.active).length}
+        />
+      </KpiCardGrid>
 
       {/* 3. Toolbar: Active filter chips on Left, Right-aligned Search + Filter Dropdown + Export */}
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
         {/* Left: Active filter pills or item count */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {selectedTypeName ? (
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
+          {selectedTypeName && (
+            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
               <span className="text-muted-foreground text-xs font-normal">Type:</span>
               <span className="font-medium">{selectedTypeName}</span>
               <button
                 type="button"
                 onClick={() => setSelectedTypeFilter('all')}
-                className="p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="p-0.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 title="Clear type filter"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             </span>
-          ) : (
-            <span className="text-sm text-muted-foreground font-normal">
-              Showing {totalCount} items
-            </span>
           )}
 
           {selectedStatusFilter !== 'all' && (
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
+            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
               <span className="text-muted-foreground text-xs font-normal">Status:</span>
               <span className="font-medium">
                 {selectedStatusFilter === 'active' ? 'Active' : 'Inactive'}
@@ -273,7 +251,7 @@ export function ItemsPage({
               <button
                 type="button"
                 onClick={() => setSelectedStatusFilter('all')}
-                className="p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="p-0.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 title="Clear status filter"
               >
                 <X className="h-3.5 w-3.5" />
@@ -293,7 +271,7 @@ export function ItemsPage({
         </div>
 
         {/* Right side controls: Search bar, Filter Dropdown button, Export */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 ml-auto">
           {/* Search bar */}
           <div className="relative w-64 sm:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -491,24 +469,14 @@ export function ItemsPage({
                   </TD>
 
                   <TD>
-                    <div className="flex items-center gap-3">
-                      <Package className="h-4 w-4 text-muted-foreground/80 shrink-0 group-hover:text-foreground transition-colors" />
-                      <div>
-                        <p className="font-medium text-foreground">{item.name}</p>
-                        {item.description && (
-                          <p className="text-xs font-normal text-muted-foreground mt-0.5 line-clamp-1">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <p className="font-medium text-foreground">{item.name}</p>
                   </TD>
 
                   <TD className="font-normal">
                     {item.itemType.name}
                   </TD>
 
-                  <TD className="font-normal text-muted-foreground">
+                  <TD className="font-normal">
                     {item.unitOfMeasure}
                   </TD>
 

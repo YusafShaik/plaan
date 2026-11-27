@@ -128,9 +128,9 @@ export function CreateSupplierModal({
           value={supplierCode}
           onChange={(e) => setSupplierCode(e.target.value.toUpperCase())}
           disabled={isLoading}
-          className="font-mono font-medium"
+          className="tabular-nums font-medium"
           rightElement={
-            <span className="text-[11px] font-sans font-medium text-brand-deep flex items-center gap-1">
+            <span className="text-xs font-sans font-medium text-brand-deep flex items-center gap-1">
               <Sparkles className="h-3 w-3" /> Auto
             </span>
           }

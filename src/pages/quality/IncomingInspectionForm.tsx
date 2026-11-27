@@ -165,7 +165,7 @@ export function IncomingInspectionForm({
         <div className="space-y-5">
           <div className="flex items-start justify-between gap-4 border-b border-border/80 pb-3.5">
             <div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
                 Quality / Incoming Inspections / {inspection.inspectionNumber}
               </p>
               <div className="flex items-center gap-2.5">
@@ -264,7 +264,7 @@ export function IncomingInspectionForm({
             </div>
             <div className="w-full">
               <div className="group relative flex min-h-[5.5rem] w-full flex-col justify-start px-3.5 py-2 rounded-md border bg-secondary border-border/80">
-                <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+                <span className="text-xs font-medium text-muted-foreground select-none leading-none">
                   Inspection Remarks
                 </span>
                 <textarea
@@ -281,14 +281,14 @@ export function IncomingInspectionForm({
             <div className="rounded-md border border-border/80 bg-card px-4 py-4 space-y-3">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <div>
-                  <p className="text-[11px] text-muted-foreground font-medium">Accepted</p>
+                  <p className="text-xs text-muted-foreground font-medium">Accepted</p>
                   <p className="text-lg font-semibold text-success tabular-nums">
                     {formatQty(Number.isFinite(acceptedNum) ? Math.max(0, acceptedNum) : 0)}{' '}
                     {inspection.unitOfMeasure}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[11px] text-muted-foreground font-medium">Rejected</p>
+                  <p className="text-xs text-muted-foreground font-medium">Rejected</p>
                   <p className="text-lg font-semibold text-destructive tabular-nums">
                     {formatQty(rejectedNum)} {inspection.unitOfMeasure}
                   </p>
@@ -340,7 +340,7 @@ function MetaRow({
 }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className={cn('mt-0.5 text-sm font-medium text-foreground', mono && 'text-ref')}>
         {value}
       </p>

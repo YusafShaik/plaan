@@ -7,6 +7,7 @@ import {
 } from 'react'
 import { ArrowDownRight, ArrowUpRight, ChevronRight } from 'lucide-react'
 import { Alert } from '../../components/ui/Alert'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { navigatePlaan } from '../../lib/navigate'
 import { dashboardService } from '../../services/dashboardService'
 import { useAuth } from '../../hooks/useAuth'
@@ -119,12 +120,12 @@ export function DashboardPage() {
   const equipmentTotal = equipment?.activeMachines ?? 0
 
   return (
-    <div className="space-y-5">
+    <ContentCanvas className="space-y-8 pt-2">
       <div>
         <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
           Dashboard
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
           Business overview
           {overview?.periodLabel ? (
             <span className="text-foreground"> · {overview.periodLabel}</span>
@@ -323,7 +324,7 @@ export function DashboardPage() {
           </section>
         </>
       ) : null}
-    </div>
+    </ContentCanvas>
   )
 }
 
@@ -493,13 +494,13 @@ function SeriesTrendCard({
                 className="pointer-events-none absolute top-1 z-10 -translate-x-1/2 rounded-md border border-border bg-card px-2.5 py-1.5 shadow-panel"
                 style={{ left: tooltipLeft }}
               >
-                <p className="text-[11px] text-muted-foreground">{labels[activeIndex]}</p>
+                <p className="text-xs text-muted-foreground">{labels[activeIndex]}</p>
                 <p className="text-sm font-semibold tabular-nums text-foreground">
                   {formatMoney(value, currency)}
                 </p>
                 {activeIndex > 0 && (
                   <p
-                    className={`mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-medium tabular-nums ${
+                    className={`mt-0.5 inline-flex items-center gap-0.5 text-xs font-medium tabular-nums ${
                       delta >= 0 ? 'text-success' : 'text-destructive'
                     }`}
                   >
@@ -521,7 +522,7 @@ function SeriesTrendCard({
         {labels.map((label, i) => (
           <span
             key={`${label}-${i}`}
-            className={`flex-1 text-center text-[10px] font-medium ${
+            className={`flex-1 text-center text-xs font-medium ${
               activeIndex === i ? 'text-foreground' : 'text-muted-foreground'
             }`}
           >
@@ -646,7 +647,7 @@ function MetricCard({
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {hint}
         </span>
       </div>
@@ -676,7 +677,7 @@ function StatusCount({
           : 'text-foreground'
   return (
     <div className="rounded-md border border-border/80 bg-secondary/40 px-3 py-2.5">
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className={`text-lg font-semibold tabular-nums mt-0.5 ${valueClass}`}>{value}</p>
     </div>
   )

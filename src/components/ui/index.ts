@@ -17,6 +17,13 @@ export { Label, type LabelProps } from './Label'
 export { UnderlineTabs, type TabItem } from './Tabs'
 export { Table, THead, TBody, TR, TH, TD, RefCode, RefLink } from './Table'
 export {
+  KpiCard,
+  KpiCardGrid,
+  type KpiCardProps,
+  type KpiCardGridProps,
+  type KpiTone,
+} from './KpiCard'
+export {
   fieldChrome,
   controlInput,
   controlSelect,

@@ -324,7 +324,7 @@ export function CreatePurchaseInvoiceModal({
         {/* Modal Header */}
         <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Finance / Purchase Invoices / {isEditing ? invoiceNumber : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -350,10 +350,10 @@ export function CreatePurchaseInvoiceModal({
             value={invoiceNumber}
             readOnly
             disabled
-            className="font-mono text-sm"
+            className="tabular-nums text-sm"
             rightElement={
               !isEditing ? (
-                <span className="text-[11px] font-medium text-brand flex items-center gap-1 select-none">
+                <span className="text-xs font-medium text-brand flex items-center gap-1 select-none">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               ) : undefined
@@ -457,7 +457,7 @@ export function CreatePurchaseInvoiceModal({
                     <TR key={item.goodsReceiptItemId} className="border-b border-border/40">
                       <TD className="py-2.5 px-3 text-xs font-medium text-foreground">
                         <div>{item.itemName}</div>
-                        <div className="text-[11px] text-muted-foreground">{item.itemCode}</div>
+                        <div className="text-xs text-muted-foreground">{item.itemCode}</div>
                       </TD>
                       <TD className="py-2.5 px-3 text-xs text-right font-medium text-foreground">
                         {item.quantity}
@@ -519,7 +519,7 @@ export function CreatePurchaseInvoiceModal({
 
         {/* Attachment Upload */}
         <div className="space-y-1.5 pt-1">
-          <label className="block text-[11px] font-medium text-muted-foreground">
+          <label className="block text-xs font-medium text-muted-foreground">
             Supplier Invoice Attachment
           </label>
           <input
@@ -536,7 +536,7 @@ export function CreatePurchaseInvoiceModal({
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs font-medium text-foreground">{attachmentFileName}</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {attachmentSize ? `${(attachmentSize / 1024).toFixed(1)} KB` : 'Attached'}
                   </p>
                 </div>
@@ -560,7 +560,7 @@ export function CreatePurchaseInvoiceModal({
               <p className="text-xs font-medium text-foreground">
                 Upload supplier invoice (optional)
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 PDF or image
               </p>
             </div>
@@ -570,7 +570,7 @@ export function CreatePurchaseInvoiceModal({
         {/* Notes with Stacked Box */}
         <div className="w-full">
           <div className="group relative flex min-h-[76px] w-full flex-col justify-start px-3.5 py-2.5 rounded-md border border-border/80 bg-secondary focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none mb-1">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1">
               Notes
             </span>
             <textarea

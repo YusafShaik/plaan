@@ -276,17 +276,17 @@ export function StockSummaryReport({ onBack }: StockSummaryReportProps) {
                 >
                   <TD>
                     <div className="text-sm font-medium text-foreground">{row.itemName}</div>
-                    <RefLink className="text-[11px]">{row.itemCode}</RefLink>
+                    <RefLink className="text-xs">{row.itemCode}</RefLink>
                   </TD>
                   <TD className="text-xs text-muted-foreground">{row.itemTypeName || '—'}</TD>
                   <TD className="text-sm text-foreground">{row.warehouseName}</TD>
                   <TD className="text-xs text-muted-foreground">{row.unitOfMeasure}</TD>
-                  <TD className="font-mono text-xs tabular-nums">
+                  <TD className="tabular-nums text-xs tabular-nums">
                     {formatQty(row.onHandQuantity)}
                   </TD>
                   <TD
                     className={cn(
-                      'font-mono text-xs tabular-nums',
+                      'tabular-nums text-xs tabular-nums',
                       qtyClass(row.pendingInspectionQuantity, 'pending')
                     )}
                   >
@@ -294,7 +294,7 @@ export function StockSummaryReport({ onBack }: StockSummaryReportProps) {
                   </TD>
                   <TD
                     className={cn(
-                      'font-mono text-xs tabular-nums',
+                      'tabular-nums text-xs tabular-nums',
                       qtyClass(row.rejectedQuantity, 'rejected')
                     )}
                   >
@@ -302,7 +302,7 @@ export function StockSummaryReport({ onBack }: StockSummaryReportProps) {
                   </TD>
                   <TD
                     className={cn(
-                      'font-mono text-xs tabular-nums font-medium',
+                      'tabular-nums text-xs tabular-nums font-medium',
                       qtyClass(row.availableQuantity, 'available')
                     )}
                   >

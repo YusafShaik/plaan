@@ -240,7 +240,7 @@ export function CreateSalesInvoiceModal({
       <form onSubmit={(e) => handleSubmit('DRAFT', e)} className="space-y-5">
         <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Finance / Sales Invoices / {isEditing ? invoiceNumber : 'New'}
             </p>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -264,10 +264,10 @@ export function CreateSalesInvoiceModal({
             value={invoiceNumber}
             readOnly
             disabled
-            className="font-mono text-sm"
+            className="tabular-nums text-sm"
             rightElement={
               !isEditing ? (
-                <span className="text-[11px] font-medium text-brand flex items-center gap-1 select-none">
+                <span className="text-xs font-medium text-brand flex items-center gap-1 select-none">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               ) : undefined
@@ -327,7 +327,7 @@ export function CreateSalesInvoiceModal({
           />
 
           <div className="group relative flex min-h-[76px] w-full flex-col justify-start px-3.5 py-2.5 rounded-md border border-border/80 bg-secondary">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none mb-1">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1">
               Billing Address
             </span>
             <p className="text-sm font-medium text-foreground whitespace-pre-wrap">
@@ -336,7 +336,7 @@ export function CreateSalesInvoiceModal({
           </div>
 
           <div className="group relative flex min-h-[76px] w-full flex-col justify-start px-3.5 py-2.5 rounded-md border border-border/80 bg-secondary">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none mb-1">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1">
               Shipping Address
             </span>
             <p className="text-sm font-medium text-foreground whitespace-pre-wrap">
@@ -371,7 +371,7 @@ export function CreateSalesInvoiceModal({
                     <TR key={item.dispatchOrderItemId} className="border-b border-border/40">
                       <TD className="py-2.5 px-3 text-xs font-medium text-foreground">
                         <div>{item.itemName}</div>
-                        <div className="text-[11px] text-muted-foreground">{item.itemCode}</div>
+                        <div className="text-xs text-muted-foreground">{item.itemCode}</div>
                       </TD>
                       <TD className="py-2.5 px-3 text-xs text-right font-medium text-foreground">
                         {item.quantity}
@@ -422,7 +422,7 @@ export function CreateSalesInvoiceModal({
 
         <div className="w-full">
           <div className="group relative flex min-h-[76px] w-full flex-col justify-start px-3.5 py-2.5 rounded-md border border-border/80 bg-secondary focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none mb-1">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1">
               Notes
             </span>
             <textarea

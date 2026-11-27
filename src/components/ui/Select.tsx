@@ -112,7 +112,7 @@ export function Select({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           className={cn(
             dense
-              ? 'flex h-9 w-full items-center justify-between rounded-md border border-border/80 bg-secondary px-2.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+              ? 'flex h-9 w-full items-center justify-between rounded-md border border-border/80 bg-secondary px-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
               : cn(
                   'flex h-11 w-full items-center justify-between rounded-md border bg-secondary px-3.5 py-2 text-sm transition-all',
                   'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground cursor-pointer',
@@ -157,7 +157,7 @@ export function Select({
         )}
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+          <span className="text-xs font-medium text-muted-foreground select-none leading-none">
             {label}
           </span>
           {rightElement}

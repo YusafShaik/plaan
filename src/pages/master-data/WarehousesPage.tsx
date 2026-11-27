@@ -11,9 +11,9 @@ import {
   Download,
   RotateCcw,
   Check,
-  MapPin,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateWarehouseModal } from './CreateWarehouseModal'
@@ -172,7 +172,7 @@ export function WarehousesPage({
   const totalCount = pageData?.totalElements ?? warehouses.length
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 1. Header if rendered standalone */}
       {showHeader && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3.5">
@@ -193,48 +193,37 @@ export function WarehousesPage({
         </div>
       )}
 
-      {/* 2. Unified Metric Strip */}
-      <div className="flex items-center gap-6 py-1">
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Total warehouses</span>
-          <p className="text-xl font-semibold text-foreground tracking-tight mt-0.5">
-            {summary?.totalWarehouses ?? warehouses.length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Active</span>
-          <p className="text-xl font-semibold text-success tracking-tight mt-0.5">
-            {summary?.activeWarehouses ?? warehouses.filter((w) => w.active).length}
-          </p>
-        </div>
-        <div className="h-9 w-px bg-border" />
-        <div>
-          <span className="text-xs text-muted-foreground font-medium">Inactive</span>
-          <p className="text-xl font-semibold text-muted-foreground tracking-tight mt-0.5">
-            {summary?.inactiveWarehouses ?? warehouses.filter((w) => !w.active).length}
-          </p>
-        </div>
-      </div>
+      <KpiCardGrid columns={3}>
+        <KpiCard
+          label="Total warehouses"
+          value={summary?.totalWarehouses ?? warehouses.length}
+        />
+        <KpiCard
+          label="Active"
+          value={summary?.activeWarehouses ?? warehouses.filter((w) => w.active).length}
+        />
+        <KpiCard
+          label="Inactive"
+          value={summary?.inactiveWarehouses ?? warehouses.filter((w) => !w.active).length}
+        />
+      </KpiCardGrid>
 
       {/* 3. Toolbar: Active filter chip on Left, Right Search + Filter + Export */}
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
-          {selectedStatusFilter !== 'all' ? (
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
+          {selectedStatusFilter !== 'all' && (
+            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
               <span className="text-muted-foreground text-xs font-normal">Status:</span>
               <span className="font-medium text-xs capitalize">{selectedStatusFilter}</span>
               <button
                 type="button"
                 onClick={() => setSelectedStatusFilter('all')}
-                className="ml-1 rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="ml-1 rounded-md p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 title="Remove filter"
               >
                 <X className="h-3 w-3" />
               </button>
             </span>
-          ) : (
-            <span className="text-sm font-medium text-muted-foreground">All warehouses</span>
           )}
 
           {hasActiveFilters && (
@@ -250,7 +239,7 @@ export function WarehousesPage({
         </div>
 
         {/* Right side controls: Search bar, Filter Dropdown button, Export */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 ml-auto">
           {/* Search bar with sharp black focus ring */}
           <div className="relative w-64 sm:w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -286,7 +275,7 @@ export function WarehousesPage({
                     <button
                       type="button"
                       onClick={() => setSelectedStatusFilter('all')}
-                      className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       Reset
                     </button>
@@ -403,26 +392,18 @@ export function WarehousesPage({
                     </TD>
 
                     <TD>
-                      <div className="flex items-center gap-3">
-                        <WarehouseIcon className="h-4 w-4 text-muted-foreground/80 shrink-0 group-hover:text-foreground transition-colors" />
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{w.name}</p>
-                        </div>
-                      </div>
+                      <p className="text-sm font-medium text-foreground">{w.name}</p>
                     </TD>
 
                     <TD className="font-normal">
                       {w.address ? (
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          <span className="line-clamp-1 max-w-xs">{w.address}</span>
-                        </div>
+                        <span className="line-clamp-1 max-w-xs">{w.address}</span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span>—</span>
                       )}
                     </TD>
 
-                    <TD className="font-normal text-muted-foreground">
+                    <TD className="font-normal">
                       {w.description ? (
                         <span className="line-clamp-1 max-w-xs block">{w.description}</span>
                       ) : (

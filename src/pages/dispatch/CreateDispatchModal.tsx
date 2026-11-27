@@ -319,7 +319,7 @@ export function CreateDispatchModal({
         {/* Header matching Screenshot 2 */}
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Dispatch / Dispatch Orders / {editingDispatch ? editingDispatch.dispatchNumber : 'New'}
             </p>
             <div className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export function CreateDispatchModal({
               type="text"
               value={dispatchNumber}
               disabled
-              className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground font-mono text-xs cursor-not-allowed"
+              className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground tabular-nums text-xs cursor-not-allowed"
             />
           </div>
 
@@ -448,12 +448,12 @@ export function CreateDispatchModal({
                       <TR key={line.salesOrderItemId} className="hover:bg-secondary/15 transition-colors">
                         <TD className="py-3 px-3.5 font-medium text-foreground">
                           <p>{line.itemName}</p>
-                          <p className="text-[11px] text-ref text-muted-foreground">{line.itemCode}</p>
+                          <p className="text-xs text-ref text-muted-foreground">{line.itemCode}</p>
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono font-medium text-foreground">
+                        <TD className="py-3 px-3 text-right tabular-nums font-medium text-foreground">
                           {formatQuantity(line.pendingQuantity)}
                         </TD>
-                        <TD className="py-3 px-3 text-right font-mono text-muted-foreground">
+                        <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
                           {formatQuantity(line.onHandQuantity)}
                         </TD>
                         <TD className="py-3 px-3.5 text-right">
@@ -466,7 +466,7 @@ export function CreateDispatchModal({
                             onChange={(e) => handleLineQtyChange(line.salesOrderItemId, e.target.value)}
                             disabled={isSubmitting}
                             placeholder="0"
-                            className={`w-28 px-2.5 py-1.5 rounded-md border text-right font-mono text-xs focus:outline-hidden transition-colors ${
+                            className={`w-28 px-2.5 py-1.5 rounded-md border text-right tabular-nums text-xs focus:outline-hidden transition-colors ${
                               isExceeded
                                 ? 'border-destructive bg-destructive/10 text-destructive'
                                 : 'border-border/80 bg-secondary/20 text-foreground focus:border-foreground'
@@ -524,7 +524,7 @@ export function CreateDispatchModal({
                 onChange={(e) => setVehicleNumber(e.target.value)}
                 disabled={isSubmitting}
                 placeholder="Optional"
-                className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors font-mono"
+                className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors tabular-nums"
               />
             </div>
           </div>
@@ -537,7 +537,7 @@ export function CreateDispatchModal({
               onChange={(e) => setTransportReference(e.target.value)}
               disabled={isSubmitting}
               placeholder="Optional"
-              className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors font-mono"
+              className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors tabular-nums"
             />
           </div>
         </div>

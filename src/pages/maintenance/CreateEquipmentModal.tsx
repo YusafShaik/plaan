@@ -157,7 +157,7 @@ export function CreateEquipmentModal({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Maintenance / Equipment / {isEditing ? equipmentCode : 'New'}
             </p>
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
@@ -234,7 +234,7 @@ export function CreateEquipmentModal({
 
         <div className="w-full">
           <div className="group relative flex min-h-[5.5rem] w-full flex-col justify-start px-3.5 py-2 rounded-md border bg-secondary border-border/80">
-            <span className="text-[11px] font-medium text-muted-foreground select-none leading-none">
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none">
               Description
             </span>
             <textarea
@@ -249,7 +249,7 @@ export function CreateEquipmentModal({
         </div>
 
         <div>
-          <p className="text-[11px] font-medium text-muted-foreground mb-2">Record Status</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Record Status</p>
           <div className="flex items-center gap-2">
             {([
               { value: 'ACTIVE', label: 'Active' },

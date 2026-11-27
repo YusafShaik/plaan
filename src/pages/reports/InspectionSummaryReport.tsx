@@ -333,9 +333,9 @@ export function InspectionSummaryReport({ onBack }: InspectionSummaryReportProps
                     <TR key={`${row.inspectionType}-${row.id}`} clickable onClick={() => openInspection(row)}>
                       <TD>
                         <div className="text-sm font-medium text-foreground">{row.itemName}</div>
-                        <RefLink className="text-[11px]">{row.inspectionNumber}</RefLink>
+                        <RefLink className="text-xs">{row.inspectionNumber}</RefLink>
                         <div>
-                          <RefCode className="text-[11px] text-muted-foreground">{row.itemCode}</RefCode>
+                          <RefCode className="text-xs text-muted-foreground">{row.itemCode}</RefCode>
                         </div>
                       </TD>
                       <TD className="text-xs text-muted-foreground whitespace-nowrap">
@@ -349,16 +349,16 @@ export function InspectionSummaryReport({ onBack }: InspectionSummaryReportProps
                           <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums">
+                      <TD className="text-right tabular-nums text-xs tabular-nums">
                         {formatQty(row.inspectionQuantity)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums text-success">
+                      <TD className="text-right tabular-nums text-xs tabular-nums text-success">
                         {formatQty(row.acceptedQuantity)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums text-destructive">
+                      <TD className="text-right tabular-nums text-xs tabular-nums text-destructive">
                         {formatQty(row.rejectedQuantity)}
                       </TD>
-                      <TD className="text-right font-mono text-xs tabular-nums">
+                      <TD className="text-right tabular-nums text-xs tabular-nums">
                         {formatPercent(row.acceptanceRate)}
                       </TD>
                       <TD>{statusBadge(row.status)}</TD>

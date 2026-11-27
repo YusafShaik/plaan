@@ -15,7 +15,7 @@ export function Table({
     >
       <table
         className={cn(
-          'w-full text-left border-collapse text-xs',
+          'w-full text-left border-collapse text-sm',
           tableClassName
         )}
         {...props}
@@ -73,7 +73,7 @@ export function TH({
   return (
     <th
       className={cn(
-        'py-3.5 px-4 text-[11px] font-medium text-muted-foreground tracking-wide',
+        'py-3.5 px-4 text-xs font-medium text-muted-foreground tracking-wide',
         className
       )}
       {...props}
@@ -89,7 +89,7 @@ export function TD({
   return (
     <td
       className={cn(
-        'py-3.5 px-4 text-xs font-medium text-foreground',
+        'py-3.5 px-4 text-sm font-medium text-foreground',
         className
       )}
       {...props}

@@ -395,25 +395,25 @@ export function MaterialConsumptionReport({ onBack }: MaterialConsumptionReportP
                           <div className="text-sm font-medium text-foreground">
                             {line.materialName}
                           </div>
-                          <RefCode className="text-[11px] text-muted-foreground">
+                          <RefCode className="text-xs text-muted-foreground">
                             {line.materialCode}
                           </RefCode>
                         </TD>
-                        <TD className="text-right font-mono text-xs tabular-nums">
+                        <TD className="text-right tabular-nums text-xs tabular-nums">
                           {formatQty(line.requiredQuantity)}
                         </TD>
-                        <TD className="text-right font-mono text-xs tabular-nums">
+                        <TD className="text-right tabular-nums text-xs tabular-nums">
                           {formatQty(line.issuedQuantity)}
                         </TD>
-                        <TD className="text-right font-mono text-xs tabular-nums">
+                        <TD className="text-right tabular-nums text-xs tabular-nums">
                           {formatQty(line.consumedQuantity)}
                         </TD>
-                        <TD className="text-right font-mono text-xs tabular-nums">
+                        <TD className="text-right tabular-nums text-xs tabular-nums">
                           {formatQty(line.returnedQuantity)}
                         </TD>
                         <TD
                           className={cn(
-                            'text-right font-mono text-xs tabular-nums font-medium',
+                            'text-right tabular-nums text-xs tabular-nums font-medium',
                             line.unreconciled ? 'text-warning' : 'text-foreground'
                           )}
                         >

@@ -112,11 +112,11 @@ export function PurchaseInvoiceDetailsModal({
       <div className="space-y-5">
         <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
               Finance / Purchase Invoices / {invoice.invoiceNumber}
             </p>
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
+              <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
                 {invoice.invoiceNumber}
               </span>
               {isPosted ? (
@@ -140,26 +140,26 @@ export function PurchaseInvoiceDetailsModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
-            <span className="text-[11px] font-medium text-muted-foreground">Invoice Total</span>
+            <span className="text-xs font-medium text-muted-foreground">Invoice Total</span>
             <div className="mt-1 text-xl font-semibold text-foreground">
               {formatCurrency(invoice.totalAmount)}
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               Subtotal: {formatCurrency(invoice.subtotal)} + Tax: {formatCurrency(invoice.taxAmount)}
             </p>
           </div>
 
           <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
-            <span className="text-[11px] font-medium text-muted-foreground">Total Paid</span>
+            <span className="text-xs font-medium text-muted-foreground">Total Paid</span>
             <div className="mt-1 text-xl font-semibold text-success">
               {formatCurrency(invoice.paidAmount)}
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">{percentPaid}% paid</p>
+            <p className="mt-1 text-xs text-muted-foreground">{percentPaid}% paid</p>
           </div>
 
           <div className="rounded-md border border-border/80 bg-secondary/30 p-4">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-medium text-muted-foreground">Outstanding</span>
+              <span className="text-xs font-medium text-muted-foreground">Outstanding</span>
               {isPosted && paymentStatusBadge(paymentStatus)}
             </div>
             <div className="mt-1 text-xl font-semibold text-foreground">
@@ -237,7 +237,7 @@ export function PurchaseInvoiceDetailsModal({
                       <TD className="text-muted-foreground">
                         {METHOD_LABEL[p.paymentMethod]}
                       </TD>
-                      <TD className="text-right font-mono font-medium">
+                      <TD className="text-right tabular-nums font-medium">
                         {formatCurrency(p.amount)}
                       </TD>
                     </TR>
@@ -265,12 +265,12 @@ export function PurchaseInvoiceDetailsModal({
                 <TR key={it.id}>
                   <TD>
                     <p className="font-medium">{it.itemName}</p>
-                    <p className="text-[11px] text-ref text-muted-foreground">{it.itemCode}</p>
+                    <p className="text-xs text-ref text-muted-foreground">{it.itemCode}</p>
                   </TD>
-                  <TD className="text-right font-mono">{it.quantity}</TD>
+                  <TD className="text-right tabular-nums">{it.quantity}</TD>
                   <TD className="text-center text-muted-foreground">{it.unitOfMeasure}</TD>
-                  <TD className="text-right font-mono">{formatCurrency(it.unitPrice)}</TD>
-                  <TD className="text-right font-mono font-medium">
+                  <TD className="text-right tabular-nums">{formatCurrency(it.unitPrice)}</TD>
+                  <TD className="text-right tabular-nums font-medium">
                     {formatCurrency(it.lineAmount)}
                   </TD>
                 </TR>
@@ -281,7 +281,7 @@ export function PurchaseInvoiceDetailsModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <span className="text-[11px] text-muted-foreground block mb-1 font-medium">
+            <span className="text-xs text-muted-foreground block mb-1 font-medium">
               Supplier Invoice Attachment
             </span>
             {invoice.hasAttachment ? (
@@ -304,7 +304,7 @@ export function PurchaseInvoiceDetailsModal({
           </div>
 
           <div>
-            <span className="text-[11px] text-muted-foreground block mb-1 font-medium">Notes</span>
+            <span className="text-xs text-muted-foreground block mb-1 font-medium">Notes</span>
             <p className="text-xs text-foreground bg-secondary/30 p-2 rounded-md border border-border/80 min-h-[36px]">
               {invoice.notes || 'No additional notes'}
             </p>

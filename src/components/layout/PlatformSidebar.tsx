@@ -29,7 +29,7 @@ export function PlatformSidebar({ activeTab, onTabChange }: PlatformSidebarProps
           </span>
         </div>
 
-        <span className="inline-flex items-center rounded-md bg-brand/15 px-2 py-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
+        <span className="inline-flex items-center rounded-md bg-brand/15 px-2 py-0.5 text-xs font-semibold text-brand uppercase tracking-wider">
           Platform
         </span>
       </div>
@@ -52,7 +52,7 @@ export function PlatformSidebar({ activeTab, onTabChange }: PlatformSidebarProps
           {user?.email || 'platform@plaan.io'}
         </p>
 
-        <span className="mt-1.5 inline-flex items-center rounded-md bg-secondary px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <span className="mt-1.5 inline-flex items-center rounded-md bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
           Global Operator
         </span>
       </div>
@@ -107,7 +107,7 @@ export function PlatformSidebar({ activeTab, onTabChange }: PlatformSidebarProps
           </button>
         </div>
 
-        <nav aria-label="Footer links" className="flex items-center gap-4 text-[11px] text-muted-foreground">
+        <nav aria-label="Footer links" className="flex items-center gap-4 text-xs text-muted-foreground">
           <a href="#terms" className="hover:text-foreground transition-colors">
             Terms
           </a>

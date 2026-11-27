@@ -31,11 +31,11 @@ function PlatformLayout() {
           </div>
         </header>
 
-        <section className="flex-1 p-8">
+        <section className="flex-1 px-8 py-8 w-full">
           {activeTab === 'organizations' ? (
             <OrganizationsPage />
           ) : (
-            <div className="rounded-md border border-border bg-card p-8 shadow-xs">
+            <div className="mx-auto w-full max-w-[var(--content-max)] rounded-md border border-border bg-card p-8 shadow-xs">
               <h2 className="text-lg font-semibold text-card-foreground">
                 {activeTab} View
               </h2>

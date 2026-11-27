@@ -63,7 +63,7 @@ export function StockAdjustmentDetailsModal({
         <div className="flex items-start justify-between border-b border-border/80 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xl font-medium tracking-tight text-foreground">
+              <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
                 {adjustment.adjustmentNumber}
               </span>
               {adjustment.status === 'POSTED' && (
@@ -92,40 +92,40 @@ export function StockAdjustmentDetailsModal({
         {/* Info Strip */}
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 rounded-md border border-border/80 bg-secondary/30 p-4">
           <div>
-            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <WarehouseIcon className="h-3.5 w-3.5" />
               Warehouse
             </span>
             <p className="mt-1 text-sm font-semibold text-foreground">
               {adjustment.warehouseName}
             </p>
-            <p className="text-[11px] text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground tabular-nums">
               {adjustment.warehouseCode}
             </p>
           </div>
 
           <div>
-            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
               Adjustment Date & Reason
             </span>
             <p className="mt-1 text-sm font-semibold text-foreground">
               {formatDate(adjustment.adjustmentDate)}
             </p>
-            <p className="text-[11px] text-muted-foreground font-medium">
+            <p className="text-xs text-muted-foreground font-medium">
               Reason: {adjustment.reason}
             </p>
           </div>
 
           <div>
-            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <PackageCheck className="h-3.5 w-3.5" />
               Items Count
             </span>
-            <p className="mt-1 text-sm font-medium text-foreground font-mono">
+            <p className="mt-1 text-sm font-medium text-foreground tabular-nums">
               {adjustment.totalItems} {adjustment.totalItems === 1 ? 'item' : 'items'}
             </p>
-            <p className="text-[11px] text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground tabular-nums">
               Net difference: {adjustment.totalDifference > 0 ? `+${adjustment.totalDifference}` : adjustment.totalDifference}
             </p>
           </div>
@@ -139,7 +139,7 @@ export function StockAdjustmentDetailsModal({
               <TrendingUp className="h-4 w-4 text-success" />
               <span className="text-xs font-semibold text-foreground">Positive Adjustment</span>
             </div>
-            <p className="mt-2 text-2xl font-medium font-mono text-success">
+            <p className="mt-2 text-2xl font-medium tabular-nums text-success">
               +{formatQuantity(totalPositiveQty)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -153,7 +153,7 @@ export function StockAdjustmentDetailsModal({
               <TrendingDown className="h-4 w-4 text-destructive" />
               <span className="text-xs font-semibold text-foreground">Negative Adjustment</span>
             </div>
-            <p className="mt-2 text-2xl font-medium font-mono text-destructive">
+            <p className="mt-2 text-2xl font-medium tabular-nums text-destructive">
               -{formatQuantity(totalNegativeQty)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -165,7 +165,7 @@ export function StockAdjustmentDetailsModal({
         {/* Notes */}
         {adjustment.notes && (
           <div className="mt-4 rounded-md border border-border/70 bg-card p-3">
-            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 mb-1">
+            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 mb-1">
               <FileText className="h-3.5 w-3.5" />
               Notes
             </span>
@@ -193,17 +193,17 @@ export function StockAdjustmentDetailsModal({
                   <TR key={it.id} className="hover:bg-secondary/30 transition-colors">
                     <TD className="py-2.5 px-3">
                       <p className="font-medium text-foreground">{it.itemName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {it.itemCode}
                       </p>
                     </TD>
-                    <TD className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                    <TD className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
                       {formatQuantity(it.systemQuantity)} {it.unitOfMeasure}
                     </TD>
-                    <TD className="py-2.5 px-3 text-right font-mono font-medium text-foreground">
+                    <TD className="py-2.5 px-3 text-right tabular-nums font-medium text-foreground">
                       {formatQuantity(it.physicalQuantity)} {it.unitOfMeasure}
                     </TD>
-                    <TD className="py-2.5 px-3 text-right font-mono font-medium">
+                    <TD className="py-2.5 px-3 text-right tabular-nums font-medium">
                       {it.adjustmentQuantity > 0 ? (
                         <span className="text-success">
                           +{formatQuantity(it.adjustmentQuantity)}
@@ -218,15 +218,15 @@ export function StockAdjustmentDetailsModal({
                     </TD>
                     <TD className="py-2.5 px-3 text-right">
                       {it.adjustmentQuantity > 0 ? (
-                        <Badge variant="success" className="h-auto px-2 py-0.5 text-[10px]">
+                        <Badge variant="success" className="h-auto px-2 py-0.5 text-xs">
                           Adjustment In
                         </Badge>
                       ) : it.adjustmentQuantity < 0 ? (
-                        <Badge variant="destructive" className="h-auto px-2 py-0.5 text-[10px]">
+                        <Badge variant="destructive" className="h-auto px-2 py-0.5 text-xs">
                           Adjustment Out
                         </Badge>
                       ) : (
-                        <Badge variant="neutral" className="h-auto px-2 py-0.5 text-[10px]">
+                        <Badge variant="neutral" className="h-auto px-2 py-0.5 text-xs">
                           No difference
                         </Badge>
                       )}

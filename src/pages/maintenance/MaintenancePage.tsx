@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { UnderlineTabs } from '../../components/ui/Tabs'
+import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { EquipmentPage } from './EquipmentPage'
 import { MaintenancePlansPage } from './MaintenancePlansPage'
 import { WorkOrdersPage } from './WorkOrdersPage'
@@ -36,14 +37,14 @@ export function MaintenancePage({
   }, [initialSection, onInitialSectionConsumed])
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="pb-3">
+    <ContentCanvas className="space-y-8 pt-2">
+      <header className="space-y-5">
+        <div>
           <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Maintenance
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage equipment, maintenance schedules and repairs.
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            Equipment, plans, and work orders.
           </p>
         </div>
 
@@ -52,13 +53,13 @@ export function MaintenancePage({
           value={activeTab}
           onChange={(id) => setActiveTab(id as MaintenanceTab)}
         />
-      </div>
+      </header>
 
       <div>
         {activeTab === 'equipment' && <EquipmentPage />}
         {activeTab === 'maintenance-plans' && <MaintenancePlansPage />}
         {activeTab === 'work-orders' && <WorkOrdersPage />}
       </div>
-    </div>
+    </ContentCanvas>
   )
 }

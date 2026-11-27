@@ -128,7 +128,7 @@ export function SalesInvoicesPage() {
               placeholder="Search invoices..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
             />
           </div>
 
@@ -213,11 +213,11 @@ export function SalesInvoicesPage() {
                     </TD>
                     <TD>
                       <p className="font-medium">{inv.customerName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {inv.dispatchNumber}
                       </p>
                     </TD>
-                    <TD className="text-right font-mono font-medium">
+                    <TD className="text-right tabular-nums font-medium">
                       {formatCurrency(inv.totalAmount)}
                     </TD>
                     <TD>
@@ -291,7 +291,7 @@ export function SalesInvoicesPage() {
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <span className="px-2 text-muted-foreground font-mono">
+              <span className="px-2 text-muted-foreground tabular-nums">
                 {currentPage + 1} / {pageData.totalPages}
               </span>
               <Button

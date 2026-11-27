@@ -227,7 +227,7 @@ export function StockAdjustmentsPage() {
 
                     <TD>
                       <p className="font-medium">{a.warehouseName}</p>
-                      <p className="text-[11px] text-ref text-muted-foreground">
+                      <p className="text-xs text-ref text-muted-foreground">
                         {a.warehouseCode}
                       </p>
                     </TD>
@@ -236,9 +236,9 @@ export function StockAdjustmentsPage() {
                       {a.reason}
                     </TD>
 
-                    <TD className="text-center font-mono">
+                    <TD className="text-center tabular-nums">
                       <span className="font-medium">{a.totalItems}</span>
-                      <span className="text-[11px] text-muted-foreground ml-1">
+                      <span className="text-xs text-muted-foreground ml-1">
                         ({a.totalDifference > 0 ? `+${a.totalDifference}` : a.totalDifference})
                       </span>
                     </TD>
