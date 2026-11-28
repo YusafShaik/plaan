@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { X, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { X, AlertCircle } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { DateField } from '../../components/ui/DateField'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { toast } from '../../lib/feedback'
 import { manufacturingService } from '../../services/manufacturingService'
 import type {
   ProductionOrder,
@@ -22,7 +24,7 @@ interface ReturnRowState {
   materialCode: string
   materialName: string
   returnableQuantity: number
-  returnQuantity: number | ''
+  returnQuantity: number | string
   unitOfMeasure: string
 }
 
@@ -40,7 +42,6 @@ export function ReturnMaterialsModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen || !order) return
@@ -55,7 +56,6 @@ export function ReturnMaterialsModal({
         setReturnDate(new Date().toISOString().split('T')[0])
         setNotes('')
         setError(null)
-        setSuccessMessage(null)
 
         const initialRows: ReturnRowState[] = order.items.map((it) => {
           const issued = it.issuedQuantity ?? 0
@@ -81,7 +81,6 @@ export function ReturnMaterialsModal({
         setReturnDate(initialDraft.returnDate)
         setNotes(initialDraft.notes || '')
         setError(null)
-        setSuccessMessage(null)
 
         const draftRows: ReturnRowState[] = order.items.map((it) => {
           const draftItem = initialDraft.items.find((di) => di.materialId === it.materialId)
@@ -115,15 +114,9 @@ export function ReturnMaterialsModal({
   }
 
   const handleRowQuantityChange = (materialId: number, val: string) => {
+    if (val !== '' && Number(val) < 0) return
     setRows((prev) =>
-      prev.map((r) => {
-        if (r.materialId !== materialId) return r
-        if (val === '') {
-          return { ...r, returnQuantity: '' }
-        }
-        const parsed = Math.max(0, parseFloat(val) || 0)
-        return { ...r, returnQuantity: parsed }
-      })
+      prev.map((r) => (r.materialId === materialId ? { ...r, returnQuantity: val } : r))
     )
   }
 
@@ -160,7 +153,6 @@ export function ReturnMaterialsModal({
     try {
       setIsSubmitting(true)
       setError(null)
-      setSuccessMessage(null)
 
       const itemsPayload = rows.map((r) => ({
         materialId: r.materialId,
@@ -187,16 +179,13 @@ export function ReturnMaterialsModal({
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         postImmediately
-          ? 'Material return posted successfully! Unused materials returned to warehouse stock.'
-          : 'Draft material return saved successfully.'
+          ? 'Material return posted and warehouse stock updated.'
+          : 'Draft material return saved.'
       )
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 800)
+      onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving material return.')
     } finally {
@@ -205,7 +194,7 @@ export function ReturnMaterialsModal({
   }
 
   // Display only rows with returnable quantity or user-entered quantity
-  const visibleRows = rows.filter((r) => r.returnableQuantity > 0 || (r.returnQuantity !== '' && r.returnQuantity > 0))
+  const visibleRows = rows.filter((r) => r.returnableQuantity > 0 || (r.returnQuantity !== '' && Number(r.returnQuantity) > 0))
 
   return (
     <Modal
@@ -217,15 +206,15 @@ export function ReturnMaterialsModal({
         {/* Header matching Screenshot 3 */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              {initialDraft ? `Edit Material Return (${returnNumber})` : 'Return Materials'}
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              {initialDraft ? `Edit material return (${returnNumber})` : 'Return materials'}
             </h2>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -239,66 +228,39 @@ export function ReturnMaterialsModal({
           </div>
         )}
 
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
-          </div>
-        )}
-
-        {/* Form Body matching Screenshot 3 */}
         <div className="space-y-4">
-          {/* Row 1: Return Number & Return Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Return Number
-              </label>
-              <input
-                type="text"
-                disabled
-                value={returnNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Return number
+              </span>
+              <span className="mt-1 text-sm font-medium tabular-nums text-foreground">
+                {returnNumber}
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Return Date <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="date"
-                value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
-            </div>
-          </div>
+            <DateField
+              label="Return date *"
+              value={returnDate}
+              onChange={(e) => setReturnDate(e.target.value)}
+            />
 
-          {/* Row 2: Production Order & Return Warehouse */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Production Order
-              </label>
-              <input
-                type="text"
-                disabled
-                value={order.orderNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed font-medium"
-              />
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Production order
+              </span>
+              <span className="mt-1 text-sm font-medium tabular-nums text-foreground">
+                {order.orderNumber}
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Return Warehouse
-              </label>
-              <input
-                type="text"
-                disabled
-                value={order.sourceWarehouseName}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
-              />
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Return warehouse
+              </span>
+              <span className="mt-1 text-sm font-medium text-foreground truncate">
+                {order.sourceWarehouseName}
+              </span>
             </div>
           </div>
 
@@ -359,16 +321,16 @@ export function ReturnMaterialsModal({
           </div>
 
           {/* Notes */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
+          <div className="flex min-h-14 w-full flex-col rounded-md border border-border bg-card px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
               Notes
-            </label>
+            </span>
             <textarea
               rows={2}
               placeholder="Reason for returning unused materials..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
             />
           </div>
 
@@ -376,23 +338,28 @@ export function ReturnMaterialsModal({
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
             <Button
               type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
               variant="outline"
-              size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
-              Save Draft
+              Save draft
             </Button>
 
             <Button
               type="button"
-              size="sm"
+              variant="primary"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4"
             >
-              <span>{isSubmitting ? 'Posting...' : 'Post Return'}</span>
+              <span>{isSubmitting ? 'Posting...' : 'Post return'}</span>
             </Button>
           </div>
         </div>

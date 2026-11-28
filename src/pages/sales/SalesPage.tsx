@@ -1,18 +1,15 @@
 import { useState } from 'react'
-import { UnderlineTabs } from '../../components/ui/Tabs'
+import { Plus } from 'lucide-react'
+import { Button } from '../../components/ui/Button'
 import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { SalesOrdersPage } from './SalesOrdersPage'
 
-export type SalesTab = 'orders'
-
-const TABS = [{ id: 'orders', label: 'Sales Orders' }]
-
 export function SalesPage() {
-  const [activeTab, setActiveTab] = useState<SalesTab>('orders')
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
 
   return (
-    <ContentCanvas className="space-y-8 pt-2">
-      <header className="space-y-5">
+    <ContentCanvas className="space-y-6 pt-2">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
             Sales
@@ -21,14 +18,16 @@ export function SalesPage() {
             Customer orders and fulfillment.
           </p>
         </div>
-        <UnderlineTabs
-          items={TABS}
-          value={activeTab}
-          onChange={(id) => setActiveTab(id as SalesTab)}
-        />
+        <Button variant="primary" size="sm" onClick={() => setIsOrderModalOpen(true)}>
+          <Plus className="h-4 w-4" />
+          New sales order
+        </Button>
       </header>
 
-      <div>{activeTab === 'orders' && <SalesOrdersPage />}</div>
+      <SalesOrdersPage
+        isModalOpen={isOrderModalOpen}
+        setIsModalOpen={setIsOrderModalOpen}
+      />
     </ContentCanvas>
   )
 }

@@ -114,7 +114,7 @@
   --muted: #eaebee;
   /* Darker muted text — Mercury/Stripe-level contrast for long reading */
   --muted-foreground: #5c5c66;
-  --surface-subtle: #f8f9fa;
+  --surface-subtle: #f7f7f8;
   --surface-muted: #fafafa;
 
   --accent: #011e0f;
@@ -150,8 +150,8 @@
   --control-xl: 48px;
   --control-stacked: 56px;
 
-  --sidebar-w: 288px;
-  --content-max: 1180px;
+  --sidebar-w: 256px;
+  --content-max: 1600px;
   --page-pad-x: 32px;
   --page-pad-y: 24px;
   --modal-sm: 480px;
@@ -315,6 +315,10 @@ body {
 @layer base {
   select:not([class*='appearance']) {
     font-family: inherit;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 }
 

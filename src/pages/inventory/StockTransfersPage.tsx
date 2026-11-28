@@ -1,39 +1,82 @@
-import { useState, useEffect, useCallback } from 'react'
-import {
-  Search,
-  Plus,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  RotateCcw,
-} from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { ArrowRight, Eye, MoreHorizontal, PackageCheck, Pencil, Ban, RotateCcw } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
-import { Badge } from '../../components/ui/Badge'
-import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
-import { NativeSelect } from '../../components/ui/NativeSelect'
+import { SearchInput } from '../../components/ui/Input'
+import { Badge, type BadgeVariant } from '../../components/ui/Badge'
+import {
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  TableEmptyState,
+  TablePagination,
+} from '../../components/ui/Table'
 import { inventoryService } from '../../services/inventoryService'
+import { confirmAction, toast } from '../../lib/feedback'
+import { formatQuantity, formatShortDate } from '../../lib/format'
+import { cn } from '../../lib/cn'
 import { CreateStockTransferModal } from './CreateStockTransferModal'
 import { StockTransferDetailsModal } from './StockTransferDetailsModal'
 import type { StockTransfer, StockTransferStatus } from '../../types/inventory'
 import type { PageResponse } from '../../types/masterData'
 
-export function StockTransfersPage() {
+const TRANSFER_STATUS_FILTERS: Array<{ id: StockTransferStatus | ''; label: string }> = [
+  { id: '', label: 'All' },
+  { id: 'POSTED', label: 'Posted' },
+  { id: 'DRAFT', label: 'Draft' },
+  { id: 'CANCELLED', label: 'Cancelled' },
+]
+
+const STATUS_BADGE: Record<StockTransferStatus, { variant: BadgeVariant; label: string }> = {
+  POSTED: { variant: 'success', label: 'Posted' },
+  DRAFT: { variant: 'warning', label: 'Draft' },
+  CANCELLED: { variant: 'destructive', label: 'Cancelled' },
+}
+
+export interface StockTransfersPageProps {
+  isModalOpen?: boolean
+  setIsModalOpen?: (open: boolean) => void
+}
+
+export function StockTransfersPage({
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: setControlledModalOpen,
+}: StockTransfersPageProps = {}) {
   const [transfers, setTransfers] = useState<StockTransfer[]>([])
   const [pageData, setPageData] = useState<PageResponse<StockTransfer> | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [pageSize] = useState(10)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StockTransferStatus | ''>('')
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Modals
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [internalModalOpen, setInternalModalOpen] = useState(false)
+  const isCreateModalOpen =
+    controlledModalOpen !== undefined ? controlledModalOpen : internalModalOpen
+  const setIsCreateModalOpen = setControlledModalOpen || setInternalModalOpen
   const [editingDraft, setEditingDraft] = useState<StockTransfer | null>(null)
   const [selectedTransfer, setSelectedTransfer] = useState<StockTransfer | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+
+  const menuContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        menuContainerRef.current &&
+        !menuContainerRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const loadTransfers = useCallback(
     (page = 0) => {
@@ -62,7 +105,10 @@ export function StockTransfersPage() {
   )
 
   useEffect(() => {
-    loadTransfers(0)
+    const timer = setTimeout(() => {
+      loadTransfers(0)
+    }, 0)
+    return () => clearTimeout(timer)
   }, [loadTransfers])
 
   const handlePostTransfer = async (id: number) => {
@@ -72,290 +118,285 @@ export function StockTransfersPage() {
       setIsDetailsModalOpen(false)
       setSelectedTransfer(null)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to post transfer')
+      toast.error(err instanceof Error ? err.message : 'Failed to post transfer')
     }
   }
 
   const handleCancelTransfer = async (id: number) => {
-    if (!confirm('Are you sure you want to cancel this draft stock transfer?')) return
+    const ok = await confirmAction({
+      title: 'Cancel draft stock transfer?',
+      description: 'This draft stock transfer will be marked as cancelled.',
+      confirmLabel: 'Cancel transfer',
+      variant: 'destructive',
+    })
+    if (!ok) return
     try {
       await inventoryService.cancelStockTransfer(id)
       loadTransfers(currentPage)
       setIsDetailsModalOpen(false)
       setSelectedTransfer(null)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to cancel transfer')
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel transfer')
     }
   }
 
-  const formatDate = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr)
-      return d.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
-    } catch {
-      return dateStr
-    }
-  }
-
-  const formatQuantity = (qty: number) => {
-    if (qty % 1 === 0) {
-      return qty.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-    }
-    return qty.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 3 })
+  const hasActiveFilters = Boolean(search.trim() || statusFilter)
+  const clearAllFilters = () => {
+    setSearch('')
+    setStatusFilter('')
   }
 
   return (
-    <div className="space-y-4">
-      {/* 1. Toolbar: Search, Status filter, + New Transfer button */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-        <div className="flex items-center gap-2.5">
-          {/* Search bar */}
-          <div className="relative w-64 sm:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search transfers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search transfers..."
+        />
 
-          {/* Status Filter */}
-          <NativeSelect
-            dense
-            className="w-auto min-w-[9.5rem]"
-            value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as StockTransferStatus | '')
-            }
-          >
-            <option value="">All Statuses</option>
-            <option value="POSTED">Posted</option>
-            <option value="DRAFT">Draft</option>
-            <option value="CANCELLED">Cancelled</option>
-          </NativeSelect>
-
-          {(search || statusFilter) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('')
-              }}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline cursor-pointer ml-1"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Reset
-            </button>
-          )}
+        <div
+          className="inline-flex flex-wrap items-center gap-1"
+          role="group"
+          aria-label="Filter by status"
+        >
+          {TRANSFER_STATUS_FILTERS.map((opt) => {
+            const active = statusFilter === opt.id
+            return (
+              <button
+                key={opt.id || 'all'}
+                type="button"
+                onClick={() => setStatusFilter(opt.id)}
+                className={cn(
+                  'h-8 rounded-md px-2.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap',
+                  active
+                    ? 'bg-ink text-ink-foreground'
+                    : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                )}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
         </div>
 
-        {/* Right side: + New Transfer button */}
-        <div className="flex items-center gap-2.5">
-          <Button
+        {hasActiveFilters && (
+          <button
             type="button"
-            onClick={() => {
-              setEditingDraft(null)
-              setIsCreateModalOpen(true)
-            }}
-            className="flex h-10 items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-4 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+            onClick={clearAllFilters}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer px-1"
           >
-            <Plus className="h-4 w-4" />
-            <span>New Transfer</span>
-          </Button>
-        </div>
+            <RotateCcw className="h-3 w-3" />
+            Reset
+          </button>
+        )}
       </div>
 
-      {/* 2. Stock Transfers Table */}
-      <div className="w-full">
+      <div className="w-full" ref={menuContainerRef}>
         {isLoading && transfers.length === 0 ? (
-          <div className="py-20 text-center">
+          <div className="py-20 text-center rounded-md border border-border bg-card">
             <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
             <p className="mt-3 text-xs text-muted-foreground">Loading stock transfers...</p>
           </div>
         ) : error ? (
-          <div className="py-16 text-center">
+          <div className="py-16 text-center rounded-md border border-border bg-card">
             <p className="text-sm font-medium text-destructive">{error}</p>
-            <Button variant="outline" size="sm" onClick={() => loadTransfers(0)} className="mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadTransfers(0)}
+              className="mt-3"
+            >
               Retry
             </Button>
           </div>
-        ) : transfers.length === 0 ? (
-          <div className="py-16 text-center rounded-md border border-border/80 bg-card">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
-              <ArrowRight className="h-6 w-6" />
-            </div>
-            <p className="text-base font-semibold text-foreground">No stock transfers found</p>
-            <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
-              Create a stock transfer to move materials between warehouses. Total organization stock remains unchanged.
-            </p>
-            <Button
-              size="sm"
-              onClick={() => setIsCreateModalOpen(true)}
-              className="mt-4 gap-1.5 text-xs"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Create First Transfer</span>
-            </Button>
-          </div>
         ) : (
-          <>
-            <Table>
+          <div className="rounded-md border border-border/80 bg-card overflow-visible">
+            <Table className="border-0 rounded-none overflow-visible" tableClassName="table-fixed">
               <THead>
                 <tr>
-                  <TH>Reference</TH>
-                  <TH>From</TH>
-                  <TH>To</TH>
-                  <TH>Transfer date</TH>
-                  <TH className="text-center">Items</TH>
-                  <TH>Status</TH>
-                  <TH className="text-right">Actions</TH>
+                  <TH className="w-[14%]">Reference</TH>
+                  <TH className="w-[20%]">From</TH>
+                  <TH className="w-[20%]">To</TH>
+                  <TH className="w-[12%]">Transfer date</TH>
+                  <TH className="w-[10%] text-right">Items</TH>
+                  <TH className="w-[11%] pl-6">Status</TH>
+                  <TH className="w-[13%] px-3 text-right">Actions</TH>
                 </tr>
               </THead>
               <TBody>
-                {transfers.map((t) => (
-                  <TR
-                    key={t.id}
-                    clickable
-                    onClick={() => {
-                      if (t.status === 'DRAFT') {
-                        setEditingDraft(t)
-                        setIsCreateModalOpen(true)
-                      } else {
-                        setSelectedTransfer(t)
-                        setIsDetailsModalOpen(true)
-                      }
-                    }}
-                  >
-                    <TD>
-                      <span className="text-ref-link">{t.transferNumber}</span>
-                    </TD>
-
-                    <TD>
-                      <p className="font-medium">{t.fromWarehouseName}</p>
-                      <p className="text-xs text-ref text-muted-foreground">
-                        {t.fromWarehouseCode}
-                      </p>
-                    </TD>
-
-                    <TD>
-                      <p className="font-medium">{t.toWarehouseName}</p>
-                      <p className="text-xs text-ref text-muted-foreground">
-                        {t.toWarehouseCode}
-                      </p>
-                    </TD>
-
-                    <TD className="whitespace-nowrap">
-                      {formatDate(t.transferDate)}
-                    </TD>
-
-                    <TD className="text-center tabular-nums">
-                      <span className="font-medium text-foreground">{t.totalItems}</span>
-                      <span className="text-xs text-muted-foreground ml-1">
-                        ({formatQuantity(t.totalQuantity)})
-                      </span>
-                    </TD>
-
-                    <TD>
-                      {t.status === 'POSTED' && (
-                        <Badge variant="success">Posted</Badge>
-                      )}
-                      {t.status === 'DRAFT' && (
-                        <Badge variant="warning">Draft</Badge>
-                      )}
-                      {t.status === 'CANCELLED' && (
-                        <Badge variant="destructive">Cancelled</Badge>
-                      )}
-                    </TD>
-
-                    <TD
-                      className="text-right space-x-1.5 whitespace-nowrap"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {t.status === 'DRAFT' ? (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setEditingDraft(t)
-                              setIsCreateModalOpen(true)
-                            }}
-                            className="h-8 px-2.5 text-xs cursor-pointer"
-                          >
-                            Edit / Post
-                          </Button>
-                          <button
-                            type="button"
-                            onClick={() => handleCancelTransfer(t.id)}
-                            className="text-xs text-destructive hover:underline cursor-pointer ml-1"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedTransfer(t)
-                            setIsDetailsModalOpen(true)
-                          }}
-                          className="h-8 px-2.5 text-xs cursor-pointer inline-flex items-center gap-1"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                          <span>View</span>
-                        </Button>
-                      )}
+                {transfers.length === 0 ? (
+                  <TR>
+                    <TD colSpan={7} className="p-0">
+                      <TableEmptyState
+                        icon={<ArrowRight className="h-5 w-5" />}
+                        title="No stock transfers found"
+                        description={
+                          hasActiveFilters
+                            ? 'No stock transfers match your current search or status filter.'
+                            : 'Move inventory between warehouses using "+ New transfer" above. Organization stock totals stay unchanged.'
+                        }
+                        action={
+                          hasActiveFilters ? (
+                            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                              <RotateCcw className="h-3.5 w-3.5" />
+                              Reset filters
+                            </Button>
+                          ) : undefined
+                        }
+                      />
                     </TD>
                   </TR>
-                ))}
+                ) : (
+                  transfers.map((t) => {
+                    const badge = STATUS_BADGE[t.status] ?? {
+                      variant: 'neutral',
+                      label: t.status,
+                    }
+
+                    return (
+                      <TR
+                        key={t.id}
+                        clickable
+                        onClick={() => {
+                          setOpenMenuId(null)
+                          if (t.status === 'DRAFT') {
+                            setEditingDraft(t)
+                            setIsCreateModalOpen(true)
+                          } else {
+                            setSelectedTransfer(t)
+                            setIsDetailsModalOpen(true)
+                          }
+                        }}
+                      >
+                        <TD>
+                          <span className="text-ref-link">{t.transferNumber}</span>
+                        </TD>
+
+                        <TD>
+                          <p className="font-medium truncate">{t.fromWarehouseName}</p>
+                          <p className="text-ref text-muted-foreground">
+                            {t.fromWarehouseCode}
+                          </p>
+                        </TD>
+
+                        <TD>
+                          <p className="font-medium truncate">{t.toWarehouseName}</p>
+                          <p className="text-ref text-muted-foreground">
+                            {t.toWarehouseCode}
+                          </p>
+                        </TD>
+
+                        <TD className="tabular-nums text-muted-foreground font-normal whitespace-nowrap">
+                          {formatShortDate(t.transferDate)}
+                        </TD>
+
+                        <TD className="text-right tabular-nums">
+                          <span className="font-medium text-foreground">{t.totalItems}</span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({formatQuantity(t.totalQuantity)})
+                          </span>
+                        </TD>
+
+                        <TD className="pl-6">
+                          <Badge variant={badge.variant}>{badge.label}</Badge>
+                        </TD>
+
+                        <TD className="px-3 text-right whitespace-nowrap">
+                          <div
+                            className="relative inline-flex items-center justify-end gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {t.status === 'DRAFT' && (
+                              <button
+                                type="button"
+                                onClick={() => handlePostTransfer(t.id)}
+                                className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                                title="Post transfer"
+                              >
+                                <PackageCheck className="h-3 w-3 text-muted-foreground" />
+                                Post
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setOpenMenuId((prev) => (prev === t.id ? null : t.id))
+                              }
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer transition-colors"
+                              aria-label="More transfer actions"
+                              aria-expanded={openMenuId === t.id}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+
+                            {openMenuId === t.id && (
+                              <div className="absolute right-0 top-full z-40 mt-1 w-40 rounded-md border border-border bg-card py-1 shadow-panel text-left">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuId(null)
+                                    setSelectedTransfer(t)
+                                    setIsDetailsModalOpen(true)
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                  View details
+                                </button>
+                                {t.status === 'DRAFT' && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuId(null)
+                                        setEditingDraft(t)
+                                        setIsCreateModalOpen(true)
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                      Edit draft
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuId(null)
+                                        handleCancelTransfer(t.id)
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer"
+                                    >
+                                      <Ban className="h-3.5 w-3.5" />
+                                      Cancel draft
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </TD>
+                      </TR>
+                    )
+                  })
+                )}
               </TBody>
             </Table>
 
-            {/* Pagination footer */}
-            {pageData && pageData.totalPages > 1 && (
-              <div className="flex items-center justify-between border border-t-0 border-border/80 rounded-b-md bg-card px-4 py-3 text-xs text-muted-foreground">
-                <span>
-                  Showing {transfers.length} of {pageData.totalElements} transfers
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => loadTransfers(currentPage - 1)}
-                    disabled={currentPage === 0}
-                    className="h-8 gap-1 text-xs cursor-pointer"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" />
-                    <span>Previous</span>
-                  </Button>
-                  <span className="px-2 text-foreground font-medium">
-                    Page {pageData.page + 1} of {pageData.totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => loadTransfers(currentPage + 1)}
-                    disabled={currentPage >= pageData.totalPages - 1}
-                    className="h-8 gap-1 text-xs cursor-pointer"
-                  >
-                    <span>Next</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
+            {pageData && (
+              <TablePagination
+                page={currentPage}
+                totalPages={pageData.totalPages}
+                totalElements={pageData.totalElements}
+                count={transfers.length}
+                itemLabel="transfers"
+                onPageChange={loadTransfers}
+              />
             )}
-          </>
+          </div>
         )}
       </div>
 
-      {/* Create / Edit Transfer Modal */}
       <CreateStockTransferModal
         isOpen={isCreateModalOpen}
         initialDraft={editingDraft}
@@ -368,7 +409,6 @@ export function StockTransfersPage() {
         }}
       />
 
-      {/* Details Modal */}
       <StockTransferDetailsModal
         isOpen={isDetailsModalOpen}
         transfer={selectedTransfer}

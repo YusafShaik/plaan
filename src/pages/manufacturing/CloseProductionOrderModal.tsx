@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
+import { toast } from '../../lib/feedback'
 import type {
   ProductionOrder,
   ProductionOrderClosureValidation,
@@ -27,7 +28,6 @@ export function CloseProductionOrderModal({
   const [closureNotes, setClosureNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen || !order) return
@@ -35,7 +35,6 @@ export function CloseProductionOrderModal({
     Promise.resolve().then(() => {
       setIsLoading(true)
       setError(null)
-      setSuccessMessage(null)
       setClosureNotes('')
 
       manufacturingService
@@ -68,12 +67,9 @@ export function CloseProductionOrderModal({
       await manufacturingService.closeProductionOrder(order.id, {
         closureNotes: closureNotes.trim() || undefined,
       })
-      setSuccessMessage('Production order closed successfully.')
+      toast.success('Production order closed.')
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 700)
+      onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to close production order.')
     } finally {
@@ -94,8 +90,8 @@ export function CloseProductionOrderModal({
         <div className="flex items-start justify-between pb-3 border-b border-border/80">
           <div>
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-bold tracking-tight text-foreground">
-                Close Production Order
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                Close production order
               </h2>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -110,7 +106,7 @@ export function CloseProductionOrderModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer ml-2"
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer ml-2"
             >
               <X className="h-4 w-4" />
             </button>
@@ -122,13 +118,6 @@ export function CloseProductionOrderModal({
           <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
           </div>
         )}
 
@@ -287,46 +276,39 @@ export function CloseProductionOrderModal({
             </div>
 
             {/* Closure Notes */}
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Closure Notes
-              </label>
+            <div className="flex min-h-14 w-full flex-col rounded-md border border-border bg-card px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Closure notes
+              </span>
               <textarea
                 value={closureNotes}
                 onChange={(e) => setClosureNotes(e.target.value)}
                 placeholder="Optional closure notes..."
-                rows={3}
-                className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+                rows={2}
+                className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
               />
             </div>
           </div>
         ) : null}
 
-        {/* Footer Actions matching Screenshot 0 */}
+        {/* Footer Actions */}
         <div className="flex items-center justify-end pt-3 border-t border-border/80 gap-2">
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="ghost"
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-xs font-medium cursor-pointer"
           >
             Cancel
           </Button>
 
           <Button
             type="button"
-            size="sm"
+            variant="primary"
             onClick={handleCloseOrder}
             disabled={!validation?.canClose || isSubmitting}
-            className={
-              validation?.canClose
-                ? 'bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs px-4 h-9 rounded-md cursor-pointer shadow-xs'
-                : 'bg-secondary/60 text-muted-foreground opacity-60 cursor-not-allowed text-xs px-4 h-9 rounded-md'
-            }
           >
-            {isSubmitting ? 'Closing Order...' : 'Close Order'}
+            {isSubmitting ? 'Closing order...' : 'Close order'}
           </Button>
         </div>
       </div>

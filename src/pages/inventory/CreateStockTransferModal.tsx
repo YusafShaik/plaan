@@ -8,7 +8,6 @@ import {
   ChevronDown,
   PackageCheck,
   AlertCircle,
-  CheckCircle2,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Modal } from '../../components/ui/Modal'
@@ -22,6 +21,7 @@ import {
 } from '../../components/ui/fieldStyles'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
+import { toast } from '../../lib/feedback'
 import type { Warehouse, Item } from '../../types/masterData'
 import type {
   StockTransfer,
@@ -89,7 +89,31 @@ export function CreateStockTransferModal({
   // Status & errors
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const resetForm = () => {
+    setTransferDate(new Date().toISOString().split('T')[0])
+    setFromWarehouseId(null)
+    setToWarehouseId(null)
+    setNotes('')
+    setError(null)
+    setRows([
+      {
+        id: `row-${Date.now()}`,
+        itemId: null,
+        onHand: '',
+        transferQuantity: '',
+        unitOfMeasure: '',
+        isDropdownOpen: false,
+        searchQuery: '',
+      },
+    ])
+  }
+
+  const handleClose = () => {
+    if (isSubmitting) return
+    resetForm()
+    onClose()
+  }
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -113,6 +137,7 @@ export function CreateStockTransferModal({
     if (!isOpen) return
 
     if (!initialDraft) {
+      Promise.resolve().then(resetForm)
       inventoryService
         .getNextTransferNumber()
         .then((res) => setTransferNumber(res.nextCode))
@@ -319,7 +344,6 @@ export function CreateStockTransferModal({
   // Submit
   const handleSubmit = async (postImmediately: boolean) => {
     setError(null)
-    setSuccessMessage(null)
 
     const valError = validate()
     if (valError) {
@@ -359,16 +383,14 @@ export function CreateStockTransferModal({
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         postImmediately
-          ? 'Stock transfer posted successfully! Inventory moved between warehouses.'
-          : 'Draft stock transfer saved successfully.'
+          ? 'Stock transfer posted and inventory updated.'
+          : 'Draft stock transfer saved.'
       )
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 1000)
+      resetForm()
+      onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving stock transfer.')
     } finally {
@@ -381,24 +403,23 @@ export function CreateStockTransferModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       className="!max-w-[740px] max-h-[92vh] overflow-y-auto p-5 sm:p-7"
     >
       <div className="space-y-4">
-        {/* Header matching screenshot: Inventory / Stock Transfers / New -> Create Stock Transfer */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Inventory / Stock Transfers / {initialDraft ? 'Edit Draft' : 'New'}
+            <p className="text-xs font-medium text-muted-foreground">
+              Inventory / Stock transfers / {initialDraft ? 'Edit draft' : 'New'}
             </p>
-            <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
-              {initialDraft ? `Edit Stock Transfer (${transferNumber})` : 'Create Stock Transfer'}
+            <h2 className="text-xl font-semibold tracking-tight text-foreground mt-0.5">
+              {initialDraft ? `Edit stock transfer (${transferNumber})` : 'Create stock transfer'}
             </h2>
           </div>
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
@@ -410,13 +431,6 @@ export function CreateStockTransferModal({
           <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
           </div>
         )}
 
@@ -792,7 +806,7 @@ export function CreateStockTransferModal({
                 className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Add Item</span>
+                <span>Add item</span>
               </button>
             </div>
           </div>
@@ -817,7 +831,6 @@ export function CreateStockTransferModal({
             />
           </div>
 
-          {/* Bottom Actions matching screenshot: Save Draft | Post Transfer */}
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
             <Button
               type="button"
@@ -825,20 +838,19 @@ export function CreateStockTransferModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
-              Save Draft
+              Save draft
             </Button>
 
             <Button
               type="button"
+              variant="primary"
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
             >
-              <PackageCheck className="h-4 w-4" />
-              <span>{isSubmitting ? 'Posting...' : 'Post Transfer'}</span>
+              <PackageCheck className="h-3.5 w-3.5" />
+              <span>{isSubmitting ? 'Posting...' : 'Post transfer'}</span>
             </Button>
           </div>
         </div>

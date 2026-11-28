@@ -1,18 +1,15 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
-import {
-  X,
-  Search,
-  Check,
-  ChevronDown,
-  PackageCheck,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { X, PackageCheck, AlertCircle } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
+import { DateField } from '../../components/ui/DateField'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
 import { masterDataService } from '../../services/masterDataService'
+import { formatQuantity } from '../../lib/format'
+import { toast } from '../../lib/feedback'
 import type { Item, Warehouse } from '../../types/masterData'
 import type {
   ProductionOrder,
@@ -32,62 +29,45 @@ export function CreateProductionOrderModal({
   onSuccess,
   initialDraft,
 }: CreateProductionOrderModalProps) {
-  // Form states
   const [orderNumber, setOrderNumber] = useState('MO-...')
   const [orderDate, setOrderDate] = useState(() => new Date().toISOString().split('T')[0])
   const [productId, setProductId] = useState<number | null>(null)
-  const [productionQuantity, setProductionQuantity] = useState<number | ''>(10)
+  const [productionQuantity, setProductionQuantity] = useState<string | number>(10)
   const [plannedStartDate, setPlannedStartDate] = useState('')
   const [plannedEndDate, setPlannedEndDate] = useState('')
   const [sourceWarehouseId, setSourceWarehouseId] = useState<number | null>(null)
   const [finishedGoodsWarehouseId, setFinishedGoodsWarehouseId] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
 
-  // Active BOM & requirement preview
   const [activeBomCode, setActiveBomCode] = useState<string | null>(null)
   const [requiredItems, setRequiredItems] = useState<ProductionOrderItem[]>([])
   const [bomError, setBomError] = useState<string | null>(null)
 
-  // Master collections
   const [items, setItems] = useState<Item[]>([])
   const [warehouses, setWarehouses] = useState<Warehouse[]>([])
 
-  // Dropdown states
-  const [isProductOpen, setIsProductOpen] = useState(false)
-  const [productSearch, setProductSearch] = useState('')
-  const productRef = useRef<HTMLDivElement>(null)
-
-  const [isSourceWhOpen, setIsSourceWhOpen] = useState(false)
-  const [sourceWhSearch, setSourceWhSearch] = useState('')
-  const sourceWhRef = useRef<HTMLDivElement>(null)
-
-  const [isFgWhOpen, setIsFgWhOpen] = useState(false)
-  const [fgWhSearch, setFgWhSearch] = useState('')
-  const fgWhRef = useRef<HTMLDivElement>(null)
-
-  // Status & errors
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Close dropdowns on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (productRef.current && !productRef.current.contains(event.target as Node)) {
-        setIsProductOpen(false)
-      }
-      if (sourceWhRef.current && !sourceWhRef.current.contains(event.target as Node)) {
-        setIsSourceWhOpen(false)
-      }
-      if (fgWhRef.current && !fgWhRef.current.contains(event.target as Node)) {
-        setIsFgWhOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const resetForm = () => {
+    setOrderDate(new Date().toISOString().split('T')[0])
+    setProductId(null)
+    setProductionQuantity(10)
+    setPlannedStartDate('')
+    setPlannedEndDate('')
+    setNotes('')
+    setActiveBomCode(null)
+    setRequiredItems([])
+    setBomError(null)
+    setError(null)
+  }
 
-  // Load items, warehouses, and next code
+  const handleClose = () => {
+    if (isSubmitting) return
+    resetForm()
+    onClose()
+  }
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -103,7 +83,9 @@ export function CreateProductionOrderModal({
         if (!initialDraft && res.content.length > 0) {
           Promise.resolve().then(() => {
             setSourceWarehouseId(res.content[0].id)
-            setFinishedGoodsWarehouseId(res.content.length > 1 ? res.content[1].id : res.content[0].id)
+            setFinishedGoodsWarehouseId(
+              res.content.length > 1 ? res.content[1].id : res.content[0].id
+            )
           })
         }
       })
@@ -115,19 +97,10 @@ export function CreateProductionOrderModal({
         .then((res) => setOrderNumber(res.nextCode))
         .catch(console.error)
 
-      Promise.resolve().then(() => {
-        setOrderDate(new Date().toISOString().split('T')[0])
-        setProductId(null)
-        setProductionQuantity(10)
-        setPlannedStartDate('')
-        setPlannedEndDate('')
-        setNotes('')
-        setActiveBomCode(null)
-        setRequiredItems([])
-        setBomError(null)
-      })
+      Promise.resolve().then(resetForm)
     } else {
       Promise.resolve().then(() => {
+        setError(null)
         setOrderNumber(initialDraft.orderNumber)
         setOrderDate(initialDraft.orderDate)
         setProductId(initialDraft.productId)
@@ -144,7 +117,6 @@ export function CreateProductionOrderModal({
     }
   }, [isOpen, initialDraft])
 
-  // Fetch / calculate BOM requirements when productId or productionQuantity changes
   useEffect(() => {
     if (!productId || productionQuantity === '' || Number(productionQuantity) <= 0) {
       if (!initialDraft) {
@@ -170,60 +142,20 @@ export function CreateProductionOrderModal({
         setBomError(
           err instanceof Error
             ? err.message
-            : 'No active Bill of Materials found for this product.'
+            : 'No active bill of materials found for this product.'
         )
       })
   }, [productId, productionQuantity, initialDraft])
 
-  const selectedProduct = useMemo(() => {
-    return items.find((i) => i.id === productId) || null
-  }, [items, productId])
-
-  const selectedSourceWarehouse = useMemo(() => {
-    return warehouses.find((w) => w.id === sourceWarehouseId) || null
-  }, [warehouses, sourceWarehouseId])
-
-  const selectedFgWarehouse = useMemo(() => {
-    return warehouses.find((w) => w.id === finishedGoodsWarehouseId) || null
-  }, [warehouses, finishedGoodsWarehouseId])
-
-  const filteredProducts = useMemo(() => {
-    if (!productSearch.trim()) return items
-    const q = productSearch.trim().toLowerCase()
-    return items.filter(
-      (it) => it.name.toLowerCase().includes(q) || it.itemCode.toLowerCase().includes(q)
-    )
-  }, [items, productSearch])
-
-  const filteredSourceWarehouses = useMemo(() => {
-    if (!sourceWhSearch.trim()) return warehouses
-    const q = sourceWhSearch.trim().toLowerCase()
-    return warehouses.filter(
-      (w) => w.name.toLowerCase().includes(q) || w.warehouseCode.toLowerCase().includes(q)
-    )
-  }, [warehouses, sourceWhSearch])
-
-  const filteredFgWarehouses = useMemo(() => {
-    if (!fgWhSearch.trim()) return warehouses
-    const q = fgWhSearch.trim().toLowerCase()
-    return warehouses.filter(
-      (w) => w.name.toLowerCase().includes(q) || w.warehouseCode.toLowerCase().includes(q)
-    )
-  }, [warehouses, fgWhSearch])
-
-  const formatQuantity = (qty: number) => {
-    if (qty % 1 === 0) {
-      return qty.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-    }
-    return qty.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 4 })
-  }
+  const selectedProduct = useMemo(
+    () => items.find((i) => i.id === productId) || null,
+    [items, productId]
+  )
 
   const validate = (): string | null => {
-    if (!productId) {
-      return 'Please select a product to manufacture.'
-    }
+    if (!productId) return 'Please select a product to manufacture.'
     if (bomError || !activeBomCode) {
-      return bomError || 'The selected product does not have an active Bill of Materials.'
+      return bomError || 'The selected product does not have an active bill of materials.'
     }
     if (productionQuantity === '' || Number(productionQuantity) <= 0) {
       return 'Production quantity must be greater than zero.'
@@ -232,7 +164,7 @@ export function CreateProductionOrderModal({
       return 'Please select a source warehouse for material issuance.'
     }
     if (!finishedGoodsWarehouseId) {
-      return 'Please select a finished goods warehouse for receiving completed products.'
+      return 'Please select a finished goods warehouse.'
     }
     if (plannedStartDate && plannedEndDate && plannedEndDate < plannedStartDate) {
       return 'Planned end date cannot precede planned start date.'
@@ -253,7 +185,6 @@ export function CreateProductionOrderModal({
     try {
       setIsSubmitting(true)
       setError(null)
-      setSuccessMessage(null)
 
       if (initialDraft) {
         await manufacturingService.updateProductionOrder(initialDraft.id, {
@@ -269,7 +200,10 @@ export function CreateProductionOrderModal({
         })
       } else {
         await manufacturingService.createProductionOrder({
-          orderNumber: orderNumber.startsWith('MO-') && !orderNumber.includes('...') ? orderNumber : undefined,
+          orderNumber:
+            orderNumber.startsWith('MO-') && !orderNumber.includes('...')
+              ? orderNumber
+              : undefined,
           orderDate,
           productId: productId!,
           productionQuantity: Number(productionQuantity),
@@ -282,18 +216,18 @@ export function CreateProductionOrderModal({
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         releaseImmediately
-          ? 'Production order released successfully! Order is authorized for manufacturing.'
-          : 'Draft production order saved successfully.'
+          ? 'Production order released for manufacturing.'
+          : 'Draft production order saved.'
       )
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 900)
+      resetForm()
+      onClose()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred while saving production order.')
+      setError(
+        err instanceof Error ? err.message : 'An error occurred while saving production order.'
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -304,31 +238,32 @@ export function CreateProductionOrderModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      className="!max-w-[740px] max-h-[92vh] overflow-y-auto p-5 sm:p-7"
+      onClose={handleClose}
+      className="!max-w-[760px] max-h-[90vh] overflow-y-auto p-5 sm:p-6"
     >
       <div className="space-y-4">
-        {/* Header matching design standard */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Manufacturing / Production Orders / {initialDraft ? 'Edit Draft' : 'New'}
-            </p>
-            <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
-              {initialDraft ? `Edit Production Order (${orderNumber})` : 'Create Production Order'}
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              {initialDraft
+                ? `Edit production order (${orderNumber})`
+                : 'Create production order'}
             </h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Plan manufacturing output, material warehouses, and schedule.
+            </p>
           </div>
 
           <button
             type="button"
-            onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            onClick={handleClose}
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            title="Close"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Feedback banners */}
         {error && (
           <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -343,431 +278,213 @@ export function CreateProductionOrderModal({
           </div>
         )}
 
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
-          </div>
-        )}
-
-        {/* Form Body */}
-        <div className="space-y-4">
-          {/* Row 1: Production Order Number (50%) and Order Date * (50%) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Production Order Number
-              </label>
-              <input
-                type="text"
-                disabled
-                value={orderNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">Auto-generated</p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Order Date <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="date"
-                value={orderDate}
-                onChange={(e) => setOrderDate(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
+              Production order number
+            </span>
+            <div className="mt-1 flex items-center justify-between">
+              <span className="text-sm font-medium tabular-nums text-foreground">
+                {orderNumber}
+              </span>
+              <span className="text-xs text-muted-foreground">Auto</span>
             </div>
           </div>
 
-          {/* Row 2: Product * (50%) and Bill of Materials (50%) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Product * */}
-            <div className="relative" ref={productRef}>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Product <span className="text-destructive">*</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsProductOpen(!isProductOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
-              >
-                <span className={selectedProduct ? 'font-medium truncate' : 'text-muted-foreground'}>
-                  {selectedProduct ? `${selectedProduct.name} (${selectedProduct.itemCode})` : 'Select product...'}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </button>
+          <DateField
+            label="Order date *"
+            value={orderDate}
+            onChange={(e) => setOrderDate(e.target.value)}
+            disabled={isSubmitting}
+          />
 
-              {isProductOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
-                  <div className="relative mb-1.5">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search product code or name..."
-                      value={productSearch}
-                      onChange={(e) => setProductSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                  <div className="max-h-48 overflow-y-auto space-y-0.5">
-                    {filteredProducts.length === 0 ? (
-                      <p className="p-2.5 text-center text-xs text-muted-foreground">
-                        No products found
-                      </p>
-                    ) : (
-                      filteredProducts.map((it) => {
-                        const isSelected = productId === it.id
-                        return (
-                          <div
-                            key={it.id}
-                            onMouseDown={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              setProductId(it.id)
-                              setIsProductOpen(false)
-                              setProductSearch('')
-                            }}
-                            className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
-                              isSelected
-                                ? 'bg-secondary text-foreground font-semibold'
-                                : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
-                            }`}
-                          >
-                            <div className="text-left">
-                              <p className="font-medium text-foreground">{it.name}</p>
-                              <p className="text-xs text-muted-foreground tabular-nums">
-                                {it.itemCode} · {it.unitOfMeasure}
-                              </p>
-                            </div>
-                            {isSelected && (
-                              <Check className="h-4 w-4 text-foreground stroke-[2.5]" />
-                            )}
-                          </div>
-                        )
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+          <Select
+            label="Product *"
+            value={productId ?? ''}
+            onChange={(val) => setProductId(val ? Number(val) : null)}
+            disabled={isSubmitting}
+            placeholder="Select product..."
+            options={items.map((it) => ({
+              value: it.id,
+              label: `${it.name} (${it.itemCode})`,
+            }))}
+          />
 
-            {/* Bill of Materials (Auto-selected from active BOM) */}
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Bill of Materials
-              </label>
-              <input
-                type="text"
-                disabled
-                value={activeBomCode || (selectedProduct ? 'No active BOM found' : '—')}
-                className={`flex h-10 w-full rounded-md border px-3.5 text-xs tabular-nums cursor-not-allowed ${
-                  activeBomCode
-                    ? 'border-border/80 bg-secondary/50 text-foreground font-semibold'
-                    : 'border-border/80 bg-secondary/30 text-muted-foreground'
-                }`}
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                {activeBomCode ? 'Automatically linked active recipe' : 'Requires an active BOM for product'}
-              </p>
-            </div>
-          </div>
-
-          {/* Row 3: Production Quantity * (50%) and UOM (50%) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Production Quantity <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="number"
-                min="0.0001"
-                step="any"
-                placeholder="10"
-                value={productionQuantity}
-                onChange={(e) => {
-                  const val = e.target.value
-                  setProductionQuantity(val === '' ? '' : Math.max(0, parseFloat(val) || 0))
-                }}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs tabular-nums text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                UOM
-              </label>
-              <input
-                type="text"
-                disabled
-                value={selectedProduct ? selectedProduct.unitOfMeasure : '—'}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
-              />
-            </div>
-          </div>
-
-          {/* Row 4: Planned Start Date (50%) and Planned End Date (50%) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Planned Start Date <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
-              </label>
-              <input
-                type="date"
-                value={plannedStartDate}
-                onChange={(e) => setPlannedStartDate(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Planned End Date <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
-              </label>
-              <input
-                type="date"
-                value={plannedEndDate}
-                onChange={(e) => setPlannedEndDate(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
-            </div>
-          </div>
-
-          {/* Row 5: Source Warehouse * (50%) and Finished Goods Warehouse * (50%) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Source Warehouse * */}
-            <div className="relative" ref={sourceWhRef}>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Source Warehouse <span className="text-destructive">*</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsSourceWhOpen(!isSourceWhOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
-              >
-                <span className={selectedSourceWarehouse ? 'font-medium truncate' : 'text-muted-foreground'}>
-                  {selectedSourceWarehouse ? `${selectedSourceWarehouse.name} (${selectedSourceWarehouse.warehouseCode})` : 'Select raw material warehouse...'}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </button>
-
-              {isSourceWhOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
-                  <div className="relative mb-1.5">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search warehouse..."
-                      value={sourceWhSearch}
-                      onChange={(e) => setSourceWhSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                  <div className="max-h-48 overflow-y-auto space-y-0.5">
-                    {filteredSourceWarehouses.map((w) => {
-                      const isSelected = sourceWarehouseId === w.id
-                      return (
-                        <div
-                          key={w.id}
-                          onMouseDown={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            setSourceWarehouseId(w.id)
-                            setIsSourceWhOpen(false)
-                            setSourceWhSearch('')
-                          }}
-                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
-                            isSelected
-                              ? 'bg-secondary text-foreground font-semibold'
-                              : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
-                          }`}
-                        >
-                          <div className="text-left">
-                            <p className="font-medium text-foreground">{w.name}</p>
-                            <p className="text-xs text-muted-foreground tabular-nums">
-                              {w.warehouseCode}
-                            </p>
-                          </div>
-                          {isSelected && (
-                            <Check className="h-4 w-4 text-foreground stroke-[2.5]" />
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Finished Goods Warehouse * */}
-            <div className="relative" ref={fgWhRef}>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Finished Goods Warehouse <span className="text-destructive">*</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsFgWhOpen(!isFgWhOpen)}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground hover:border-foreground transition-colors cursor-pointer"
-              >
-                <span className={selectedFgWarehouse ? 'font-medium truncate' : 'text-muted-foreground'}>
-                  {selectedFgWarehouse ? `${selectedFgWarehouse.name} (${selectedFgWarehouse.warehouseCode})` : 'Select finished goods warehouse...'}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </button>
-
-              {isFgWhOpen && (
-                <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
-                  <div className="relative mb-1.5">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search warehouse..."
-                      value={fgWhSearch}
-                      onChange={(e) => setFgWhSearch(e.target.value)}
-                      className="flex h-8 w-full rounded-md border border-border/60 bg-secondary/50 pl-8 pr-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                  <div className="max-h-48 overflow-y-auto space-y-0.5">
-                    {filteredFgWarehouses.map((w) => {
-                      const isSelected = finishedGoodsWarehouseId === w.id
-                      return (
-                        <div
-                          key={w.id}
-                          onMouseDown={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            setFinishedGoodsWarehouseId(w.id)
-                            setIsFgWhOpen(false)
-                            setFgWhSearch('')
-                          }}
-                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer transition-colors ${
-                            isSelected
-                              ? 'bg-secondary text-foreground font-semibold'
-                              : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
-                          }`}
-                        >
-                          <div className="text-left">
-                            <p className="font-medium text-foreground">{w.name}</p>
-                            <p className="text-xs text-muted-foreground tabular-nums">
-                              {w.warehouseCode}
-                            </p>
-                          </div>
-                          {isSelected && (
-                            <Check className="h-4 w-4 text-foreground stroke-[2.5]" />
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Required materials Section (Automatically calculated from BOM) */}
-          <div className="space-y-2 pt-2 border-t border-border/70">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Required materials
-                </h3>
-                {activeBomCode && (
-                  <p className="text-xs text-muted-foreground">
-                    Automatically calculated from <span className="tabular-nums font-medium text-foreground">{activeBomCode}</span>
-                  </p>
-                )}
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {requiredItems.length} components
+          <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
+              Bill of materials
+            </span>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <span className="text-sm font-medium tabular-nums text-foreground truncate">
+                {activeBomCode || (selectedProduct ? 'No active BOM' : '—')}
+              </span>
+              <span className="text-xs text-muted-foreground shrink-0">
+                {activeBomCode ? 'Active recipe' : 'Requires BOM'}
               </span>
             </div>
-
-            {/* Table */}
-            <Table>
-              <THead>
-                <tr>
-                  <TH className="py-2.5">Material</TH>
-                    <TH className="py-2.5 text-right">BOM Qty</TH>
-                    <TH className="py-2.5 text-right">Required Qty</TH>
-                    <TH className="py-2.5">UOM</TH>
-                  </tr>
-                </THead>
-                <TBody className="divide-y divide-border/60">
-                  {requiredItems.length === 0 ? (
-                    <TR>
-                      <TD colSpan={4} className="py-6 text-center text-muted-foreground">
-                        Select a product with an active BOM to see required materials
-                      </TD>
-                    </TR>
-                  ) : (
-                    requiredItems.map((it) => (
-                      <TR key={it.materialId} className="hover:bg-secondary/30 transition-colors">
-                        <TD className="py-2.5 px-3.5">
-                          <p className="font-medium text-foreground">{it.materialName}</p>
-                          <p className="text-xs text-muted-foreground tabular-nums">
-                            {it.materialCode}
-                          </p>
-                        </TD>
-                        <TD className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
-                          {formatQuantity(it.bomQuantity)}
-                        </TD>
-                        <TD className="py-2.5 px-3 text-right tabular-nums font-medium text-foreground">
-                          {formatQuantity(it.requiredQuantity)}
-                        </TD>
-                        <TD className="py-2.5 px-3.5 text-muted-foreground">
-                          {it.unitOfMeasure}
-                        </TD>
-                      </TR>
-                    ))
-                  )}
-                </TBody>
-            </Table>
           </div>
 
-          {/* Notes */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
-              Notes <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
-            </label>
-            <textarea
-              rows={2}
-              placeholder="Additional production instructions..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+          <Input
+            label="Production quantity *"
+            type="number"
+            min="0.0001"
+            step="any"
+            placeholder="10"
+            value={productionQuantity}
+            onChange={(e) => {
+              const val = e.target.value
+              if (val !== '' && Number(val) < 0) return
+              setProductionQuantity(val)
+            }}
+            disabled={isSubmitting}
+            rightElement={
+              selectedProduct ? (
+                <span className="text-xs font-medium uppercase text-muted-foreground">
+                  {selectedProduct.unitOfMeasure}
+                </span>
+              ) : undefined
+            }
+          />
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <DateField
+              label="Planned start"
+              value={plannedStartDate}
+              onChange={(e) => setPlannedStartDate(e.target.value)}
+              disabled={isSubmitting}
+            />
+            <DateField
+              label="Planned end"
+              value={plannedEndDate}
+              onChange={(e) => setPlannedEndDate(e.target.value)}
+              disabled={isSubmitting}
             />
           </div>
 
-          {/* Bottom Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isSubmitting}
-              onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
-            >
-              Save Draft
-            </Button>
+          <Select
+            label="Source warehouse *"
+            value={sourceWarehouseId ?? ''}
+            onChange={(val) => setSourceWarehouseId(val ? Number(val) : null)}
+            disabled={isSubmitting}
+            placeholder="Select source warehouse..."
+            options={warehouses.map((w) => ({
+              value: w.id,
+              label: `${w.name} (${w.warehouseCode})`,
+            }))}
+          />
 
-            <Button
-              type="button"
-              size="sm"
-              disabled={isSubmitting}
-              onClick={() => handleSubmit(true)}
-              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
-            >
-              <PackageCheck className="h-4 w-4" />
-              <span>{isSubmitting ? 'Releasing...' : 'Release Order'}</span>
-            </Button>
+          <Select
+            label="Finished goods warehouse *"
+            value={finishedGoodsWarehouseId ?? ''}
+            onChange={(val) => setFinishedGoodsWarehouseId(val ? Number(val) : null)}
+            disabled={isSubmitting}
+            placeholder="Select finished goods warehouse..."
+            options={warehouses.map((w) => ({
+              value: w.id,
+              label: `${w.name} (${w.warehouseCode})`,
+            }))}
+          />
+        </div>
+
+        {/* Required materials */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">
+              Required materials
+              {activeBomCode ? (
+                <span className="font-normal text-muted-foreground">
+                  {' · From '}
+                  <span className="tabular-nums font-medium text-foreground">
+                    {activeBomCode}
+                  </span>
+                </span>
+              ) : null}
+            </span>
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {requiredItems.length}{' '}
+              {requiredItems.length === 1 ? 'component' : 'components'}
+            </span>
           </div>
+
+          <Table tableClassName="table-fixed">
+            <THead>
+              <tr>
+                <TH className="py-2 px-3 w-[46%]">Material</TH>
+                <TH className="py-2 px-2.5 w-[18%] text-right">BOM qty</TH>
+                <TH className="py-2 px-2.5 w-[20%] text-right">Required qty</TH>
+                <TH className="py-2 px-3 w-[16%] pl-4">UOM</TH>
+              </tr>
+            </THead>
+            <TBody>
+              {requiredItems.length === 0 ? (
+                <TR>
+                  <TD colSpan={4} className="py-5 text-center text-xs text-muted-foreground">
+                    Select a product with an active BOM to preview required materials
+                  </TD>
+                </TR>
+              ) : (
+                requiredItems.map((it) => (
+                  <TR key={it.materialId}>
+                    <TD className="py-2 px-3">
+                      <p className="text-xs font-medium text-foreground truncate">
+                        {it.materialName}
+                      </p>
+                      <p className="text-xs text-ref text-muted-foreground">
+                        {it.materialCode}
+                      </p>
+                    </TD>
+                    <TD className="py-2 px-2.5 text-right text-xs tabular-nums text-muted-foreground">
+                      {formatQuantity(it.bomQuantity)}
+                    </TD>
+                    <TD className="py-2 px-2.5 text-right text-xs tabular-nums font-semibold text-foreground">
+                      {formatQuantity(it.requiredQuantity)}
+                    </TD>
+                    <TD className="py-2 px-3 pl-4 text-xs text-muted-foreground uppercase">
+                      {it.unitOfMeasure}
+                    </TD>
+                  </TR>
+                ))
+              )}
+            </TBody>
+          </Table>
+        </div>
+
+        {/* Notes */}
+        <div className="flex min-h-14 w-full flex-col rounded-md border border-border bg-card px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+          <span className="text-xs font-medium text-muted-foreground leading-none">
+            Notes &amp; production instructions
+          </span>
+          <textarea
+            rows={2}
+            placeholder="Optional production notes..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            disabled={isSubmitting}
+            className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
+          />
+        </div>
+
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
+          <Button type="button" variant="ghost" onClick={handleClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isSubmitting}
+            onClick={() => handleSubmit(false)}
+          >
+            Save draft
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            disabled={isSubmitting}
+            onClick={() => handleSubmit(true)}
+          >
+            <PackageCheck className="h-3.5 w-3.5" />
+            <span>{isSubmitting ? 'Releasing...' : 'Release order'}</span>
+          </Button>
         </div>
       </div>
     </Modal>

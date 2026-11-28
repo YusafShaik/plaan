@@ -4,6 +4,7 @@ import {
   forwardRef,
   useState,
 } from 'react'
+import { Search, X } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import {
   fieldChrome,
@@ -89,31 +90,31 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               className
             )}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground select-none leading-none">
-                {label}
-              </span>
+            <span className="text-xs font-medium text-muted-foreground select-none leading-none">
+              {label}
+            </span>
+            <div className="mt-1 flex items-center gap-2">
+              <input
+                ref={ref}
+                type={type}
+                value={value}
+                defaultValue={defaultValue}
+                disabled={disabled}
+                onFocus={(e) => {
+                  setIsFocused(true)
+                  onFocus?.(e)
+                }}
+                onBlur={(e) => {
+                  setIsFocused(false)
+                  onBlur?.(e)
+                }}
+                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:border-0 focus:outline-none focus:ring-0 disabled:cursor-not-allowed"
+                {...props}
+              />
               {rightElement && (
-                <div className="flex items-center ml-2">{rightElement}</div>
+                <div className="flex items-center shrink-0">{rightElement}</div>
               )}
             </div>
-            <input
-              ref={ref}
-              type={type}
-              value={value}
-              defaultValue={defaultValue}
-              disabled={disabled}
-              onFocus={(e) => {
-                setIsFocused(true)
-                onFocus?.(e)
-              }}
-              onBlur={(e) => {
-                setIsFocused(false)
-                onBlur?.(e)
-              }}
-              className="mt-1 w-full border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:border-0 focus:outline-none focus:ring-0 disabled:cursor-not-allowed"
-              {...props}
-            />
           </div>
           {hint && !error && (
             <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
@@ -153,3 +154,41 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 )
 
 Input.displayName = 'Input'
+
+export interface SearchInputProps {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  className?: string
+}
+
+/** Standard toolbar search field (`h-10`, `text-sm`, clear button). */
+export function SearchInput({
+  value,
+  onChange,
+  placeholder = 'Search...',
+  className,
+}: SearchInputProps) {
+  return (
+    <div className={cn('relative w-64 sm:w-72', className)}>
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex h-9 w-full rounded-md border border-border bg-card pl-9 pr-8 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          aria-label="Clear search"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  )
+}

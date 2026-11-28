@@ -301,7 +301,7 @@ export function CreateCustomerModal({
             className="flex items-center gap-2.5 cursor-pointer select-none py-1"
           >
             <div
-              className={`flex h-4 w-4 items-center justify-center rounded-full transition-colors ${
+              className={`flex h-4 w-4 items-center justify-center rounded-md transition-colors ${
                 shippingSameAsBilling
                   ? 'bg-foreground text-background'
                   : 'border border-border/80 bg-secondary/30'

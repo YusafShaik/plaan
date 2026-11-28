@@ -1,13 +1,14 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { Plus, Search, Power, Building2 } from 'lucide-react'
+import { Plus, Power, Building2 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
-import { Input } from '../../components/ui/Input'
+import { SearchInput } from '../../components/ui/Input'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import { CreateOrganizationModal } from './CreateOrganizationModal'
 import { platformService } from '../../services/platformService'
+import { toast } from '../../lib/feedback'
 import type { OrganizationItem, CreateOrganizationPayload } from '../../types/platform'
 
 export function OrganizationsPage() {
@@ -68,9 +69,7 @@ export function OrganizationsPage() {
         prev.map((item) => (item.id === org.id ? updated : item))
       )
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message)
-      }
+      toast.error(err instanceof Error ? err.message : 'Failed to update organization status.')
     } finally {
       setTogglingId(null)
     }
@@ -121,15 +120,12 @@ export function OrganizationsPage() {
 
       {/* 3. Search Bar */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search organizations or admin..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <SearchInput
+          placeholder="Search organizations or admin..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+          className="max-w-sm"
+        />
       </div>
 
       {/* 4. Organizations Table */}
@@ -168,7 +164,7 @@ export function OrganizationsPage() {
               </THead>
               <TBody>
                 {filteredOrgs.map((org) => (
-                  <TR key={org.id} clickable>
+                  <TR key={org.id}>
                     <TD className="px-6 py-4">
                       <div className="font-medium text-card-foreground">
                         {org.name}

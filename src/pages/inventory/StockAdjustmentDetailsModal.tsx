@@ -1,17 +1,24 @@
 import {
-  X,
   Warehouse as WarehouseIcon,
   Calendar,
   FileText,
   PackageCheck,
   TrendingUp,
   TrendingDown,
+  Ban,
 } from 'lucide-react'
-import { Modal } from '../../components/ui/Modal'
+import { Drawer, DrawerCloseButton } from '../../components/ui/Drawer'
 import { Button } from '../../components/ui/Button'
-import { Badge } from '../../components/ui/Badge'
+import { Badge, type BadgeVariant } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
-import type { StockAdjustment } from '../../types/inventory'
+import { formatQuantity, formatShortDate } from '../../lib/format'
+import type { StockAdjustment, StockAdjustmentStatus } from '../../types/inventory'
+
+const STATUS_BADGE: Record<StockAdjustmentStatus, { variant: BadgeVariant; label: string }> = {
+  POSTED: { variant: 'success', label: 'Posted' },
+  DRAFT: { variant: 'warning', label: 'Draft' },
+  CANCELLED: { variant: 'destructive', label: 'Cancelled' },
+}
 
 export interface StockAdjustmentDetailsModalProps {
   isOpen: boolean
@@ -30,68 +37,65 @@ export function StockAdjustmentDetailsModal({
 }: StockAdjustmentDetailsModalProps) {
   if (!isOpen || !adjustment) return null
 
-  const formatQuantity = (qty: number) => {
-    if (qty % 1 === 0) {
-      return qty.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-    }
-    return qty.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 3 })
-  }
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr)
-      return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
-    } catch {
-      return dateStr
-    }
+  const badge = STATUS_BADGE[adjustment.status] ?? {
+    variant: 'neutral',
+    label: adjustment.status,
   }
 
   const positiveDiffs = adjustment.items.filter((it) => it.adjustmentQuantity > 0)
   const negativeDiffs = adjustment.items.filter((it) => it.adjustmentQuantity < 0)
 
   const totalPositiveQty = positiveDiffs.reduce((acc, it) => acc + it.adjustmentQuantity, 0)
-  const totalNegativeQty = negativeDiffs.reduce((acc, it) => acc + Math.abs(it.adjustmentQuantity), 0)
+  const totalNegativeQty = negativeDiffs.reduce(
+    (acc, it) => acc + Math.abs(it.adjustmentQuantity),
+    0
+  )
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-3xl p-0">
-      <div className="flex flex-col p-6 sm:p-7">
-        {/* Header */}
-        <div className="flex items-start justify-between border-b border-border/80 pb-4">
+    <Drawer isOpen={isOpen} onClose={onClose} width="lg">
+      <div className="space-y-5 pb-4">
+        <div className="flex flex-col gap-3 pb-4 border-b border-border/80 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="tabular-nums text-xl font-medium tracking-tight text-foreground">
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground tabular-nums">
                 {adjustment.adjustmentNumber}
-              </span>
-              {adjustment.status === 'POSTED' && (
-                <Badge variant="success">Posted</Badge>
-              )}
-              {adjustment.status === 'DRAFT' && (
-                <Badge variant="warning">Draft</Badge>
-              )}
-              {adjustment.status === 'CANCELLED' && (
-                <Badge variant="destructive">Cancelled</Badge>
-              )}
+              </h2>
+              <Badge variant={badge.variant}>{badge.label}</Badge>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Stock adjustment recorded for warehouse reconciliation
+              Adjustment date:{' '}
+              <span className="text-foreground font-medium">
+                {formatShortDate(adjustment.adjustmentDate)}
+              </span>
+              {' · Created '}
+              {formatShortDate(adjustment.createdAt)}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
-          >
-            <X className="h-5 w-5" />
-          </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {adjustment.status === 'DRAFT' && onPost && (
+              <Button variant="primary" size="sm" onClick={() => onPost(adjustment.id)}>
+                <PackageCheck className="h-3.5 w-3.5" />
+                Post adjustment
+              </Button>
+            )}
+            {adjustment.status === 'DRAFT' && onCancel && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onCancel(adjustment.id)}
+                className="text-destructive border-destructive/25 hover:bg-destructive/10"
+              >
+                <Ban className="h-3.5 w-3.5" />
+                Cancel draft
+              </Button>
+            )}
+            <DrawerCloseButton onClick={onClose} />
+          </div>
         </div>
 
-        {/* Info Strip */}
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 rounded-md border border-border/80 bg-secondary/30 p-4">
-          <div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-md border border-border/80 bg-surface-subtle dark:bg-secondary/30 p-3.5">
             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <WarehouseIcon className="h-3.5 w-3.5" />
               Warehouse
@@ -99,180 +103,136 @@ export function StockAdjustmentDetailsModal({
             <p className="mt-1 text-sm font-semibold text-foreground">
               {adjustment.warehouseName}
             </p>
-            <p className="text-xs text-muted-foreground tabular-nums">
+            <p className="text-xs text-ref text-muted-foreground mt-0.5">
               {adjustment.warehouseCode}
             </p>
           </div>
 
-          <div>
+          <div className="rounded-md border border-border/80 bg-surface-subtle dark:bg-secondary/30 p-3.5">
             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
-              Adjustment Date & Reason
+              Date &amp; reason
             </span>
             <p className="mt-1 text-sm font-semibold text-foreground">
-              {formatDate(adjustment.adjustmentDate)}
+              {formatShortDate(adjustment.adjustmentDate)}
             </p>
-            <p className="text-xs text-muted-foreground font-medium">
-              Reason: {adjustment.reason}
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">{adjustment.reason}</p>
           </div>
 
-          <div>
+          <div className="rounded-md border border-border/80 bg-surface-subtle dark:bg-secondary/30 p-3.5">
             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <PackageCheck className="h-3.5 w-3.5" />
-              Items Count
+              Summary
             </span>
-            <p className="mt-1 text-sm font-medium text-foreground tabular-nums">
+            <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
               {adjustment.totalItems} {adjustment.totalItems === 1 ? 'item' : 'items'}
             </p>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              Net difference: {adjustment.totalDifference > 0 ? `+${adjustment.totalDifference}` : adjustment.totalDifference}
+            <p className="text-xs text-muted-foreground tabular-nums mt-0.5">
+              Net difference:{' '}
+              {adjustment.totalDifference > 0
+                ? `+${formatQuantity(adjustment.totalDifference)}`
+                : formatQuantity(adjustment.totalDifference)}
             </p>
           </div>
         </div>
 
-        {/* Visual Cards Strip matching screenshot 2: Positive Adjustment In & Negative Adjustment Out */}
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {/* Positive Adjustment Card */}
-          <div className="rounded-md border border-border/80 bg-card p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-success" />
-              <span className="text-xs font-semibold text-foreground">Positive Adjustment</span>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="rounded-md border border-border/80 bg-card p-3.5">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5 text-success" />
+              <span>Positive adjustment</span>
             </div>
-            <p className="mt-2 text-2xl font-medium tabular-nums text-success">
+            <p className="mt-1.5 text-2xl font-semibold tabular-nums text-success">
               +{formatQuantity(totalPositiveQty)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Adjustment In · {positiveDiffs.length} {positiveDiffs.length === 1 ? 'item' : 'items'}
+              Adjustment in · {positiveDiffs.length}{' '}
+              {positiveDiffs.length === 1 ? 'item' : 'items'}
             </p>
           </div>
 
-          {/* Negative Adjustment Card */}
-          <div className="rounded-md border border-border/80 bg-card p-4">
-            <div className="flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-destructive" />
-              <span className="text-xs font-semibold text-foreground">Negative Adjustment</span>
+          <div className="rounded-md border border-border/80 bg-card p-3.5">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+              <span>Negative adjustment</span>
             </div>
-            <p className="mt-2 text-2xl font-medium tabular-nums text-destructive">
+            <p className="mt-1.5 text-2xl font-semibold tabular-nums text-destructive">
               -{formatQuantity(totalNegativeQty)}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Adjustment Out · {negativeDiffs.length} {negativeDiffs.length === 1 ? 'item' : 'items'}
+              Adjustment out · {negativeDiffs.length}{' '}
+              {negativeDiffs.length === 1 ? 'item' : 'items'}
             </p>
           </div>
         </div>
 
-        {/* Notes */}
-        {adjustment.notes && (
-          <div className="mt-4 rounded-md border border-border/70 bg-card p-3">
-            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 mb-1">
-              <FileText className="h-3.5 w-3.5" />
-              Notes
-            </span>
-            <p className="text-xs text-foreground whitespace-pre-wrap">{adjustment.notes}</p>
-          </div>
-        )}
-
-        {/* Line Items Table */}
-        <div className="mt-5">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Adjusted Items
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground">
+            Adjusted items ({adjustment.items.length})
           </h4>
-          <Table>
-              <THead>
-                <tr>
-                  <TH className="py-2.5">Item</TH>
-                  <TH className="py-2.5 text-right">System Qty</TH>
-                  <TH className="py-2.5 text-right">Physical Qty</TH>
-                  <TH className="py-2.5 text-right">Difference</TH>
-                  <TH className="py-2.5 text-right">Movement</TH>
-                </tr>
-              </THead>
-              <TBody className="divide-y divide-border/60 text-xs">
-                {adjustment.items.map((it) => (
-                  <TR key={it.id} className="hover:bg-secondary/30 transition-colors">
-                    <TD className="py-2.5 px-3">
-                      <p className="font-medium text-foreground">{it.itemName}</p>
-                      <p className="text-xs text-ref text-muted-foreground">
-                        {it.itemCode}
-                      </p>
-                    </TD>
-                    <TD className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
-                      {formatQuantity(it.systemQuantity)} {it.unitOfMeasure}
-                    </TD>
-                    <TD className="py-2.5 px-3 text-right tabular-nums font-medium text-foreground">
-                      {formatQuantity(it.physicalQuantity)} {it.unitOfMeasure}
-                    </TD>
-                    <TD className="py-2.5 px-3 text-right tabular-nums font-medium">
-                      {it.adjustmentQuantity > 0 ? (
-                        <span className="text-success">
-                          +{formatQuantity(it.adjustmentQuantity)}
-                        </span>
-                      ) : it.adjustmentQuantity < 0 ? (
-                        <span className="text-destructive">
-                          {formatQuantity(it.adjustmentQuantity)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">0</span>
-                      )}
-                    </TD>
-                    <TD className="py-2.5 px-3 text-right">
-                      {it.adjustmentQuantity > 0 ? (
-                        <Badge variant="success" className="h-auto px-2 py-0.5 text-xs">
-                          Adjustment In
-                        </Badge>
-                      ) : it.adjustmentQuantity < 0 ? (
-                        <Badge variant="destructive" className="h-auto px-2 py-0.5 text-xs">
-                          Adjustment Out
-                        </Badge>
-                      ) : (
-                        <Badge variant="neutral" className="h-auto px-2 py-0.5 text-xs">
-                          No difference
-                        </Badge>
-                      )}
-                    </TD>
-                  </TR>
-                ))}
-              </TBody>
-            </Table>
+          <Table tableClassName="table-fixed">
+            <THead>
+              <tr>
+                <TH className="py-2.5 px-3 w-[36%]">Item &amp; code</TH>
+                <TH className="py-2.5 px-2.5 w-[15%] text-right">System qty</TH>
+                <TH className="py-2.5 px-2.5 w-[15%] text-right">Physical qty</TH>
+                <TH className="py-2.5 px-2.5 w-[15%] text-right">Difference</TH>
+                <TH className="py-2.5 px-3 w-[19%] pl-5">Movement</TH>
+              </tr>
+            </THead>
+            <TBody>
+              {adjustment.items.map((it) => (
+                <TR key={it.id}>
+                  <TD className="py-2.5 px-3">
+                    <p className="text-xs font-medium text-foreground truncate">
+                      {it.itemName}
+                    </p>
+                    <p className="text-xs text-ref text-muted-foreground">{it.itemCode}</p>
+                  </TD>
+                  <TD className="py-2.5 px-2.5 text-right text-xs tabular-nums text-muted-foreground">
+                    {formatQuantity(it.systemQuantity)} {it.unitOfMeasure}
+                  </TD>
+                  <TD className="py-2.5 px-2.5 text-right text-xs tabular-nums font-medium text-foreground">
+                    {formatQuantity(it.physicalQuantity)} {it.unitOfMeasure}
+                  </TD>
+                  <TD className="py-2.5 px-2.5 text-right text-xs tabular-nums font-medium">
+                    {it.adjustmentQuantity > 0 ? (
+                      <span className="text-success">
+                        +{formatQuantity(it.adjustmentQuantity)}
+                      </span>
+                    ) : it.adjustmentQuantity < 0 ? (
+                      <span className="text-destructive">
+                        {formatQuantity(it.adjustmentQuantity)}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">0</span>
+                    )}
+                  </TD>
+                  <TD className="py-2.5 px-3 pl-5">
+                    {it.adjustmentQuantity > 0 ? (
+                      <Badge variant="success">Adjustment in</Badge>
+                    ) : it.adjustmentQuantity < 0 ? (
+                      <Badge variant="destructive">Adjustment out</Badge>
+                    ) : (
+                      <Badge variant="neutral">No difference</Badge>
+                    )}
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
         </div>
 
-        {/* Footer */}
-        <div className="mt-6 flex items-center justify-between border-t border-border/80 pt-4">
-          <div className="text-xs text-muted-foreground">
-            Created on {formatDate(adjustment.createdAt)}
+        <div className="rounded-md border border-border/80 bg-surface-subtle dark:bg-secondary/30 p-3.5 space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <FileText className="h-3.5 w-3.5" />
+            <span>Notes</span>
           </div>
-          <div className="flex items-center gap-2">
-            {adjustment.status === 'DRAFT' && onCancel && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onCancel(adjustment.id)}
-                className="text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
-              >
-                Cancel Draft
-              </Button>
-            )}
-            {adjustment.status === 'DRAFT' && onPost && (
-              <Button
-                size="sm"
-                onClick={() => onPost(adjustment.id)}
-                className="bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-              >
-                Post Adjustment
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="text-xs font-medium cursor-pointer"
-            >
-              Close
-            </Button>
-          </div>
+          <p className="text-xs text-foreground whitespace-pre-wrap">
+            {adjustment.notes || 'No adjustment notes provided.'}
+          </p>
         </div>
       </div>
-    </Modal>
+    </Drawer>
   )
 }

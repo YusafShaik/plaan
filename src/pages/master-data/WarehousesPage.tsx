@@ -18,6 +18,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateWarehouseModal } from './CreateWarehouseModal'
 import { masterDataService } from '../../services/masterDataService'
+import { toast } from '../../lib/feedback'
 import type {
   Warehouse,
   CreateWarehousePayload,
@@ -132,7 +133,7 @@ export function WarehousesPage({
       setWarehouses((prev) => prev.map((w) => (w.id === warehouse.id ? updated : w)))
       loadSummary()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to update warehouse status')
+      toast.error(err instanceof Error ? err.message : 'Failed to update warehouse status')
     } finally {
       setActiveMenuId(null)
     }
@@ -347,8 +348,8 @@ export function WarehousesPage({
           </div>
         ) : warehouses.length === 0 ? (
           <div className="py-20 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
-              <WarehouseIcon className="h-6 w-6" />
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground mb-3">
+              <WarehouseIcon className="h-5 w-5" />
             </div>
             <p className="text-base font-semibold text-foreground">No warehouses found</p>
             <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">

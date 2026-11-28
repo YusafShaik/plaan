@@ -1,11 +1,12 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { X, Plus } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Badge } from '../../components/ui/Badge'
 import { Alert } from '../../components/ui/Alert'
 import { financeService } from '../../services/financeService'
+import { toast } from '../../lib/feedback'
 import type { ExpenseCategory } from '../../types/finance'
 
 export interface ManageExpenseCategoriesModalProps {
@@ -32,15 +33,17 @@ export function ManageExpenseCategoriesModal({
       .getExpenseCategories(true)
       .then(setCategories)
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : 'Failed to load categories')
+        setError(err instanceof Error ? err.message : 'Failed to load categories.')
       })
       .finally(() => setIsLoading(false))
   }
 
   useEffect(() => {
     if (!isOpen) return
-    setNewName('')
-    load()
+    Promise.resolve().then(() => {
+      setNewName('')
+      load()
+    })
   }, [isOpen])
 
   const handleCreate = async (e?: FormEvent) => {
@@ -54,11 +57,12 @@ export function ManageExpenseCategoriesModal({
     setError(null)
     try {
       await financeService.createExpenseCategory(name)
+      toast.success(`Category "${name}" added`)
       setNewName('')
       load()
       onChanged?.()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create category')
+      setError(err instanceof Error ? err.message : 'Failed to create category.')
     } finally {
       setIsSaving(false)
     }
@@ -71,10 +75,15 @@ export function ManageExpenseCategoriesModal({
         name: category.name,
         active: !category.active,
       })
+      toast.success(
+        category.active
+          ? `Category "${category.name}" deactivated`
+          : `Category "${category.name}" activated`
+      )
       load()
       onChanged?.()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update category')
+      setError(err instanceof Error ? err.message : 'Failed to update category.')
     }
   }
 
@@ -82,20 +91,23 @@ export function ManageExpenseCategoriesModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="!max-w-[440px] max-h-[88vh] overflow-y-auto p-5 sm:p-6"
+      className="!max-w-[460px] max-h-[88vh] overflow-y-auto p-5 sm:p-6"
     >
       <div className="space-y-4">
         <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
-              Expenses
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              Manage categories
+            </h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Add or deactivate operating expense categories.
             </p>
-            <h2 className="text-lg font-bold tracking-tight text-foreground">Manage Categories</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Close"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -103,17 +115,17 @@ export function ManageExpenseCategoriesModal({
 
         {error && <Alert variant="destructive">{error}</Alert>}
 
-        <form onSubmit={handleCreate} className="flex items-end gap-2">
+        <form onSubmit={handleCreate} className="flex items-center gap-2">
           <div className="flex-1">
             <Input
               label="New category"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. Machinery Lease"
+              placeholder="e.g. Machinery lease"
               disabled={isSaving}
             />
           </div>
-          <Button type="submit" variant="primary" disabled={isSaving}>
+          <Button type="submit" variant="primary" size="sm" disabled={isSaving}>
             <Plus className="h-3.5 w-3.5" />
             Add
           </Button>
@@ -121,7 +133,7 @@ export function ManageExpenseCategoriesModal({
 
         <div className="rounded-md border border-border/80 divide-y divide-border/60 max-h-[320px] overflow-y-auto">
           {isLoading && categories.length === 0 ? (
-            <p className="p-4 text-xs text-muted-foreground text-center">Loading…</p>
+            <p className="p-4 text-xs text-muted-foreground text-center">Loading...</p>
           ) : categories.length === 0 ? (
             <p className="p-4 text-xs text-muted-foreground text-center">No categories yet.</p>
           ) : (
@@ -138,20 +150,21 @@ export function ManageExpenseCategoriesModal({
                     <Badge variant="neutral">Inactive</Badge>
                   )}
                 </div>
-                <button
+                <Button
                   type="button"
-                  onClick={() => handleToggleActive(cat)}
-                  className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer shrink-0"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void handleToggleActive(cat)}
                 >
                   {cat.active ? 'Deactivate' : 'Activate'}
-                </button>
+                </Button>
               </div>
             ))
           )}
         </div>
 
         <div className="flex justify-end border-t border-border/80 pt-3">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
             Done
           </Button>
         </div>

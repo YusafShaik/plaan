@@ -1,27 +1,36 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import {
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  X,
   ShoppingCart,
   Download,
   RotateCcw,
-  Check,
   Plus,
   Send,
   Ban,
   Eye,
+  MoreHorizontal,
+  PackageCheck,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
-import { Badge } from '../../components/ui/Badge'
-import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { Badge, type BadgeVariant } from '../../components/ui/Badge'
+import {
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  TableEmptyState,
+  TablePagination,
+} from '../../components/ui/Table'
 import { CreatePurchaseOrderModal } from './CreatePurchaseOrderModal'
 import { PurchaseOrderDetailsModal } from './PurchaseOrderDetailsModal'
 import { procurementService } from '../../services/procurementService'
 import { useAuth } from '../../hooks/useAuth'
+import { confirmAction, toast } from '../../lib/feedback'
+import { formatMoney, formatShortDate } from '../../lib/format'
+import { cn } from '../../lib/cn'
 import type { PageResponse } from '../../types/masterData'
 import type {
   PurchaseOrder,
@@ -29,27 +38,46 @@ import type {
   PurchaseOrderStatus,
 } from '../../types/procurement'
 
+const STATUS_FILTERS: Array<{ id: string; label: string }> = [
+  { id: 'all', label: 'All' },
+  { id: 'DRAFT', label: 'Draft' },
+  { id: 'ISSUED', label: 'Issued' },
+  { id: 'PARTIALLY_RECEIVED', label: 'Partially received' },
+  { id: 'COMPLETED', label: 'Completed' },
+  { id: 'CANCELLED', label: 'Cancelled' },
+]
+
+const STATUS_BADGE: Record<PurchaseOrderStatus, { variant: BadgeVariant; label: string }> = {
+  DRAFT: { variant: 'neutral', label: 'Draft' },
+  ISSUED: { variant: 'info', label: 'Issued' },
+  PARTIALLY_RECEIVED: { variant: 'warning', label: 'Partially received' },
+  COMPLETED: { variant: 'success', label: 'Completed' },
+  CANCELLED: { variant: 'destructive', label: 'Cancelled' },
+}
+
 export interface PurchaseOrdersPageProps {
   showHeader?: boolean
   isModalOpen?: boolean
   setIsModalOpen?: (open: boolean) => void
+  onReceiveGoods?: (orderId: number) => void
 }
 
 export function PurchaseOrdersPage({
   showHeader = true,
   isModalOpen,
   setIsModalOpen,
+  onReceiveGoods,
 }: PurchaseOrdersPageProps = {}) {
   const { organization } = useAuth()
-  const currencySymbol = organization?.baseCurrency === 'USD' ? '$' : organization?.baseCurrency === 'EUR' ? '€' : '₹'
+  const currency = organization?.baseCurrency || 'INR'
 
-  // Modal create state
   const [internalCreateModalOpen, setInternalCreateModalOpen] = useState(false)
   const isCreateOpen = isModalOpen !== undefined ? isModalOpen : internalCreateModalOpen
   const setCreateOpen = setIsModalOpen || setInternalCreateModalOpen
 
   const [downloadingPoId, setDownloadingPoId] = useState<number | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null)
+  const [openMenuPoId, setOpenMenuPoId] = useState<number | null>(null)
 
   const [orders, setOrders] = useState<PurchaseOrder[]>([])
   const [summary, setSummary] = useState<PurchaseOrderSummary | null>(null)
@@ -58,17 +86,18 @@ export function PurchaseOrdersPage({
   const [pageSize] = useState(10)
   const [search, setSearch] = useState('')
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const filterRef = useRef<HTMLDivElement>(null)
+  const menuContainerRef = useRef<HTMLDivElement>(null)
 
-  // Close context menus on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-        setIsFilterOpen(false)
+      if (
+        menuContainerRef.current &&
+        !menuContainerRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuPoId(null)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -124,13 +153,29 @@ export function PurchaseOrdersPage({
     return () => clearTimeout(timer)
   }, [loadOrders])
 
-  const handleStatusTransition = async (orderId: number, targetStatus: PurchaseOrderStatus) => {
+  const handleStatusTransition = async (
+    orderId: number,
+    targetStatus: PurchaseOrderStatus,
+    requireConfirm = false,
+    poNumber?: string
+  ) => {
+    if (requireConfirm && targetStatus === 'CANCELLED') {
+      const confirmed = await confirmAction({
+        title: `Cancel ${poNumber || 'purchase order'}?`,
+        description:
+          'This purchase order will be marked cancelled and removed from open pipeline.',
+        confirmLabel: 'Cancel order',
+        variant: 'destructive',
+      })
+      if (!confirmed) return
+    }
+
     try {
       await procurementService.updateStatus(orderId, targetStatus)
       loadSummary()
       loadOrders(currentPage)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to update order status')
+      toast.error(err instanceof Error ? err.message : 'Failed to update order status')
     }
   }
 
@@ -139,7 +184,9 @@ export function PurchaseOrdersPage({
       setDownloadingPoId(poId)
       await procurementService.downloadPurchaseOrderPdf(poId, poNumber)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to download purchase order PDF')
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to download purchase order PDF'
+      )
     } finally {
       setDownloadingPoId(null)
     }
@@ -147,7 +194,16 @@ export function PurchaseOrdersPage({
 
   const handleExport = () => {
     if (orders.length === 0) return
-    const headers = ['PO Number', 'Supplier', 'Receiving Warehouse', 'Order Date', 'Expected Delivery', 'Items Count', 'Total Amount', 'Status']
+    const headers = [
+      'PO Number',
+      'Supplier',
+      'Receiving Warehouse',
+      'Order Date',
+      'Expected Delivery',
+      'Items Count',
+      'Total Amount',
+      'Status',
+    ]
     const rows = orders.map((o) => [
       `"${o.poNumber.replace(/"/g, '""')}"`,
       `"${o.supplierName.replace(/"/g, '""')}"`,
@@ -166,7 +222,10 @@ export function PurchaseOrdersPage({
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `purchase_orders_export_${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute(
+      'download',
+      `purchase_orders_export_${new Date().toISOString().split('T')[0]}.csv`
+    )
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -186,177 +245,107 @@ export function PurchaseOrdersPage({
     (summary?.issuedCount ?? orders.filter((o) => o.status === 'ISSUED').length) +
     (summary?.partiallyReceivedCount ??
       orders.filter((o) => o.status === 'PARTIALLY_RECEIVED').length)
-  const committedValue = (
+
+  const committedValue =
     summary?.totalValue ??
-    orders.reduce(
-      (acc, o) => (o.status !== 'CANCELLED' ? acc + o.totalAmount : acc),
-      0
-    )
-  ).toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+    orders.reduce((acc, o) => (o.status !== 'CANCELLED' ? acc + o.totalAmount : acc), 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {showHeader && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between border-b border-border pb-4">
           <div>
             <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
-              Purchase Orders
+              Purchase orders
             </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Vendor commitments and inbound deliveries.
+            <p className="mt-1 text-sm text-muted-foreground">
+              Supplier commitments and inbound deliveries.
             </p>
           </div>
 
-          <Button variant="primary" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" />
+          <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-3.5 w-3.5" />
             Create purchase order
           </Button>
         </div>
       )}
 
       <KpiCardGrid columns={3}>
-        <KpiCard
-          label="Total orders"
-          value={summary?.totalOrders ?? orders.length}
-        />
+        <KpiCard label="Total orders" value={summary?.totalOrders ?? orders.length} />
         <KpiCard label="Open pipeline" value={openPipeline} />
         <KpiCard
           label="Committed value"
-          value={`${currencySymbol}${committedValue}`}
+          value={formatMoney(committedValue, currency)}
         />
       </KpiCardGrid>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2.5">
-          {selectedStatusFilter !== 'all' && (
-            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
-              <span className="text-muted-foreground text-xs font-normal">Status:</span>
-              <span className="font-medium text-xs uppercase">{selectedStatusFilter}</span>
-              <button
-                type="button"
-                onClick={() => setSelectedStatusFilter('all')}
-                className="ml-1 rounded-md p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                title="Remove filter"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          )}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search PO number or supplier..."
+          />
+
+          <div
+            className="inline-flex flex-wrap items-center gap-1"
+            role="group"
+            aria-label="Filter by status"
+          >
+            {STATUS_FILTERS.map((opt) => {
+              const active = selectedStatusFilter === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setSelectedStatusFilter(opt.id)}
+                  className={cn(
+                    'h-8 rounded-md px-2.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap',
+                    active
+                      ? 'bg-ink text-ink-foreground'
+                      : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                  )}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
 
           {hasActiveFilters && (
             <button
               type="button"
               onClick={clearAllFilters}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer px-1"
             >
               <RotateCcw className="h-3 w-3" />
-              Reset all
+              Reset
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-2.5 ml-auto">
-          {/* Search bar */}
-          <div className="relative w-64 sm:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search PO number, vendor..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
-
-          {/* Filter Popover */}
-          <div className="relative" ref={filterRef}>
-            <button
-              type="button"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors cursor-pointer ${
-                selectedStatusFilter !== 'all' || isFilterOpen
-                  ? 'border-foreground bg-secondary text-foreground'
-                  : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:border-border'
-              }`}
-              title="Filter by status"
-            >
-              <Filter className="h-4 w-4" />
-            </button>
-
-            {isFilterOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
-                <div className="px-2 py-1.5 border-b border-border/60 mb-1 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">Filter Status</span>
-                  {selectedStatusFilter !== 'all' && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStatusFilter('all')}
-                      className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-                <div className="space-y-0.5">
-                  {[
-                    { id: 'all', label: 'All Statuses' },
-                    { id: 'DRAFT', label: 'Draft' },
-                    { id: 'ISSUED', label: 'Issued' },
-                    { id: 'PARTIALLY_RECEIVED', label: 'Partially received' },
-                    { id: 'COMPLETED', label: 'Completed' },
-                    { id: 'CANCELLED', label: 'Cancelled' },
-                  ].map((option) => {
-                    const isSelected = selectedStatusFilter === option.id
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedStatusFilter(option.id)
-                          setIsFilterOpen(false)
-                        }}
-                        className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-secondary text-foreground font-semibold'
-                            : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
-                        }`}
-                      >
-                        <span>{option.label}</span>
-                        {isSelected && <Check className="h-3.5 w-3.5 text-foreground stroke-[2.5]" />}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Export CSV */}
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={orders.length === 0}
-            className="flex h-10 items-center gap-1.5 rounded-md border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            title="Export as CSV"
-          >
-            <Download className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="hidden sm:inline">Export</span>
-          </button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          disabled={orders.length === 0}
+          className="self-start lg:self-auto"
+          title="Export as CSV"
+        >
+          <Download className="h-3.5 w-3.5 text-muted-foreground" />
+          Export
+        </Button>
       </div>
 
-      {/* 4. Table Section */}
-      <div className="w-full">
+      {/* Table Section */}
+      <div className="w-full" ref={menuContainerRef}>
         {isLoading && orders.length === 0 ? (
-          <div className="py-20 text-center">
+          <div className="py-20 text-center rounded-md border border-border bg-card">
             <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
             <p className="mt-3 text-xs text-muted-foreground">Loading purchase orders...</p>
           </div>
         ) : error ? (
-          <div className="py-16 text-center">
+          <div className="py-16 text-center rounded-md border border-border bg-card">
             <p className="text-sm font-medium text-destructive">{error}</p>
             <Button
               variant="outline"
@@ -367,187 +356,201 @@ export function PurchaseOrdersPage({
               Retry
             </Button>
           </div>
-        ) : orders.length === 0 ? (
-          <div className="py-20 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
-              <ShoppingCart className="h-6 w-6" />
-            </div>
-            <p className="text-base font-semibold text-foreground">No purchase orders found</p>
-            <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
-              {search || selectedStatusFilter !== 'all'
-                ? 'No purchase orders match your filter criteria. Try resetting filters.'
-                : 'Your organization has no purchase orders yet. Click "+ Create purchase order" above to issue your first order.'}
-            </p>
-            {hasActiveFilters ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="mt-4 gap-1.5"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Reset filters</span>
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                onClick={() => setCreateOpen(true)}
-                className="mt-4 gap-1.5 bg-ink text-ink-foreground"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Create purchase order</span>
-              </Button>
-            )}
-          </div>
         ) : (
-          <Table>
-            <THead>
-              <tr>
-                <TH>PO number</TH>
-                <TH>Supplier</TH>
-                <TH>Receiving warehouse</TH>
-                <TH>Order date</TH>
-                <TH>Items</TH>
-                <TH className="text-right">Total amount</TH>
-                <TH className="text-center">Status</TH>
-                <TH className="text-right w-24" />
-              </tr>
-            </THead>
-            <TBody>
-                {orders.map((po) => (
-                  <TR
-                    key={po.id}
-                    onClick={() => setSelectedOrder(po)}
-                    clickable
-                    className="group"
-                  >
-                    <TD>
-                      <span className="text-ref-link">
-                        {po.poNumber}
-                      </span>
-                    </TD>
-
-                    <TD>
-                      <p className="font-medium text-foreground">{po.supplierName}</p>
-                      <p className="text-ref text-muted-foreground">{po.supplierCode}</p>
-                    </TD>
-
-                    <TD>{po.warehouseName}</TD>
-
-                    <TD>{po.orderDate}</TD>
-
-                    <TD>
-                      {po.itemsCount} {po.itemsCount === 1 ? 'item' : 'items'}
-                    </TD>
-
-                    <TD className="text-right tabular-nums font-medium">
-                      {currencySymbol}{po.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </TD>
-
-                    <TD className="text-center">
-                      {po.status === 'ISSUED' && (
-                        <Badge variant="success">Issued</Badge>
-                      )}
-                      {po.status === 'PARTIALLY_RECEIVED' && (
-                        <Badge variant="warning">Partially received</Badge>
-                      )}
-                      {po.status === 'COMPLETED' && (
-                        <Badge variant="info">Completed</Badge>
-                      )}
-                      {po.status === 'DRAFT' && (
-                        <Badge variant="neutral">Draft</Badge>
-                      )}
-                      {po.status === 'CANCELLED' && (
-                        <Badge variant="destructive">Cancelled</Badge>
-                      )}
-                    </TD>
-
-                    <TD className="text-right whitespace-nowrap">
-                      <div
-                        className="flex items-center justify-end gap-1.5"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setSelectedOrder(po)}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
-                          title="View PO Details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDownloadPdf(po.id, po.poNumber)}
-                          disabled={downloadingPoId === po.id}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
-                          title="Download PDF"
-                        >
-                          {downloadingPoId === po.id ? (
-                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent inline-block" />
-                          ) : (
-                            <Download className="h-4 w-4" />
-                          )}
-                        </button>
-
-                        {po.status === 'DRAFT' && (
-                          <button
-                            type="button"
-                            onClick={() => handleStatusTransition(po.id, 'ISSUED')}
-                            className="p-1.5 rounded-md text-success hover:text-success hover:bg-success/10 cursor-pointer transition-colors"
-                            title="Issue Purchase Order"
-                          >
-                            <Send className="h-4 w-4" />
-                          </button>
-                        )}
-
-                        {po.status !== 'CANCELLED' && (
-                          <button
-                            type="button"
-                            onClick={() => handleStatusTransition(po.id, 'CANCELLED')}
-                            className="p-1.5 rounded-md text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
-                            title="Cancel Order"
-                          >
-                            <Ban className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
+          <div className="rounded-md border border-border/80 bg-card overflow-visible">
+            <Table className="border-0 rounded-none overflow-visible" tableClassName="table-fixed">
+              <THead>
+                <tr>
+                  <TH className="w-[12%]">PO number</TH>
+                  <TH className="w-[21%]">Supplier</TH>
+                  <TH className="w-[14%]">Warehouse</TH>
+                  <TH className="w-[11%]">Order date</TH>
+                  <TH className="w-[7%] text-right">Items</TH>
+                  <TH className="w-[11%] text-right">Total</TH>
+                  <TH className="w-[11%] pl-6">Status</TH>
+                  <TH className="w-[13%] px-3 text-right">Actions</TH>
+                </tr>
+              </THead>
+              <TBody>
+                {orders.length === 0 ? (
+                  <TR>
+                    <TD colSpan={8} className="p-0">
+                      <TableEmptyState
+                        icon={<ShoppingCart className="h-5 w-5" />}
+                        title="No purchase orders found"
+                        description={
+                          hasActiveFilters
+                            ? 'No purchase orders match your current search or status filter.'
+                            : 'Issue your first purchase order using "+ Create purchase order" above.'
+                        }
+                        action={
+                          hasActiveFilters ? (
+                            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                              <RotateCcw className="h-3.5 w-3.5" />
+                              Reset filters
+                            </Button>
+                          ) : undefined
+                        }
+                      />
                     </TD>
                   </TR>
-                ))}
-            </TBody>
-          </Table>
-        )}
+                ) : (
+                  orders.map((po) => {
+                    const badge = STATUS_BADGE[po.status] ?? {
+                      variant: 'neutral',
+                      label: po.status,
+                    }
+                    const canReceive =
+                      (po.status === 'ISSUED' || po.status === 'PARTIALLY_RECEIVED') &&
+                      !!onReceiveGoods
 
-        {/* 5. Pagination Footer */}
-        {orders.length > 0 && pageData && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/60 text-xs text-muted-foreground">
-            <div>
-              Showing {orders.length} of {totalCount} purchase orders
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={currentPage === 0 || isLoading}
-                onClick={() => loadOrders(currentPage - 1)}
-                className="flex items-center gap-1 rounded-md border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-                Previous
-              </button>
-              <span className="px-2 font-medium text-foreground">
-                Page {currentPage + 1} of {Math.max(1, pageData.totalPages)}
-              </span>
-              <button
-                type="button"
-                disabled={currentPage + 1 >= pageData.totalPages || isLoading}
-                onClick={() => loadOrders(currentPage + 1)}
-                className="flex items-center gap-1 rounded-md border border-border/80 bg-secondary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              >
-                Next
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+                    return (
+                      <TR
+                        key={po.id}
+                        onClick={() => {
+                          setOpenMenuPoId(null)
+                          setSelectedOrder(po)
+                        }}
+                        clickable
+                        className="group"
+                      >
+                        <TD>
+                          <span className="text-ref-link">{po.poNumber}</span>
+                        </TD>
+
+                        <TD>
+                          <p className="font-medium text-foreground truncate">
+                            {po.supplierName}
+                          </p>
+                          <p className="text-ref text-muted-foreground">{po.supplierCode}</p>
+                        </TD>
+
+                        <TD className="truncate">{po.warehouseName}</TD>
+
+                        <TD className="tabular-nums text-muted-foreground font-normal">
+                          {formatShortDate(po.orderDate)}
+                        </TD>
+
+                        <TD className="text-right tabular-nums font-normal">
+                          {po.itemsCount}
+                        </TD>
+
+                        <TD className="text-right tabular-nums font-medium">
+                          {formatMoney(po.totalAmount, currency)}
+                        </TD>
+
+                        <TD className="pl-6">
+                          <Badge variant={badge.variant}>{badge.label}</Badge>
+                        </TD>
+
+                        <TD className="px-3 text-right whitespace-nowrap">
+                          <div
+                            className="relative inline-flex items-center justify-end gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {po.status === 'DRAFT' && (
+                              <button
+                                type="button"
+                                onClick={() => handleStatusTransition(po.id, 'ISSUED')}
+                                className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                                title="Issue purchase order"
+                              >
+                                <Send className="h-3 w-3 text-muted-foreground" />
+                                Issue
+                              </button>
+                            )}
+
+                            {canReceive && (
+                              <button
+                                type="button"
+                                onClick={() => onReceiveGoods!(po.id)}
+                                className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                                title="Create goods receipt for this order"
+                              >
+                                <PackageCheck className="h-3 w-3 text-muted-foreground" />
+                                Receive
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setOpenMenuPoId((prev) => (prev === po.id ? null : po.id))
+                              }
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer transition-colors"
+                              aria-label="More order actions"
+                              aria-expanded={openMenuPoId === po.id}
+                            >
+                              {downloadingPoId === po.id ? (
+                                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+                              ) : (
+                                <MoreHorizontal className="h-4 w-4" />
+                              )}
+                            </button>
+
+                            {openMenuPoId === po.id && (
+                              <div className="absolute right-0 top-full z-40 mt-1 w-44 rounded-md border border-border bg-card py-1 shadow-panel text-left">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuPoId(null)
+                                    setSelectedOrder(po)
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                  View details
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuPoId(null)
+                                    handleDownloadPdf(po.id, po.poNumber)
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                >
+                                  <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Download PDF
+                                </button>
+                                {po.status !== 'CANCELLED' && po.status !== 'COMPLETED' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenMenuPoId(null)
+                                      handleStatusTransition(
+                                        po.id,
+                                        'CANCELLED',
+                                        true,
+                                        po.poNumber
+                                      )
+                                    }}
+                                    className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer"
+                                  >
+                                    <Ban className="h-3.5 w-3.5" />
+                                    Cancel order
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </TD>
+                      </TR>
+                    )
+                  })
+                )}
+              </TBody>
+            </Table>
+
+            {pageData && (
+              <TablePagination
+                page={currentPage}
+                totalPages={pageData.totalPages}
+                totalElements={totalCount}
+                count={orders.length}
+                itemLabel="purchase orders"
+                onPageChange={loadOrders}
+              />
+            )}
           </div>
         )}
       </div>
@@ -562,12 +565,13 @@ export function PurchaseOrdersPage({
         }}
       />
 
-      {/* View Purchase Order Details Modal */}
+      {/* View Purchase Order Details Drawer */}
       <PurchaseOrderDetailsModal
         isOpen={!!selectedOrder}
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
         onDownloadPdf={handleDownloadPdf}
+        onReceiveGoods={onReceiveGoods}
         onStatusChange={async (id, status) => {
           await handleStatusTransition(id, status)
           procurementService

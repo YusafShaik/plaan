@@ -14,6 +14,7 @@ import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { NativeSelect } from '../../components/ui/NativeSelect'
 import { CreateCustomerModal } from './CreateCustomerModal'
 import { masterDataService } from '../../services/masterDataService'
+import { confirmAction, toast } from '../../lib/feedback'
 import type { Customer, PageResponse } from '../../types/masterData'
 
 export interface CustomersPageProps {
@@ -97,20 +98,23 @@ export function CustomersPage({
       await masterDataService.toggleCustomerStatus(customer.id)
       loadCustomers(currentPage)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to update customer status.')
+      toast.error(err instanceof Error ? err.message : 'Failed to update customer status.')
     }
   }
 
   const handleDelete = async (customer: Customer) => {
-    if (!confirm(`Are you sure you want to delete customer "${customer.name}" (${customer.customerCode})?`)) {
-      return
-    }
+    const ok = await confirmAction({
+      title: `Delete customer ${customer.name}?`,
+      description: `This will permanently remove customer ${customer.customerCode}.`,
+      confirmLabel: 'Delete customer',
+    })
+    if (!ok) return
 
     try {
       await masterDataService.deleteCustomer(customer.id)
       loadCustomers(currentPage)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to delete customer.')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete customer.')
     }
   }
 
@@ -195,8 +199,8 @@ export function CustomersPage({
           </div>
         ) : customers.length === 0 ? (
           <div className="py-16 text-center rounded-md border border-border/80 bg-card">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
-              <Users className="h-6 w-6" />
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground mb-3">
+              <Users className="h-5 w-5" />
             </div>
             <p className="text-base font-semibold text-foreground">No customers found</p>
             <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">

@@ -5,11 +5,10 @@ import {
   Cog,
   Edit,
   Eye,
-  Plus,
   RotateCcw,
-  Search,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD, RefLink } from '../../components/ui/Table'
 import { NativeSelect } from '../../components/ui/NativeSelect'
@@ -36,7 +35,15 @@ function operationalBadge(status: EquipmentOperationalStatus) {
   return <Badge variant="destructive">{OPS_LABEL[status]}</Badge>
 }
 
-export function EquipmentPage() {
+export interface EquipmentPageProps {
+  isModalOpen?: boolean
+  setIsModalOpen?: (open: boolean) => void
+}
+
+export function EquipmentPage({
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: setControlledModalOpen,
+}: EquipmentPageProps = {}) {
   const [equipment, setEquipment] = useState<Equipment[]>([])
   const [pageData, setPageData] = useState<PageResponse<Equipment> | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
@@ -47,7 +54,10 @@ export function EquipmentPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [internalModalOpen, setInternalModalOpen] = useState(false)
+  const isCreateOpen =
+    controlledModalOpen !== undefined ? controlledModalOpen : internalModalOpen
+  const setIsCreateOpen = setControlledModalOpen || setInternalModalOpen
   const [equipmentToEdit, setEquipmentToEdit] = useState<Equipment | null>(null)
   const [selected, setSelected] = useState<Equipment | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
@@ -92,27 +102,22 @@ export function EquipmentPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="relative w-64 sm:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search equipment..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search equipment..."
+          />
           <NativeSelect
             dense
             className="w-auto min-w-[10rem]"
             value={opsFilter}
             onChange={(e) => setOpsFilter(e.target.value as EquipmentOperationalStatus | '')}
           >
-            <option value="">All Conditions</option>
+            <option value="">All conditions</option>
             <option value="OPERATIONAL">Operational</option>
-            <option value="UNDER_MAINTENANCE">Under Maintenance</option>
+            <option value="UNDER_MAINTENANCE">Under maintenance</option>
             <option value="BREAKDOWN">Breakdown</option>
           </NativeSelect>
           <NativeSelect
@@ -121,7 +126,7 @@ export function EquipmentPage() {
             value={recordFilter}
             onChange={(e) => setRecordFilter(e.target.value as EquipmentRecordStatus | '')}
           >
-            <option value="">All Records</option>
+            <option value="">All statuses</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
           </NativeSelect>
@@ -140,30 +145,19 @@ export function EquipmentPage() {
             </button>
           )}
         </div>
-        <Button
-          type="button"
-          variant="primary"
-          onClick={() => {
-            setEquipmentToEdit(null)
-            setIsCreateOpen(true)
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          New Equipment
-        </Button>
       </div>
 
       {error && <Alert variant="destructive">{error}</Alert>}
 
       <div className="overflow-hidden rounded-md border border-border bg-card shadow-xs">
-        <Table className="border-0 rounded-none shadow-none bg-transparent">
+        <Table className="border-0 rounded-none shadow-none bg-transparent" tableClassName="table-fixed">
           <THead>
             <tr>
-              <TH>Code</TH>
-              <TH>Equipment</TH>
-              <TH>Location</TH>
-              <TH>Status</TH>
-              <TH className="text-right">Actions</TH>
+              <TH className="w-[16%]">Code</TH>
+              <TH className="w-[32%]">Equipment</TH>
+              <TH className="w-[24%]">Location</TH>
+              <TH className="w-[16%]">Status</TH>
+              <TH className="w-[12%] text-right">Actions</TH>
             </tr>
           </THead>
           <TBody>

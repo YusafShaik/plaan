@@ -105,7 +105,7 @@ export function CreateSupplierModal({
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
+          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
           title="Close"
         >
           <X className="h-4 w-4" />

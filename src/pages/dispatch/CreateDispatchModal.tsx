@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
-import { X, AlertTriangle, Truck } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
 import { DateField } from '../../components/ui/DateField'
+import { Alert } from '../../components/ui/Alert'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { dispatchService } from '../../services/dispatchService'
 import { salesService } from '../../services/salesService'
+import { toast } from '../../lib/feedback'
+import { formatQuantity } from '../../lib/format'
+import { cn } from '../../lib/cn'
 import type { SalesOrder } from '../../types/sales'
 import type {
   DispatchOrder,
@@ -32,7 +37,7 @@ interface DispatchLineForm {
   previouslyDispatchedQuantity: number
   pendingQuantity: number
   onHandQuantity: number
-  dispatchQuantity: number | ''
+  dispatchQuantity: string
 }
 
 export function CreateDispatchModal({
@@ -42,7 +47,7 @@ export function CreateDispatchModal({
   preselectedSalesOrder,
   editingDispatch,
 }: CreateDispatchModalProps) {
-  const [dispatchNumber, setDispatchNumber] = useState('')
+  const [dispatchNumber, setDispatchNumber] = useState('DSP-...')
   const [dispatchDate, setDispatchDate] = useState(() => new Date().toISOString().split('T')[0])
   const [salesOrders, setSalesOrders] = useState<SalesOrder[]>([])
   const [selectedSalesOrderId, setSelectedSalesOrderId] = useState<number | ''>('')
@@ -60,58 +65,43 @@ export function CreateDispatchModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load eligible sales orders (Confirmed or Partially Dispatched)
   const loadEligibleSalesOrders = useCallback(async () => {
     try {
       const [confirmedRes, partialRes] = await Promise.all([
         salesService.getSalesOrders({ status: 'CONFIRMED', size: 100 }),
         salesService.getSalesOrders({ status: 'PARTIALLY_DISPATCHED', size: 100 }),
       ])
-      const merged = [...confirmedRes.content, ...partialRes.content]
-      // deduplicate
       const map = new Map<number, SalesOrder>()
-      merged.forEach((so) => map.set(so.id, so))
+      ;[...confirmedRes.content, ...partialRes.content].forEach((so) => map.set(so.id, so))
       setSalesOrders(Array.from(map.values()))
-    } catch (err) {
-      console.error('Failed to load sales orders:', err)
+    } catch {
+      // Handled smoothly if dropdown list fails
     }
   }, [])
 
-  // Load next number
-  const loadNextNumber = useCallback(async () => {
-    try {
-      const res = await dispatchService.getNextDispatchNumber()
-      setDispatchNumber(res.nextCode)
-    } catch (err) {
-      console.error('Failed to load next dispatch number:', err)
-    }
-  }, [])
-
-  // Prepare dispatch data when sales order selected
   const handleSelectSalesOrder = useCallback(
     async (orderId: number, currentEditingDispatch?: DispatchOrder | null) => {
       setIsLoading(true)
       setError(null)
       try {
-        const prep = await dispatchService.prepareDispatch(orderId)
+        const [prep, fullOrder] = await Promise.all([
+          dispatchService.prepareDispatch(orderId),
+          salesService.getSalesOrderById(orderId),
+        ])
         setPreparedData(prep)
-
-        // Find full order details if not already loaded
-        const fullOrder = await salesService.getSalesOrderById(orderId)
         setSelectedOrder(fullOrder)
 
         if (!currentEditingDispatch) {
           setShippingAddress(prep.shippingAddress || fullOrder.shippingAddress || '')
         }
 
-        // Map items
         const lineForms: DispatchLineForm[] = prep.items.map((it) => {
-          let initialQty: number | '' = ''
+          let initialQty = ''
           if (currentEditingDispatch) {
-            const found = currentEditingDispatch.items.find((i) => i.salesOrderItemId === it.salesOrderItemId)
-            if (found) {
-              initialQty = found.dispatchQuantity
-            }
+            const found = currentEditingDispatch.items.find(
+              (i) => i.salesOrderItemId === it.salesOrderItemId
+            )
+            if (found) initialQty = String(found.dispatchQuantity)
           }
 
           return {
@@ -130,8 +120,9 @@ export function CreateDispatchModal({
 
         setItems(lineForms)
       } catch (err: unknown) {
-        console.error('Failed to prepare dispatch:', err)
-        setError(err instanceof Error ? err.message : 'Failed to prepare dispatch for selected order')
+        setError(
+          err instanceof Error ? err.message : 'Failed to prepare dispatch for selected order.'
+        )
       } finally {
         setIsLoading(false)
       }
@@ -141,8 +132,10 @@ export function CreateDispatchModal({
 
   useEffect(() => {
     if (!isOpen) return
+    let mounted = true
 
     Promise.resolve().then(() => {
+      if (!mounted) return
       loadEligibleSalesOrders()
       setError(null)
 
@@ -157,7 +150,15 @@ export function CreateDispatchModal({
         setNotes(editingDispatch.notes || '')
         handleSelectSalesOrder(editingDispatch.salesOrderId, editingDispatch)
       } else {
-        loadNextNumber()
+        dispatchService
+          .getNextDispatchNumber()
+          .then((res) => {
+            if (mounted && res?.nextCode) setDispatchNumber(res.nextCode)
+          })
+          .catch(() => {
+            if (mounted) setDispatchNumber('DSP-001')
+          })
+
         setDispatchDate(new Date().toISOString().split('T')[0])
         setTransporterName('')
         setVehicleNumber('')
@@ -177,11 +178,15 @@ export function CreateDispatchModal({
         }
       }
     })
-  }, [isOpen, editingDispatch, preselectedSalesOrder, loadEligibleSalesOrders, loadNextNumber, handleSelectSalesOrder])
+
+    return () => {
+      mounted = false
+    }
+  }, [isOpen, editingDispatch, preselectedSalesOrder, loadEligibleSalesOrders, handleSelectSalesOrder])
 
   const handleSalesOrderChange = (soIdStr: string) => {
     const id = Number(soIdStr)
-    setSelectedSalesOrderId(id)
+    setSelectedSalesOrderId(id || '')
     if (id) {
       handleSelectSalesOrder(id, null)
     } else {
@@ -194,76 +199,67 @@ export function CreateDispatchModal({
 
   const handleLineQtyChange = (salesOrderItemId: number, valStr: string) => {
     setItems((prev) =>
-      prev.map((it) => {
-        if (it.salesOrderItemId !== salesOrderItemId) return it
-        if (valStr === '') return { ...it, dispatchQuantity: '' }
-        const num = parseFloat(valStr)
-        return { ...it, dispatchQuantity: isNaN(num) ? '' : num }
-      })
+      prev.map((it) =>
+        it.salesOrderItemId === salesOrderItemId ? { ...it, dispatchQuantity: valStr } : it
+      )
     )
   }
 
-  // Fill available quantities matching screenshot
   const handleFillAvailable = () => {
     setItems((prev) =>
       prev.map((it) => {
         const availableToFill = Math.min(it.pendingQuantity, Math.max(0, it.onHandQuantity))
         return {
           ...it,
-          dispatchQuantity: availableToFill,
+          dispatchQuantity: availableToFill > 0 ? String(availableToFill) : '0',
         }
       })
     )
   }
 
-  const formatQuantity = (qty: number) => {
-    if (qty % 1 === 0) {
-      return qty.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-    }
-    return qty.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 4 })
-  }
-
   const handleSubmit = async (postDirectly: boolean) => {
     if (!selectedSalesOrderId) {
-      setError('Please select a Sales Order.')
+      setError('Sales order is required.')
       return
     }
-
     if (!dispatchDate) {
-      setError('Dispatch Date is required.')
+      setError('Dispatch date is required.')
       return
     }
 
-    // Check items
-    const validLines = items.filter(
-      (it) => typeof it.dispatchQuantity === 'number' && it.dispatchQuantity > 0
-    )
+    const parsedQty = (raw: string) => {
+      const n = Number(raw)
+      return Number.isFinite(n) ? n : 0
+    }
 
+    const validLines = items.filter((it) => parsedQty(it.dispatchQuantity) > 0)
     if (validLines.length === 0) {
-      setError('At least one positive dispatch quantity is required.')
+      setError('Enter a positive dispatch quantity for at least one item.')
       return
     }
 
-    // Validate quantities
     for (const line of items) {
-      const q = typeof line.dispatchQuantity === 'number' ? line.dispatchQuantity : 0
+      const q = parsedQty(line.dispatchQuantity)
       if (q < 0) {
         setError(`Dispatch quantity cannot be negative for ${line.itemName}.`)
         return
       }
       if (q > line.pendingQuantity) {
-        setError(`Dispatch quantity (${q}) cannot exceed pending quantity (${line.pendingQuantity}) for ${line.itemName}.`)
+        setError(
+          `Dispatch quantity (${q}) cannot exceed pending quantity (${line.pendingQuantity}) for ${line.itemName}.`
+        )
         return
       }
       if (postDirectly && q > line.onHandQuantity) {
-        setError(`Dispatch quantity (${q}) exceeds available stock (${line.onHandQuantity}) for ${line.itemName}.`)
+        setError(
+          `Dispatch quantity (${q}) exceeds available stock (${line.onHandQuantity}) for ${line.itemName}.`
+        )
         return
       }
     }
 
     setIsSubmitting(true)
     setError(null)
-
     try {
       const payload: CreateDispatchOrderPayload = {
         dispatchNumber: dispatchNumber.trim() || undefined,
@@ -278,7 +274,7 @@ export function CreateDispatchModal({
         items: items.map((it) => ({
           salesOrderItemId: it.salesOrderItemId,
           itemId: it.itemId,
-          dispatchQuantity: typeof it.dispatchQuantity === 'number' ? it.dispatchQuantity : 0,
+          dispatchQuantity: parsedQty(it.dispatchQuantity),
         })),
       }
 
@@ -295,143 +291,174 @@ export function CreateDispatchModal({
         if (postDirectly) {
           await dispatchService.postDispatchOrder(editingDispatch.id)
         }
+        toast.success(
+          postDirectly
+            ? `Dispatch ${editingDispatch.dispatchNumber} updated and posted`
+            : `Dispatch ${editingDispatch.dispatchNumber} updated`
+        )
       } else {
-        await dispatchService.createDispatchOrder(payload)
+        const created = await dispatchService.createDispatchOrder(payload)
+        toast.success(
+          postDirectly
+            ? `Dispatch ${created.dispatchNumber} posted`
+            : `Dispatch ${created.dispatchNumber} saved as draft`
+        )
       }
 
       onSuccess()
       onClose()
     } catch (err: unknown) {
-      console.error('Failed to save dispatch:', err)
       setError(err instanceof Error ? err.message : 'Failed to save dispatch order.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  const customerDisplay = preparedData?.customerName || selectedOrder?.customerName || '—'
+  const warehouseDisplay =
+    preparedData?.dispatchWarehouseName || selectedOrder?.warehouseName || '—'
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      className="!max-w-[760px] max-h-[92vh] overflow-y-auto p-5 sm:p-7"
+      className="!max-w-[820px] max-h-[90vh] overflow-y-auto p-5 sm:p-6"
     >
-      <div className="space-y-5">
-        {/* Header matching Screenshot 2 */}
-        <div className="flex items-start justify-between border-b border-border/80 pb-3.5">
+      <div className="space-y-4">
+        <div className="flex items-start justify-between border-b border-border/80 pb-3">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
-              Dispatch / Dispatch Orders / {editingDispatch ? editingDispatch.dispatchNumber : 'New'}
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              {editingDispatch
+                ? `Edit dispatch · ${editingDispatch.dispatchNumber}`
+                : 'Create dispatch'}
+            </h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Prepare outbound shipment quantities, destination address, and transport details.
             </p>
-            <div className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-success" />
-              <h2 className="text-xl font-bold tracking-tight text-foreground">
-                {editingDispatch ? `Edit Dispatch ${editingDispatch.dispatchNumber}` : 'Create Dispatch'}
-              </h2>
-            </div>
           </div>
-
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Close"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Error Alert */}
-        {error && (
-          <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <Alert variant="destructive">{error}</Alert>}
 
-        {/* Top Form Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div>
-            <label className="block font-medium text-foreground mb-1.5">Dispatch Number</label>
-            <input
-              type="text"
-              value={dispatchNumber}
-              disabled
-              className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground tabular-nums text-xs cursor-not-allowed"
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex min-h-14 flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2">
+              <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1.5">
+                Dispatch number
+              </span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="tabular-nums text-sm font-medium text-foreground">
+                  {dispatchNumber}
+                </span>
+                {!editingDispatch && (
+                  <span className="text-xs text-muted-foreground select-none">Auto</span>
+                )}
+              </div>
+            </div>
+
+            <DateField
+              label="Dispatch date *"
+              value={dispatchDate}
+              onChange={(e) => setDispatchDate(e.target.value)}
+              disabled={isSubmitting}
+            />
+
+            <div className="flex min-h-14 flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2">
+              <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1.5">
+                Dispatch warehouse
+              </span>
+              <span className="text-sm font-medium text-foreground truncate">
+                {warehouseDisplay}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2">
+              <Select
+                label="Sales order *"
+                value={selectedSalesOrderId}
+                onChange={handleSalesOrderChange}
+                disabled={
+                  isSubmitting ||
+                  !!editingDispatch ||
+                  (!!preselectedSalesOrder && salesOrders.length <= 1)
+                }
+                placeholder="Select confirmed sales order..."
+                options={salesOrders.map((so) => ({
+                  value: so.id,
+                  label: `${so.orderNumber} — ${so.customerName} (${
+                    so.status === 'PARTIALLY_DISPATCHED' ? 'Partially dispatched' : 'Confirmed'
+                  })`,
+                }))}
+              />
+            </div>
+
+            <div className="flex min-h-14 flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2">
+              <span className="text-xs font-medium text-muted-foreground select-none leading-none mb-1.5">
+                Customer
+              </span>
+              <span className="text-sm font-medium text-foreground truncate">
+                {customerDisplay}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Shipping address"
+              value={shippingAddress}
+              onChange={(e) => setShippingAddress(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Shipping destination address..."
+            />
+
+            <Input
+              label="Notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Optional dispatch instructions..."
             />
           </div>
+        </div>
 
-          <DateField
-            label="Dispatch Date *"
-            value={dispatchDate}
-            onChange={(e) => setDispatchDate(e.target.value)}
-            disabled={isSubmitting}
-          />
-
-          <Select
-            label="Sales Order *"
-            value={selectedSalesOrderId}
-            onChange={handleSalesOrderChange}
-            disabled={
-              isSubmitting ||
-              !!editingDispatch ||
-              (!!preselectedSalesOrder && salesOrders.length <= 1)
-            }
-            placeholder="Select confirmed Sales Order..."
-            options={salesOrders.map((so) => ({
-              value: so.id,
-              label: `${so.orderNumber} — ${so.customerName} (${so.status === 'PARTIALLY_DISPATCHED' ? 'Partially Dispatched' : 'Confirmed'})`,
-            }))}
-          />
-
-          <div>
-            <label className="block font-medium text-foreground mb-1.5">Customer</label>
-            <input
-              type="text"
-              value={preparedData?.customerName || selectedOrder?.customerName || '—'}
-              disabled
-              className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground text-xs cursor-not-allowed"
-            />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-foreground">Items to dispatch</h3>
+            {items.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleFillAvailable}
+                disabled={isSubmitting}
+              >
+                Fill available quantities
+              </Button>
+            )}
           </div>
-        </div>
 
-        {/* Dispatch Warehouse */}
-        <div className="text-xs">
-          <label className="block font-medium text-foreground mb-1.5">Dispatch Warehouse</label>
-          <input
-            type="text"
-            value={preparedData?.dispatchWarehouseName || selectedOrder?.warehouseName || '—'}
-            disabled
-            className="w-full px-3 py-2 rounded-md border border-border/80 bg-secondary/30 text-muted-foreground text-xs cursor-not-allowed"
-          />
-        </div>
-
-        {/* Shipping Address */}
-        <div className="text-xs">
-          <label className="block font-medium text-foreground mb-1.5">Shipping Address</label>
-          <textarea
-            rows={2}
-            value={shippingAddress}
-            onChange={(e) => setShippingAddress(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="Shipping destination address..."
-            className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors resize-none"
-          />
-        </div>
-
-        {/* Items to dispatch */}
-        <div className="space-y-2.5">
-          <h3 className="text-sm font-semibold text-foreground">Items to dispatch</h3>
-
-          <Table>
+          <div className="rounded-md border border-border/80 bg-card overflow-hidden">
+            <Table className="border-0 rounded-none" tableClassName="table-fixed">
               <THead>
                 <tr>
-                  <TH className="py-2.5">Item</TH>
-                  <TH className="py-2.5 text-right">Pending</TH>
-                  <TH className="py-2.5 text-right">On Hand</TH>
-                  <TH className="py-2.5 text-right w-36">Dispatch Qty</TH>
-                  <TH className="py-2.5">UOM</TH>
+                  <TH className="w-[42%]">Item</TH>
+                  <TH className="w-[14%] text-right">Pending</TH>
+                  <TH className="w-[14%] text-right">On hand</TH>
+                  <TH className="w-[20%] text-right">Dispatch qty</TH>
+                  <TH className="w-[10%] pl-4">UOM</TH>
                 </tr>
               </THead>
-              <TBody className="divide-y divide-border/60">
+              <TBody>
                 {isLoading ? (
                   <TR>
                     <TD colSpan={5} className="py-8 text-center text-muted-foreground">
@@ -440,150 +467,110 @@ export function CreateDispatchModal({
                   </TR>
                 ) : items.length > 0 ? (
                   items.map((line) => {
+                    const numQty = Number(line.dispatchQuantity)
                     const isExceeded =
-                      typeof line.dispatchQuantity === 'number' &&
-                      (line.dispatchQuantity > line.pendingQuantity || line.dispatchQuantity > line.onHandQuantity)
+                      line.dispatchQuantity !== '' &&
+                      Number.isFinite(numQty) &&
+                      (numQty > line.pendingQuantity || numQty > line.onHandQuantity)
 
                     return (
-                      <TR key={line.salesOrderItemId} className="hover:bg-secondary/15 transition-colors">
-                        <TD className="py-3 px-3.5 font-medium text-foreground">
-                          <p>{line.itemName}</p>
-                          <p className="text-xs text-ref text-muted-foreground">{line.itemCode}</p>
+                      <TR key={line.salesOrderItemId}>
+                        <TD>
+                          <p className="font-medium text-foreground truncate">{line.itemName}</p>
+                          <p className="text-ref text-muted-foreground">{line.itemCode}</p>
                         </TD>
-                        <TD className="py-3 px-3 text-right tabular-nums font-medium text-foreground">
+                        <TD className="text-right tabular-nums font-medium">
                           {formatQuantity(line.pendingQuantity)}
                         </TD>
-                        <TD className="py-3 px-3 text-right tabular-nums text-muted-foreground">
+                        <TD className="text-right tabular-nums text-muted-foreground">
                           {formatQuantity(line.onHandQuantity)}
                         </TD>
-                        <TD className="py-3 px-3.5 text-right">
+                        <TD className="text-right">
                           <input
                             type="number"
                             min="0"
                             max={line.pendingQuantity}
                             step="any"
                             value={line.dispatchQuantity}
-                            onChange={(e) => handleLineQtyChange(line.salesOrderItemId, e.target.value)}
+                            onChange={(e) =>
+                              handleLineQtyChange(line.salesOrderItemId, e.target.value)
+                            }
                             disabled={isSubmitting}
                             placeholder="0"
-                            className={`w-28 px-2.5 py-1.5 rounded-md border text-right tabular-nums text-xs focus:outline-hidden transition-colors ${
+                            className={cn(
+                              'h-9 w-full rounded-md border px-2.5 text-right text-sm tabular-nums focus:outline-none focus:ring-1',
                               isExceeded
-                                ? 'border-destructive bg-destructive/10 text-destructive'
-                                : 'border-border/80 bg-secondary/20 text-foreground focus:border-foreground'
-                            }`}
+                                ? 'border-destructive bg-destructive/10 text-destructive focus:ring-destructive'
+                                : 'border-border/80 bg-card text-foreground focus:border-foreground focus:ring-foreground'
+                            )}
                           />
                         </TD>
-                        <TD className="py-3 px-3 text-muted-foreground">{line.unitOfMeasure}</TD>
+                        <TD className="pl-4 text-xs text-muted-foreground uppercase">
+                          {line.unitOfMeasure}
+                        </TD>
                       </TR>
                     )
                   })
                 ) : (
                   <TR>
                     <TD colSpan={5} className="py-6 text-center text-muted-foreground">
-                      {selectedSalesOrderId ? 'No pending items found for this order.' : 'Select a Sales Order to load items.'}
+                      {selectedSalesOrderId
+                        ? 'No pending items found for this order.'
+                        : 'Select a sales order above to load pending items.'}
                     </TD>
                   </TR>
                 )}
               </TBody>
             </Table>
-
-          {items.length > 0 && (
-            <button
-              type="button"
-              onClick={handleFillAvailable}
-              disabled={isSubmitting}
-              className="w-full py-2 px-4 rounded-md border border-border/80 bg-secondary/30 hover:bg-secondary/60 text-xs font-medium text-foreground transition-colors cursor-pointer disabled:opacity-50"
-            >
-              Fill available quantities
-            </button>
-          )}
+          </div>
         </div>
 
-        {/* Transportation Details Section matching Screenshot 2 */}
-        <div className="space-y-2.5 pt-1">
-          <h3 className="text-sm font-semibold text-foreground">Transportation details</h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div>
-              <label className="block font-medium text-foreground mb-1.5">Transporter Name</label>
-              <input
-                type="text"
-                value={transporterName}
-                onChange={(e) => setTransporterName(e.target.value)}
-                disabled={isSubmitting}
-                placeholder="Optional"
-                className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block font-medium text-foreground mb-1.5">Vehicle Number</label>
-              <input
-                type="text"
-                value={vehicleNumber}
-                onChange={(e) => setVehicleNumber(e.target.value)}
-                disabled={isSubmitting}
-                placeholder="Optional"
-                className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors tabular-nums"
-              />
-            </div>
-          </div>
-
-          <div className="text-xs">
-            <label className="block font-medium text-foreground mb-1.5">Transport Reference / LR Number</label>
-            <input
-              type="text"
+        <div className="space-y-2">
+          <h3 className="text-xs font-semibold text-foreground">Transportation details</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Input
+              label="Transporter name"
+              value={transporterName}
+              onChange={(e) => setTransporterName(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Optional carrier"
+            />
+            <Input
+              label="Vehicle number"
+              value={vehicleNumber}
+              onChange={(e) => setVehicleNumber(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Optional vehicle"
+            />
+            <Input
+              label="LR / transport ref"
               value={transportReference}
               onChange={(e) => setTransportReference(e.target.value)}
               disabled={isSubmitting}
-              placeholder="Optional"
-              className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors tabular-nums"
+              placeholder="Optional reference"
             />
           </div>
         </div>
 
-        {/* Notes */}
-        <div className="text-xs">
-          <label className="block font-medium text-foreground mb-1.5">Notes</label>
-          <textarea
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            disabled={isSubmitting}
-            placeholder="Additional dispatch instructions..."
-            className="w-full px-3 py-2 rounded-md border border-border/80 bg-card text-foreground text-xs focus:outline-hidden focus:border-foreground transition-colors resize-none"
-          />
-        </div>
-
-        {/* Actions matching Screenshot 2 & 3 */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border/80">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="text-xs font-medium cursor-pointer"
-          >
+        <div className="flex items-center justify-end gap-2.5 border-t border-border/80 pt-4">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-
           <Button
+            type="button"
             variant="outline"
-            size="sm"
-            onClick={() => handleSubmit(false)}
+            onClick={() => void handleSubmit(false)}
             disabled={isSubmitting || items.length === 0}
-            className="text-xs font-medium cursor-pointer"
           >
-            {isSubmitting ? 'Saving...' : 'Save Draft'}
+            {isSubmitting ? 'Saving...' : 'Save draft'}
           </Button>
-
           <Button
-            size="sm"
-            onClick={() => handleSubmit(true)}
+            type="button"
+            variant="primary"
+            onClick={() => void handleSubmit(true)}
             disabled={isSubmitting || items.length === 0}
-            className="bg-brand hover:bg-brand-hover text-brand-foreground font-medium text-xs px-4 h-9 rounded-md cursor-pointer shadow-xs"
           >
-            {isSubmitting ? 'Posting...' : 'Post Dispatch'}
+            {isSubmitting ? 'Posting...' : 'Post dispatch'}
           </Button>
         </div>
       </div>

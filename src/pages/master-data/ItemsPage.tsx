@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import {
-  Search,
   Filter,
   MoreHorizontal,
+  Package,
   Power,
   ChevronLeft,
   ChevronRight,
@@ -12,11 +12,13 @@ import {
   Check,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
 import { Badge } from '../../components/ui/Badge'
-import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { Table, THead, TBody, TR, TH, TD, TableEmptyState } from '../../components/ui/Table'
 import { CreateItemModal } from './CreateItemModal'
 import { masterDataService } from '../../services/masterDataService'
+import { toast } from '../../lib/feedback'
 import type {
   Item,
   ItemType,
@@ -145,7 +147,7 @@ export function ItemsPage({
       setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)))
       loadSummary()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to update item status')
+      toast.error(err instanceof Error ? err.message : 'Failed to update item status')
     } finally {
       setActiveMenuId(null)
     }
@@ -223,88 +225,35 @@ export function ItemsPage({
         />
       </KpiCardGrid>
 
-      {/* 3. Toolbar: Active filter chips on Left, Right-aligned Search + Filter Dropdown + Export */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-        {/* Left: Active filter pills or item count */}
+      {/* 3. Toolbar: Search + Filter on Left, Export on Right */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
-          {selectedTypeName && (
-            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
-              <span className="text-muted-foreground text-xs font-normal">Type:</span>
-              <span className="font-medium">{selectedTypeName}</span>
-              <button
-                type="button"
-                onClick={() => setSelectedTypeFilter('all')}
-                className="p-0.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                title="Clear type filter"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </span>
-          )}
-
-          {selectedStatusFilter !== 'all' && (
-            <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
-              <span className="text-muted-foreground text-xs font-normal">Status:</span>
-              <span className="font-medium">
-                {selectedStatusFilter === 'active' ? 'Active' : 'Inactive'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelectedStatusFilter('all')}
-                className="p-0.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                title="Clear status filter"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </span>
-          )}
-
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground underline decoration-muted-foreground/40 underline-offset-2 ml-1 cursor-pointer"
-            >
-              Reset all
-            </button>
-          )}
-        </div>
-
-        {/* Right side controls: Search bar, Filter Dropdown button, Export */}
-        <div className="flex items-center gap-2.5 ml-auto">
-          {/* Search bar */}
-          <div className="relative w-64 sm:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search name or code..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search name or code..."
+          />
 
           {/* Filter Dropdown Button & Popover */}
           <div className="relative" ref={filterRef}>
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`h-10 w-10 flex items-center justify-center rounded-md border transition-colors cursor-pointer relative ${
+              className={`h-9 w-9 flex items-center justify-center rounded-md border transition-colors cursor-pointer relative ${
                 isFilterOpen || hasActiveFilters
-                  ? 'border-accent bg-brand/15 text-brand-deep'
-                  : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'
+                  ? 'border-foreground bg-secondary text-foreground'
+                  : 'border-border bg-card text-muted-foreground hover:text-foreground'
               }`}
-              title="Filter by Type or Status"
+              title="Filter by type or status"
             >
               <Filter className="h-4 w-4" />
               {hasActiveFilters && (
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-brand-deep" />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-md bg-foreground" />
               )}
             </button>
 
-            {/* Filter Menu anchored below button */}
             {isFilterOpen && (
-              <div className="absolute right-0 top-full mt-2 z-30 w-72 rounded-md border border-border bg-card p-3.5 shadow-panel animate-in fade-in-50 zoom-in-95 duration-150">
+              <div className="absolute left-0 top-full mt-2 z-30 w-72 rounded-md border border-border bg-card p-3.5 shadow-panel animate-in fade-in-50 zoom-in-95 duration-150">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Filter by
@@ -404,31 +353,71 @@ export function ItemsPage({
             )}
           </div>
 
-          {/* Export button */}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            disabled={items.length === 0}
-            className="h-10 px-4 gap-2 rounded-md border-input text-sm font-medium text-foreground hover:bg-secondary cursor-pointer"
-          >
-            <Download className="h-4 w-4" />
-            <span>Export</span>
-          </Button>
+          {selectedTypeName && (
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground">
+              <span className="text-muted-foreground">Type:</span>
+              <span className="font-medium">{selectedTypeName}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedTypeFilter('all')}
+                className="p-0.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Clear type filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+
+          {selectedStatusFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground">
+              <span className="text-muted-foreground">Status:</span>
+              <span className="font-medium">
+                {selectedStatusFilter === 'active' ? 'Active' : 'Inactive'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedStatusFilter('all')}
+                className="p-0.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Clear status filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Reset
+            </button>
+          )}
         </div>
+
+        <button
+          type="button"
+          onClick={handleExport}
+          disabled={items.length === 0}
+          className="ml-auto flex h-9 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+        >
+          <Download className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="hidden sm:inline">Export</span>
+        </button>
       </div>
 
       {/* 4. Clean Enterprise Data Table */}
-      <Table>
+      <Table tableClassName="table-fixed">
         <THead>
           <tr>
-            <TH>Item code</TH>
-            <TH>Item name</TH>
-            <TH>Type</TH>
-            <TH>UOM</TH>
-            <TH>Status</TH>
-            <TH className="text-right w-12" />
+            <TH className="w-[18%]">Item code</TH>
+            <TH className="w-[34%]">Item name</TH>
+            <TH className="w-[20%]">Type</TH>
+            <TH className="w-[10%]">UOM</TH>
+            <TH className="w-[12%]">Status</TH>
+            <TH className="w-[6%] text-right" />
           </tr>
         </THead>
         <TBody>
@@ -446,15 +435,16 @@ export function ItemsPage({
               </TR>
             ) : items.length === 0 ? (
               <TR>
-                <TD colSpan={6} className="py-16 text-center font-normal">
-                  <p className="text-base font-semibold text-foreground">
-                    No items found
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                    {search || selectedTypeFilter !== 'all' || selectedStatusFilter !== 'all'
-                      ? 'Try clearing your filters or changing your search terms.'
-                      : 'Your organization item master is empty. Click "+ Add item" above to create your first item.'}
-                  </p>
+                <TD colSpan={6} className="p-0">
+                  <TableEmptyState
+                    icon={<Package className="h-5 w-5" />}
+                    title="No items found"
+                    description={
+                      search || selectedTypeFilter !== 'all' || selectedStatusFilter !== 'all'
+                        ? 'Try clearing your filters or changing your search terms.'
+                        : 'Create your first item using "+ Add item" above.'
+                    }
+                  />
                 </TD>
               </TR>
             ) : (

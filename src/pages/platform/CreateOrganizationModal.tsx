@@ -218,7 +218,6 @@ export function CreateOrganizationModal({
             type="submit"
             variant="primary"
             isLoading={isLoading}
-            className="bg-brand-deep text-brand-foreground hover:opacity-90"
           >
             Create Organization
           </Button>

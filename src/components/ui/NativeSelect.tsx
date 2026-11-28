@@ -40,7 +40,10 @@ export const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
             id={selectId}
             disabled={disabled}
             className={cn(
-              'h-10 w-full rounded-md border border-border/80 bg-secondary pl-3.5 pr-9 text-sm font-medium text-foreground',
+              'h-9 w-full rounded-md border border-border bg-card pl-3 pr-8 text-sm [&_option]:text-foreground',
+              props.value === ''
+                ? 'font-normal text-muted-foreground/60'
+                : 'font-medium text-foreground',
               'focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground',
               'cursor-pointer appearance-none disabled:opacity-50 disabled:cursor-not-allowed',
               error && 'border-destructive ring-1 ring-destructive'

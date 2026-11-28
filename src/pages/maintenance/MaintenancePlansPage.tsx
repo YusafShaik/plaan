@@ -5,11 +5,10 @@ import {
   ChevronRight,
   Edit,
   Eye,
-  Plus,
   RotateCcw,
-  Search,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD, RefLink } from '../../components/ui/Table'
 import { NativeSelect } from '../../components/ui/NativeSelect'
@@ -42,7 +41,15 @@ function formatDueDate(value: string) {
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
 }
 
-export function MaintenancePlansPage() {
+export interface MaintenancePlansPageProps {
+  isModalOpen?: boolean
+  setIsModalOpen?: (open: boolean) => void
+}
+
+export function MaintenancePlansPage({
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: setControlledModalOpen,
+}: MaintenancePlansPageProps = {}) {
   const [plans, setPlans] = useState<MaintenancePlan[]>([])
   const [pageData, setPageData] = useState<PageResponse<MaintenancePlan> | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
@@ -53,7 +60,10 @@ export function MaintenancePlansPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [internalModalOpen, setInternalModalOpen] = useState(false)
+  const isCreateOpen =
+    controlledModalOpen !== undefined ? controlledModalOpen : internalModalOpen
+  const setIsCreateOpen = setControlledModalOpen || setInternalModalOpen
   const [planToEdit, setPlanToEdit] = useState<MaintenancePlan | null>(null)
   const [selected, setSelected] = useState<MaintenancePlan | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
@@ -98,18 +108,13 @@ export function MaintenancePlansPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="relative w-64 sm:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search plans or equipment..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search plans or equipment..."
+          />
           <NativeSelect
             dense
             className="w-auto min-w-[9rem]"
@@ -118,9 +123,9 @@ export function MaintenancePlansPage() {
               setScheduleFilter(e.target.value as MaintenanceScheduleStatus | '')
             }
           >
-            <option value="">All Schedules</option>
+            <option value="">All schedules</option>
             <option value="OVERDUE">Overdue</option>
-            <option value="DUE_TODAY">Due Today</option>
+            <option value="DUE_TODAY">Due today</option>
             <option value="UPCOMING">Upcoming</option>
           </NativeSelect>
           <NativeSelect
@@ -129,7 +134,7 @@ export function MaintenancePlansPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as MaintenancePlanStatus | '')}
           >
-            <option value="">All Plans</option>
+            <option value="">All plans</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
           </NativeSelect>
@@ -148,17 +153,6 @@ export function MaintenancePlansPage() {
             </button>
           )}
         </div>
-        <Button
-          type="button"
-          variant="primary"
-          onClick={() => {
-            setPlanToEdit(null)
-            setIsCreateOpen(true)
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          New Plan
-        </Button>
       </div>
 
       {error && <Alert variant="destructive">{error}</Alert>}

@@ -7,7 +7,6 @@ import {
   Check,
   ChevronDown,
   History,
-  CheckCircle2,
   PackageCheck,
   AlertCircle,
   Eye,
@@ -26,6 +25,8 @@ import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
+import { confirmAction, toast } from '../../lib/feedback'
+import { formatShortDate } from '../../lib/format'
 import { OpeningStockDetailsModal } from './OpeningStockDetailsModal'
 import type { Warehouse, Item } from '../../types/masterData'
 import type { OpeningStock, OpeningStockItemPayload } from '../../types/inventory'
@@ -305,22 +306,19 @@ export function EnterOpeningStockModal({
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         postImmediately
-          ? 'Opening stock posted successfully! Inventory has been updated.'
-          : 'Draft opening stock saved successfully.'
+          ? 'Opening stock posted and inventory updated.'
+          : 'Draft opening stock saved.'
       )
       loadHistory()
       onSuccess()
-
-      setTimeout(() => {
-        resetForm()
-        if (postImmediately) {
-          onClose()
-        } else {
-          setActiveTab('history')
-        }
-      }, 1000)
+      resetForm()
+      if (postImmediately) {
+        onClose()
+      } else {
+        setActiveTab('history')
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving opening stock.')
     } finally {
@@ -352,13 +350,18 @@ export function EnterOpeningStockModal({
 
   // Cancel a draft
   const handleCancelDraft = async (id: number) => {
-    if (!confirm('Are you sure you want to cancel this draft opening stock?')) return
+    const ok = await confirmAction({
+      title: 'Cancel draft opening stock?',
+      description: 'This draft opening stock entry will be cancelled.',
+      confirmLabel: 'Cancel draft',
+    })
+    if (!ok) return
     try {
       await inventoryService.cancelOpeningStock(id)
       loadHistory()
       onSuccess()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to cancel draft')
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel draft')
     }
   }
 
@@ -386,30 +389,36 @@ export function EnterOpeningStockModal({
       .catch(console.error)
   }
 
+  const handleClose = () => {
+    if (isSubmitting) return
+    resetForm()
+    onClose()
+  }
+
   if (!isOpen) return null
 
   return (
     <>
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={handleClose}
         className="!max-w-[720px] max-h-[92vh] overflow-y-auto p-5 sm:p-7"
       >
         <div className="space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-border/80">
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Inventory / Opening Stock / {editingDraftId ? 'Edit Draft' : 'New'}
+              <p className="text-xs font-medium text-muted-foreground">
+                Inventory / Opening stock / {editingDraftId ? 'Edit draft' : 'New'}
               </p>
-              <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
-                {editingDraftId ? `Edit Opening Stock (${openingStockNumber})` : 'Enter Opening Stock'}
+              <h2 className="text-xl font-semibold tracking-tight text-foreground mt-0.5">
+                {editingDraftId ? `Edit opening stock (${openingStockNumber})` : 'Enter opening stock'}
               </h2>
             </div>
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
@@ -426,7 +435,7 @@ export function EnterOpeningStockModal({
 
           {successMessage && (
             <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-              <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+              <PackageCheck className="h-4 w-4 shrink-0 mt-0.5" />
               <p className="flex-1 font-medium">{successMessage}</p>
             </div>
           )}
@@ -683,7 +692,7 @@ export function EnterOpeningStockModal({
                     className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    <span>Add Item</span>
+                    <span>Add item</span>
                   </button>
                 </div>
               </div>
@@ -732,20 +741,19 @@ export function EnterOpeningStockModal({
                     size="sm"
                     disabled={isSubmitting}
                     onClick={() => handleSubmit(false)}
-                    className="text-xs font-medium cursor-pointer rounded-md px-3.5"
                   >
-                    Save Draft
+                    Save draft
                   </Button>
 
                   <Button
                     type="button"
+                    variant="primary"
                     size="sm"
                     disabled={isSubmitting}
                     onClick={() => handleSubmit(true)}
-                    className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
                   >
-                    <PackageCheck className="h-4 w-4" />
-                    <span>{isSubmitting ? 'Posting...' : 'Post Opening Stock'}</span>
+                    <PackageCheck className="h-3.5 w-3.5" />
+                    <span>{isSubmitting ? 'Posting...' : 'Post opening stock'}</span>
                   </Button>
                 </div>
               </div>
@@ -797,8 +805,8 @@ export function EnterOpeningStockModal({
                           <TD className="py-2.5 px-3.5 tabular-nums font-medium text-foreground">
                             {stock.openingStockNumber}
                           </TD>
-                          <TD className="py-2.5 px-3.5 text-muted-foreground">
-                            {stock.openingDate}
+                          <TD className="py-2.5 px-3.5 tabular-nums text-muted-foreground">
+                            {formatShortDate(stock.openingDate)}
                           </TD>
                           <TD className="py-2.5 px-3.5 text-foreground">
                             {stock.warehouseName}

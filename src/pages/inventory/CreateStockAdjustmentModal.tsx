@@ -8,7 +8,6 @@ import {
   ChevronDown,
   PackageCheck,
   AlertCircle,
-  CheckCircle2,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Modal } from '../../components/ui/Modal'
@@ -23,6 +22,8 @@ import {
 } from '../../components/ui/fieldStyles'
 import { inventoryService } from '../../services/inventoryService'
 import { masterDataService } from '../../services/masterDataService'
+import { toast } from '../../lib/feedback'
+import { formatQuantity } from '../../lib/format'
 import type { Warehouse, Item } from '../../types/masterData'
 import type {
   StockAdjustment,
@@ -41,7 +42,7 @@ interface AdjustmentItemRowState {
   id: string
   itemId: number | null
   systemQuantity: number | ''
-  physicalQuantity: number | ''
+  physicalQuantity: string | number
   difference: number | ''
   unitOfMeasure: string
   isDropdownOpen: boolean
@@ -97,7 +98,32 @@ export function CreateStockAdjustmentModal({
   // Status & errors
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const resetForm = () => {
+    setAdjustmentDate(new Date().toISOString().split('T')[0])
+    setWarehouseId(null)
+    setReason('Physical count')
+    setNotes('')
+    setError(null)
+    setRows([
+      {
+        id: `row-${Date.now()}`,
+        itemId: null,
+        systemQuantity: '',
+        physicalQuantity: '',
+        difference: '',
+        unitOfMeasure: '',
+        isDropdownOpen: false,
+        searchQuery: '',
+      },
+    ])
+  }
+
+  const handleClose = () => {
+    if (isSubmitting) return
+    resetForm()
+    onClose()
+  }
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -118,6 +144,7 @@ export function CreateStockAdjustmentModal({
     if (!isOpen) return
 
     if (!initialDraft) {
+      Promise.resolve().then(resetForm)
       inventoryService
         .getNextAdjustmentNumber()
         .then((res) => setAdjustmentNumber(res.nextCode))
@@ -242,15 +269,16 @@ export function CreateStockAdjustmentModal({
   }
 
   const handlePhysicalQtyChange = (rowId: string, value: string) => {
-    const qty = value === '' ? '' : Math.max(0, parseFloat(value) || 0)
+    if (value !== '' && Number(value) < 0) return
+    const parsed = parseFloat(value)
     setRows((prev) =>
       prev.map((r) => {
         if (r.id === rowId) {
           const sys = typeof r.systemQuantity === 'number' ? r.systemQuantity : 0
-          const diff = qty === '' ? '' : Number(qty) - sys
+          const diff = value === '' || Number.isNaN(parsed) ? '' : parsed - sys
           return {
             ...r,
-            physicalQuantity: qty,
+            physicalQuantity: value,
             difference: diff,
           }
         }
@@ -359,7 +387,6 @@ export function CreateStockAdjustmentModal({
     try {
       setIsSubmitting(true)
       setError(null)
-      setSuccessMessage(null)
 
       const payloadItems: StockAdjustmentItemPayload[] = validRows.map((r) => ({
         itemId: r.itemId!,
@@ -390,16 +417,14 @@ export function CreateStockAdjustmentModal({
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         postImmediately
-          ? 'Stock adjustment posted successfully! Inventory has been updated.'
-          : 'Draft stock adjustment saved successfully.'
+          ? 'Stock adjustment posted and inventory updated.'
+          : 'Draft stock adjustment saved.'
       )
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 1000)
+      resetForm()
+      onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving stock adjustment.')
     } finally {
@@ -412,24 +437,23 @@ export function CreateStockAdjustmentModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       className="!max-w-[740px] max-h-[92vh] overflow-y-auto p-5 sm:p-7"
     >
       <div className="space-y-4">
-        {/* Header matching Stock Transfer */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Inventory / Stock Adjustments / {initialDraft ? 'Edit Draft' : 'New'}
+            <p className="text-xs font-medium text-muted-foreground">
+              Inventory / Stock adjustments / {initialDraft ? 'Edit draft' : 'New'}
             </p>
-            <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
-              {initialDraft ? `Edit Stock Adjustment (${adjustmentNumber})` : 'Create Stock Adjustment'}
+            <h2 className="text-xl font-semibold tracking-tight text-foreground mt-0.5">
+              {initialDraft ? `Edit stock adjustment (${adjustmentNumber})` : 'Create stock adjustment'}
             </h2>
           </div>
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
@@ -441,13 +465,6 @@ export function CreateStockAdjustmentModal({
           <div className="flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p className="flex-1 font-medium">{error}</p>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
           </div>
         )}
 
@@ -707,9 +724,9 @@ export function CreateStockAdjustmentModal({
                       {diff === null ? (
                         <span className="text-muted-foreground">—</span>
                       ) : diff > 0 ? (
-                        <span className="text-success">+{diff}</span>
+                        <span className="text-success">+{formatQuantity(diff)}</span>
                       ) : diff < 0 ? (
-                        <span className="text-destructive">{diff}</span>
+                        <span className="text-destructive">{formatQuantity(diff)}</span>
                       ) : (
                         <span className="text-muted-foreground">0</span>
                       )}
@@ -739,7 +756,7 @@ export function CreateStockAdjustmentModal({
                 className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-secondary/40 px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Add Item</span>
+                <span>Add item</span>
               </button>
             </div>
           </div>
@@ -769,7 +786,6 @@ export function CreateStockAdjustmentModal({
             />
           </div>
 
-          {/* Bottom Actions matching Stock Transfer */}
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
             <Button
               type="button"
@@ -777,20 +793,19 @@ export function CreateStockAdjustmentModal({
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
-              Save Draft
+              Save draft
             </Button>
 
             <Button
               type="button"
+              variant="primary"
               size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
             >
-              <PackageCheck className="h-4 w-4" />
-              <span>{isSubmitting ? 'Posting...' : 'Post Adjustment'}</span>
+              <PackageCheck className="h-3.5 w-3.5" />
+              <span>{isSubmitting ? 'Posting...' : 'Post adjustment'}</span>
             </Button>
           </div>
         </div>

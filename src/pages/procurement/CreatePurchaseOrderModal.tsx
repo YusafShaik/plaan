@@ -17,6 +17,7 @@ import { CreateItemModal } from '../master-data/CreateItemModal'
 import { masterDataService } from '../../services/masterDataService'
 import { procurementService } from '../../services/procurementService'
 import { useAuth } from '../../hooks/useAuth'
+import { formatMoney, getCurrencySymbol } from '../../lib/format'
 import type { Supplier, Warehouse, Item, ItemType, CreateItemPayload } from '../../types/masterData'
 import type { CreatePurchaseOrderPayload, PurchaseOrderStatus } from '../../types/procurement'
 
@@ -39,12 +40,8 @@ export function CreatePurchaseOrderModal({
   onSuccess,
 }: CreatePurchaseOrderModalProps) {
   const { organization } = useAuth()
-  const currencySymbol =
-    organization?.baseCurrency === 'USD'
-      ? '$'
-      : organization?.baseCurrency === 'EUR'
-      ? '€'
-      : '₹'
+  const currency = organization?.baseCurrency || 'INR'
+  const currencySymbol = getCurrencySymbol(currency)
 
   // Master data collections
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -69,6 +66,22 @@ export function CreatePurchaseOrderModal({
   const [isItemModalOpen, setIsItemModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const resetForm = () => {
+    setSupplierId('')
+    setWarehouseId('')
+    setOrderDate(new Date().toISOString().split('T')[0])
+    setExpectedDeliveryDate('')
+    setNotes('')
+    setOrderItems([{ rowId: `row-${Date.now()}`, itemId: '', quantity: '', unitPrice: '' }])
+    setError(null)
+  }
+
+  const handleClose = () => {
+    if (isLoading) return
+    resetForm()
+    onClose()
+  }
 
   // Fetch initial data when modal opens
   useEffect(() => {
@@ -255,6 +268,7 @@ export function CreatePurchaseOrderModal({
       }
 
       await procurementService.createPurchaseOrder(payload)
+      resetForm()
       onSuccess()
       onClose()
     } catch (err: unknown) {
@@ -264,10 +278,12 @@ export function CreatePurchaseOrderModal({
     }
   }
 
+  const selectedRowsCount = orderItems.filter((r) => r.itemId !== '').length
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       className="!max-w-[760px] max-h-[90vh] overflow-y-auto p-5 sm:p-6"
     >
       <form onSubmit={(e) => handleSubmit(e, 'DRAFT')} className="space-y-4">
@@ -275,7 +291,7 @@ export function CreatePurchaseOrderModal({
         <div className="flex items-center justify-between pb-3 border-b border-border/70">
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
-              Create Purchase Order
+              Create purchase order
             </h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Generate a purchase order for suppliers and inventory intake.
@@ -283,8 +299,8 @@ export function CreatePurchaseOrderModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            onClick={handleClose}
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
             title="Close"
           >
             <X className="h-4 w-4" />
@@ -296,8 +312,8 @@ export function CreatePurchaseOrderModal({
         {/* Section 1: Order details */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Order Details
+            <span className="text-xs font-semibold text-muted-foreground">
+              Order details
             </span>
           </div>
 
@@ -313,7 +329,6 @@ export function CreatePurchaseOrderModal({
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               }
-              hint="Unique within the organization. Can be auto-generated."
             />
 
             <DateField
@@ -354,15 +369,15 @@ export function CreatePurchaseOrderModal({
               disabled={isLoading}
             />
 
-            <div className="group relative flex min-h-14 w-full flex-col justify-center rounded-md border border-border/80 bg-secondary px-3.5 py-2 select-none">
+            <div className="group relative flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
               <span className="text-xs font-medium text-muted-foreground leading-none">
                 Currency
               </span>
               <div className="mt-1 flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">
+                <span className="text-sm font-medium text-muted-foreground">
                   {organization?.baseCurrency || 'INR'} ({currencySymbol})
                 </span>
-                <span className="text-xs text-muted-foreground">Org default</span>
+                <span className="text-xs text-muted-foreground">Locked · Org default</span>
               </div>
             </div>
           </div>
@@ -371,8 +386,8 @@ export function CreatePurchaseOrderModal({
         {/* Section 2: Order items */}
         <div className="space-y-2 pt-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Order Items
+            <span className="text-xs font-semibold text-muted-foreground">
+              Order items
             </span>
             <button
               type="button"
@@ -380,17 +395,17 @@ export function CreatePurchaseOrderModal({
               className="text-xs font-semibold text-foreground hover:underline cursor-pointer flex items-center gap-1 py-1 px-2 rounded-md hover:bg-secondary transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>Create new item in Master</span>
+              <span>New item</span>
             </button>
           </div>
 
-          <div className="rounded-md border border-border/70 overflow-hidden bg-card">
-            <Table tableClassName="table-fixed">
+          <div className="rounded-md border border-border/80 overflow-hidden bg-card">
+            <Table className="border-0 rounded-none" tableClassName="table-fixed">
               <THead>
                 <tr>
                   <TH className="py-2.5 w-[42%]">Item</TH>
-                    <TH className="py-2.5 w-[18%]">Qty</TH>
-                    <TH className="py-2.5 w-[18%]">Rate ({currencySymbol})</TH>
+                    <TH className="py-2.5 w-[18%] text-right">Qty</TH>
+                    <TH className="py-2.5 w-[18%] text-right">Rate ({currencySymbol})</TH>
                     <TH className="py-2.5 w-[16%] text-right">Amount</TH>
                     <TH className="py-2.5 w-[6%] text-center"></TH>
                   </tr>
@@ -459,7 +474,7 @@ export function CreatePurchaseOrderModal({
                             value={row.quantity}
                             onChange={(e) => handleRowChange(row.rowId, 'quantity', e.target.value)}
                             disabled={isLoading}
-                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs tabular-nums font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                            className="h-9 w-full rounded-md border border-border bg-card px-2.5 py-1 text-right text-xs tabular-nums font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                           />
                         </TD>
 
@@ -473,7 +488,7 @@ export function CreatePurchaseOrderModal({
                             value={row.unitPrice}
                             onChange={(e) => handleRowChange(row.rowId, 'unitPrice', e.target.value)}
                             disabled={isLoading}
-                            className="h-9 w-full rounded-md border border-border/70 bg-secondary dark:bg-secondary px-2.5 py-1 text-xs tabular-nums font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
+                            className="h-9 w-full rounded-md border border-border bg-card px-2.5 py-1 text-right text-xs tabular-nums font-medium text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
                           />
                         </TD>
 
@@ -505,7 +520,7 @@ export function CreatePurchaseOrderModal({
                 </TBody>
             </Table>
 
-            <div className="p-2.5 border-t border-border/60 bg-surface-muted/50 dark:bg-secondary/20 flex items-center justify-between">
+            <div className="p-2.5 border-t border-border/60 bg-surface-subtle dark:bg-secondary/20 flex items-center justify-between">
               <Button
                 type="button"
                 variant="outline"
@@ -515,25 +530,25 @@ export function CreatePurchaseOrderModal({
                 title={
                   !canAddMoreItems
                     ? 'All available items are already added to this order'
-                    : 'Add Item'
+                    : 'Add item row'
                 }
               >
                 <Plus className="h-3.5 w-3.5" />
-                Add Item
+                Add item
               </Button>
-              <span className="text-xs text-muted-foreground">
-                {orderItems.length} {orderItems.length === 1 ? 'line item' : 'line items'}
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {selectedRowsCount} {selectedRowsCount === 1 ? 'item' : 'items'} selected
               </span>
             </div>
           </div>
         </div>
 
         {/* Section 3: Notes & Total */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
           {/* Notes */}
-          <div className="group relative flex min-h-14 w-full flex-col rounded-md border border-border/80 bg-secondary px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+          <div className="sm:col-span-7 group relative flex min-h-14 w-full flex-col rounded-md border border-border bg-card px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
             <span className="text-xs font-medium text-muted-foreground leading-none">
-              Notes & Instructions
+              Notes &amp; instructions
             </span>
             <textarea
               rows={2}
@@ -545,19 +560,15 @@ export function CreatePurchaseOrderModal({
             />
           </div>
 
-          {/* Order Total Box */}
-          <div className="rounded-md border border-border/70 bg-surface-subtle dark:bg-secondary/40 p-3.5 flex flex-col justify-between">
+          {/* Order Total Summary */}
+          <div className="sm:col-span-5 rounded-md border border-border/80 bg-surface-subtle dark:bg-secondary/30 p-3.5 flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-              <span>Order Total</span>
-              <span>{orderItems.filter((r) => r.itemId).length} items</span>
+              <span>Order total</span>
+              <span>{currency}</span>
             </div>
             <div className="text-right mt-1">
-              <span className="text-2xl font-medium tabular-nums tracking-tight text-foreground">
-                {currencySymbol}
-                {orderTotal.toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+              <span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                {formatMoney(orderTotal, currency)}
               </span>
             </div>
           </div>
@@ -565,7 +576,7 @@ export function CreatePurchaseOrderModal({
 
         {/* Bottom Actions */}
         <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/70">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>
+          <Button type="button" variant="ghost" onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
           <Button
@@ -574,7 +585,7 @@ export function CreatePurchaseOrderModal({
             disabled={isLoading}
             onClick={(e) => handleSubmit(e, 'DRAFT')}
           >
-            Save Draft
+            Save draft
           </Button>
           <Button
             type="button"
@@ -582,7 +593,7 @@ export function CreatePurchaseOrderModal({
             disabled={isLoading}
             onClick={(e) => handleSubmit(e, 'ISSUED')}
           >
-            Issue Purchase Order
+            Issue purchase order
           </Button>
         </div>
       </form>

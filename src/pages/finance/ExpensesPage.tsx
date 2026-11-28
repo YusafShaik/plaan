@@ -1,19 +1,27 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Search,
-  Plus,
-  RotateCcw,
-  Receipt,
-  Eye,
+  CheckCircle2,
   Edit,
+  Eye,
+  MoreHorizontal,
+  Receipt,
+  RefreshCw,
+  RotateCcw,
   Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Settings2,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { Badge } from '../../components/ui/Badge'
-import { Table, THead, TBody, TR, TH, TD, RefLink } from '../../components/ui/Table'
+import {
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  TableEmptyState,
+  TablePagination,
+} from '../../components/ui/Table'
 import { NativeSelect } from '../../components/ui/NativeSelect'
 import { Alert } from '../../components/ui/Alert'
 import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
@@ -21,6 +29,11 @@ import { CreateExpenseModal } from './CreateExpenseModal'
 import { ExpenseDetailsModal } from './ExpenseDetailsModal'
 import { ManageExpenseCategoriesModal } from './ManageExpenseCategoriesModal'
 import { financeService } from '../../services/financeService'
+import { useAuth } from '../../hooks/useAuth'
+import { formatMoney, formatShortDate } from '../../lib/format'
+import { confirmAction, toast } from '../../lib/feedback'
+import { cn } from '../../lib/cn'
+import { PAYMENT_METHOD_LABELS, POST_STATUS_FILTERS } from './financeHelpers'
 import type {
   Expense,
   ExpenseStatus,
@@ -30,24 +43,30 @@ import type {
 } from '../../types/finance'
 import type { PageResponse } from '../../types/masterData'
 
-const METHOD_LABEL: Record<PaymentMethod, string> = {
-  CASH: 'Cash',
-  BANK_TRANSFER: 'Bank Transfer',
-  UPI: 'UPI',
-  CHEQUE: 'Cheque',
-  OTHER: 'Other',
-}
-
 function monthBounds() {
   const now = new Date()
   const from = new Date(now.getFullYear(), now.getMonth(), 1)
-  const to = now
   const fmt = (d: Date) => d.toISOString().split('T')[0]
-  return { from: fmt(from), to: fmt(to) }
+  return { from: fmt(from), to: fmt(now) }
 }
 
-export function ExpensesPage() {
+export interface ExpensesPageProps {
+  isModalOpen?: boolean
+  setIsModalOpen?: (open: boolean) => void
+  isManageOpen?: boolean
+  setIsManageOpen?: (open: boolean) => void
+}
+
+export function ExpensesPage({
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: setControlledModalOpen,
+  isManageOpen: controlledManageOpen,
+  setIsManageOpen: setControlledManageOpen,
+}: ExpensesPageProps = {}) {
+  const { organization } = useAuth()
+  const currency = organization?.baseCurrency
   const defaults = monthBounds()
+
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [pageData, setPageData] = useState<PageResponse<Expense> | null>(null)
   const [overview, setOverview] = useState<ExpenseOverview | null>(null)
@@ -62,12 +81,20 @@ export function ExpensesPage() {
   const [toDate, setToDate] = useState(defaults.to)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [processingId, setProcessingId] = useState<number | null>(null)
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [internalCreateOpen, setInternalCreateOpen] = useState(false)
+  const isCreateOpen =
+    controlledModalOpen !== undefined ? controlledModalOpen : internalCreateOpen
+  const setIsCreateOpen = setControlledModalOpen || setInternalCreateOpen
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
-  const [isManageOpen, setIsManageOpen] = useState(false)
+  const [internalManageOpen, setInternalManageOpen] = useState(false)
+  const isManageOpen =
+    controlledManageOpen !== undefined ? controlledManageOpen : internalManageOpen
+  const setIsManageOpen = setControlledManageOpen || setInternalManageOpen
 
   const loadOverview = useCallback(() => {
     financeService
@@ -81,7 +108,6 @@ export function ExpensesPage() {
 
   const loadExpenses = useCallback(
     (page = 0) => {
-      setIsLoading(true)
       setError(null)
       financeService
         .getExpenses({
@@ -116,159 +142,94 @@ export function ExpensesPage() {
     const timer = setTimeout(() => {
       loadExpenses(0)
       loadOverview()
-    }, 250)
+    }, 200)
     return () => clearTimeout(timer)
   }, [loadExpenses, loadOverview])
 
-  const formatCurrency = (val: number | undefined) => {
-    if (val === undefined || val === null) return '₹0'
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 2,
-    }).format(val)
-  }
-
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Delete this draft expense?')) return
-    try {
-      await financeService.deleteExpense(id)
-      loadExpenses(currentPage)
-      loadOverview()
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to delete expense')
-    }
-  }
-
-  const handleOpenDetails = (expense: Expense) => {
-    setSelectedExpense(expense)
-    setIsDetailsOpen(true)
-  }
+  useEffect(() => {
+    if (openMenuId === null) return
+    const handleOutside = () => setOpenMenuId(null)
+    window.addEventListener('click', handleOutside)
+    return () => window.removeEventListener('click', handleOutside)
+  }, [openMenuId])
 
   const handleRefresh = () => {
     loadExpenses(currentPage)
     loadOverview()
   }
 
-  const hasFilters =
-    search || statusFilter || categoryFilter !== '' || methodFilter || fromDate !== defaults.from || toDate !== defaults.to
+  const handlePost = async (expense: Expense) => {
+    setOpenMenuId(null)
+    setProcessingId(expense.id)
+    try {
+      await financeService.postExpense(expense.id)
+      toast.success(`Expense ${expense.expenseNumber} posted`)
+      handleRefresh()
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to post expense.')
+    } finally {
+      setProcessingId(null)
+    }
+  }
 
-  const maxCategoryAmount =
-    overview?.byCategory.reduce((m, c) => Math.max(m, Number(c.amount) || 0), 0) || 0
+  const handleDelete = async (expense: Expense) => {
+    setOpenMenuId(null)
+    const ok = await confirmAction({
+      title: `Delete draft expense ${expense.expenseNumber}?`,
+      description: 'This draft expense will be permanently deleted.',
+      confirmLabel: 'Delete draft',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    setProcessingId(expense.id)
+    try {
+      await financeService.deleteExpense(expense.id)
+      toast.success(`Draft expense ${expense.expenseNumber} deleted`)
+      handleRefresh()
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete expense.')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleOpenDetails = (expense: Expense) => {
+    setOpenMenuId(null)
+    setSelectedExpense(expense)
+    setIsDetailsOpen(true)
+  }
+
+  const hasFilters = Boolean(
+    search ||
+      statusFilter ||
+      categoryFilter !== '' ||
+      methodFilter ||
+      fromDate !== defaults.from ||
+      toDate !== defaults.to
+  )
+
+  const clearFilters = () => {
+    setSearch('')
+    setStatusFilter('')
+    setCategoryFilter('')
+    setMethodFilter('')
+    const bounds = monthBounds()
+    setFromDate(bounds.from)
+    setToDate(bounds.to)
+  }
+
+  const totalByCategories =
+    overview?.byCategory.reduce((sum, c) => sum + (Number(c.amount) || 0), 0) || 0
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="relative w-56 sm:w-64">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search expenses..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="flex h-10 rounded-md border border-border/80 bg-secondary px-2.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            title="From date"
-          />
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className="flex h-10 rounded-md border border-border/80 bg-secondary px-2.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            title="To date"
-          />
-          <NativeSelect
-            dense
-            className="w-auto min-w-[9rem]"
-            value={categoryFilter === '' ? '' : String(categoryFilter)}
-            onChange={(e) =>
-              setCategoryFilter(e.target.value ? Number(e.target.value) : '')
-            }
-          >
-            <option value="">All Categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </NativeSelect>
-          <NativeSelect
-            dense
-            className="w-auto min-w-[8.5rem]"
-            value={methodFilter}
-            onChange={(e) => setMethodFilter(e.target.value as PaymentMethod | '')}
-          >
-            <option value="">All Methods</option>
-            {(Object.keys(METHOD_LABEL) as PaymentMethod[]).map((m) => (
-              <option key={m} value={m}>
-                {METHOD_LABEL[m]}
-              </option>
-            ))}
-          </NativeSelect>
-          <NativeSelect
-            dense
-            className="w-auto min-w-[8rem]"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as ExpenseStatus | '')}
-          >
-            <option value="">All Statuses</option>
-            <option value="DRAFT">Draft</option>
-            <option value="POSTED">Posted</option>
-          </NativeSelect>
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('')
-                setCategoryFilter('')
-                setMethodFilter('')
-                const bounds = monthBounds()
-                setFromDate(bounds.from)
-                setToDate(bounds.to)
-              }}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline cursor-pointer ml-1"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Reset
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" onClick={() => setIsManageOpen(true)}>
-            <Settings2 className="h-4 w-4" />
-            Manage Categories
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            onClick={() => {
-              setExpenseToEdit(null)
-              setIsCreateOpen(true)
-            }}
-          >
-            <Plus className="h-4 w-4" />
-            New Expense
-          </Button>
-        </div>
-      </div>
-
-      {error && <Alert variant="destructive">{error}</Alert>}
-
       <KpiCardGrid columns={3}>
         <KpiCard
           label="Posted this month"
-          value={formatCurrency(overview?.totalPostedThisMonth)}
+          value={formatMoney(overview?.totalPostedThisMonth, currency, 2)}
         />
         <KpiCard
-          label="Expense rows"
+          label="Entries"
           value={pageData?.totalElements ?? expenses.length}
         />
         <KpiCard
@@ -277,164 +238,311 @@ export function ExpensesPage() {
         />
       </KpiCardGrid>
 
-      <div className="rounded-md border border-border bg-card shadow-xs overflow-hidden">
-        <Table className="border-0 rounded-none shadow-none bg-transparent">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search expenses..."
+            className="w-56"
+          />
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {POST_STATUS_FILTERS.map((pill) => {
+              const active = statusFilter === pill.value
+              return (
+                <button
+                  key={pill.label}
+                  type="button"
+                  onClick={() => setStatusFilter(pill.value)}
+                  className={cn(
+                    'h-8 px-3 rounded-md text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap',
+                    active
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-card text-muted-foreground border-border/80 hover:text-foreground hover:bg-secondary/50'
+                  )}
+                >
+                  {pill.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="inline-flex items-center gap-1.5 h-9 rounded-md border border-border/80 bg-card px-2.5 text-xs text-muted-foreground">
+            <span>From</span>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="border-0 bg-transparent text-xs font-medium text-foreground tabular-nums focus:outline-none"
+            />
+          </label>
+          <label className="inline-flex items-center gap-1.5 h-9 rounded-md border border-border/80 bg-card px-2.5 text-xs text-muted-foreground">
+            <span>To</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="border-0 bg-transparent text-xs font-medium text-foreground tabular-nums focus:outline-none"
+            />
+          </label>
+          <NativeSelect
+            dense
+            className="w-auto min-w-[8.5rem]"
+            value={categoryFilter === '' ? '' : String(categoryFilter)}
+            onChange={(e) =>
+              setCategoryFilter(e.target.value ? Number(e.target.value) : '')
+            }
+          >
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </NativeSelect>
+          <NativeSelect
+            dense
+            className="w-auto min-w-[7.5rem]"
+            value={methodFilter}
+            onChange={(e) => setMethodFilter(e.target.value as PaymentMethod | '')}
+          >
+            <option value="">All methods</option>
+            {(Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]).map((m) => (
+              <option key={m} value={m}>
+                {PAYMENT_METHOD_LABELS[m]}
+              </option>
+            ))}
+          </NativeSelect>
+          {hasFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reset
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {error && <Alert variant="destructive">{error}</Alert>}
+
+      <div className="rounded-md border border-border/80 bg-card shadow-xs overflow-visible">
+        <Table
+          className="border-0 rounded-none shadow-none bg-transparent overflow-visible"
+          tableClassName="table-fixed"
+        >
           <THead>
             <tr>
-              <TH>Reference</TH>
-              <TH>Category</TH>
-              <TH>Method</TH>
-              <TH className="text-right">Amount</TH>
-              <TH>Status</TH>
-              <TH className="text-right">Actions</TH>
+              <TH className="w-[12%]">Reference</TH>
+              <TH className="w-[29%]">Expense</TH>
+              <TH className="w-[11%]">Date</TH>
+              <TH className="w-[12%]">Method</TH>
+              <TH className="w-[12%] text-right">Amount</TH>
+              <TH className="w-[11%] pl-6">Status</TH>
+              <TH className="w-[13%] px-3 text-right">Actions</TH>
             </tr>
           </THead>
           <TBody>
             {isLoading && expenses.length === 0 ? (
               <TR>
-                <TD colSpan={6} className="py-16 text-center text-muted-foreground">
+                <TD colSpan={7} className="py-16 text-center text-muted-foreground">
+                  <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-foreground" />
                   Loading expenses...
                 </TD>
               </TR>
             ) : expenses.length === 0 ? (
               <TR>
-                <TD colSpan={6} className="py-16 text-center text-muted-foreground">
-                  <div className="flex flex-col items-center gap-2">
-                    <Receipt className="h-8 w-8 text-muted-foreground/60" />
-                    <p className="text-sm font-medium text-foreground">No expenses found.</p>
-                    <p className="text-xs text-muted-foreground">
-                      Record paid operating costs like rent, utilities, and repairs.
-                    </p>
-                  </div>
+                <TD colSpan={7} className="p-0">
+                  <TableEmptyState
+                    icon={<Receipt className="h-5 w-5" />}
+                    title="No expenses found"
+                    description={
+                      hasFilters
+                        ? 'No expenses match your current search, date range, or filters.'
+                        : 'Record paid operating costs like rent, utilities, and repairs.'
+                    }
+                    action={
+                      hasFilters ? (
+                        <Button variant="outline" size="sm" onClick={clearFilters}>
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Reset filters
+                        </Button>
+                      ) : undefined
+                    }
+                  />
                 </TD>
               </TR>
             ) : (
-              expenses.map((expense) => (
-                <TR
-                  key={expense.id}
-                  className="cursor-pointer"
-                  onClick={() => handleOpenDetails(expense)}
-                >
-                  <TD>
-                    <RefLink>{expense.expenseNumber}</RefLink>
-                  </TD>
-                  <TD>
-                    <div className="text-sm font-medium text-foreground">{expense.categoryName}</div>
-                    <div className="text-xs text-muted-foreground truncate max-w-[220px]">
-                      {expense.description}
-                    </div>
-                  </TD>
-                  <TD className="text-sm text-foreground">
-                    {METHOD_LABEL[expense.paymentMethod]}
-                  </TD>
-                  <TD className="text-right font-medium text-foreground">
-                    {formatCurrency(expense.amount)}
-                  </TD>
-                  <TD>
-                    {expense.status === 'POSTED' ? (
-                      <Badge variant="success">Posted</Badge>
-                    ) : (
-                      <Badge variant="warning">Draft</Badge>
-                    )}
-                  </TD>
-                  <TD className="text-right">
-                    <div
-                      className="inline-flex items-center gap-1"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        title="View"
-                        onClick={() => handleOpenDetails(expense)}
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </button>
-                      {expense.status === 'DRAFT' && (
-                        <>
-                          <button
-                            type="button"
-                            title="Edit"
-                            onClick={() => {
-                              setExpenseToEdit(expense)
-                              setIsCreateOpen(true)
-                            }}
-                            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer"
-                          >
-                            <Edit className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            title="Delete"
-                            onClick={() => handleDelete(expense.id)}
-                            className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </>
+              expenses.map((expense) => {
+                const isPosted = expense.status === 'POSTED'
+                const isBusy = processingId === expense.id
+
+                return (
+                  <TR key={expense.id} clickable onClick={() => handleOpenDetails(expense)}>
+                    <TD>
+                      <span className="text-ref-link">{expense.expenseNumber}</span>
+                    </TD>
+                    <TD>
+                      <p className="font-medium text-foreground truncate">{expense.categoryName}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {expense.description}
+                      </p>
+                    </TD>
+                    <TD className="text-muted-foreground tabular-nums">
+                      {formatShortDate(expense.expenseDate)}
+                    </TD>
+                    <TD className="text-muted-foreground">
+                      {PAYMENT_METHOD_LABELS[expense.paymentMethod]}
+                    </TD>
+                    <TD className="text-right tabular-nums font-medium text-foreground">
+                      {formatMoney(expense.amount, currency, 2)}
+                    </TD>
+                    <TD className="pl-6">
+                      {isPosted ? (
+                        <Badge variant="success">Posted</Badge>
+                      ) : (
+                        <Badge variant="neutral">Draft</Badge>
                       )}
-                    </div>
-                  </TD>
-                </TR>
-              ))
+                    </TD>
+                    <TD className="px-3 text-right">
+                      <div
+                        className="relative inline-flex items-center justify-end gap-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {!isPosted ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={isBusy}
+                            onClick={() => void handlePost(expense)}
+                          >
+                            {isBusy ? '...' : 'Post'}
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenDetails(expense)}
+                          >
+                            View
+                          </Button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenMenuId(openMenuId === expense.id ? null : expense.id)
+                          }
+                          aria-label="Expense actions"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+
+                        {openMenuId === expense.id && (
+                          <div className="absolute right-0 top-9 z-40 w-44 rounded-md border border-border bg-card shadow-md py-1 text-left">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDetails(expense)}
+                              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
+                            >
+                              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                              View details
+                            </button>
+
+                            {!isPosted && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuId(null)
+                                    setExpenseToEdit(expense)
+                                    setIsCreateOpen(true)
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
+                                >
+                                  <Edit className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Edit draft
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handlePost(expense)}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Post expense
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDelete(expense)}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Delete draft
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </TD>
+                  </TR>
+                )
+              })
             )}
           </TBody>
         </Table>
 
-        {pageData && pageData.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border/80">
-            <p className="text-xs text-muted-foreground">
-              Page {pageData.page + 1} of {pageData.totalPages}
-            </p>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={currentPage <= 0}
-                onClick={() => loadExpenses(currentPage - 1)}
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={currentPage >= pageData.totalPages - 1}
-                onClick={() => loadExpenses(currentPage + 1)}
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {overview && overview.byCategory.length > 0 && (
-          <div className="px-5 py-5 border-t border-border/80 space-y-3.5">
-            <h3 className="text-sm font-semibold text-foreground">Expenses by category</h3>
-            <div className="space-y-3">
-              {overview.byCategory.map((row) => {
-                const amount = Number(row.amount) || 0
-                const pct = maxCategoryAmount > 0 ? (amount / maxCategoryAmount) * 100 : 0
-                return (
-                  <div key={row.categoryName}>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="font-medium text-foreground">{row.categoryName}</span>
-                      <span className="text-muted-foreground">{formatCurrency(amount)}</span>
-                    </div>
-                    <div className="h-2 w-full rounded-md bg-secondary overflow-hidden">
-                      <div
-                        className="h-full rounded-md bg-brand transition-[width] duration-300"
-                        style={{ width: `${Math.max(pct, amount > 0 ? 4 : 0)}%` }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+        {pageData && (
+          <TablePagination
+            page={currentPage}
+            totalPages={pageData.totalPages}
+            totalElements={pageData.totalElements}
+            count={expenses.length}
+            itemLabel="expenses"
+            onPageChange={(nextPage) => loadExpenses(nextPage)}
+          />
         )}
       </div>
+
+      {overview && overview.byCategory.length > 0 && (
+        <section className="rounded-md border border-border/80 bg-card p-5 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">Expenses by category</h3>
+            <span className="text-xs font-medium text-muted-foreground tabular-nums">
+              Total {formatMoney(totalByCategories, currency, 2)}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {overview.byCategory.map((row) => {
+              const amount = Number(row.amount) || 0
+              const share = totalByCategories > 0 ? Math.round((amount / totalByCategories) * 100) : 0
+              return (
+                <div key={row.categoryName} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-foreground">{row.categoryName}</span>
+                    <div className="flex items-center gap-3 tabular-nums">
+                      <span className="text-muted-foreground">{share}%</span>
+                      <span className="font-semibold text-foreground w-24 text-right">
+                        {formatMoney(amount, currency, 2)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full rounded-md bg-secondary overflow-hidden">
+                    <div
+                      className="h-full rounded-md bg-primary transition-[width] duration-300"
+                      style={{ width: `${Math.max(share, amount > 0 ? 3 : 0)}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       <CreateExpenseModal
         isOpen={isCreateOpen}

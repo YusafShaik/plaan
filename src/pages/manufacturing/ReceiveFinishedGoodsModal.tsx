@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
-import { X, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { X, AlertCircle } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
+import { DateField } from '../../components/ui/DateField'
 import { manufacturingService } from '../../services/manufacturingService'
+import { confirmAction, toast } from '../../lib/feedback'
 import type {
   ProductionOrder,
   ProductionReceipt,
@@ -27,12 +30,11 @@ export function ReceiveFinishedGoodsModal({
 }: ReceiveFinishedGoodsModalProps) {
   const [receiptNumber, setReceiptNumber] = useState('PR-...')
   const [receiptDate, setReceiptDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [receiptQuantity, setReceiptQuantity] = useState<number | ''>('')
+  const [receiptQuantity, setReceiptQuantity] = useState<number | string>('')
   const [notes, setNotes] = useState('')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const orderedQuantity = order?.productionQuantity ?? 0
   const previouslyReceived = order?.receivedQuantity ?? 0
@@ -53,7 +55,6 @@ export function ReceiveFinishedGoodsModal({
         setReceiptQuantity(pendingQuantity > 0 ? pendingQuantity : '')
         setNotes('')
         setError(null)
-        setSuccessMessage(null)
       })
     } else {
       Promise.resolve().then(() => {
@@ -62,7 +63,6 @@ export function ReceiveFinishedGoodsModal({
         setReceiptQuantity(initialDraft.receiptQuantity)
         setNotes(initialDraft.notes || '')
         setError(null)
-        setSuccessMessage(null)
       })
     }
   }, [isOpen, order, initialDraft, pendingQuantity])
@@ -75,7 +75,8 @@ export function ReceiveFinishedGoodsModal({
     return qty.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 4 })
   }
 
-  const numericQty = typeof receiptQuantity === 'number' ? receiptQuantity : 0
+  const numericQty =
+    receiptQuantity === '' ? 0 : Number(receiptQuantity) || 0
 
   const totalAfterPosting = useMemo(() => {
     return previouslyReceived + numericQty
@@ -88,20 +89,20 @@ export function ReceiveFinishedGoodsModal({
   const handleSubmit = async (postImmediately: boolean) => {
     if (!order) return
     setError(null)
-    setSuccessMessage(null)
 
     if (!hasPostedConsumption) {
       setError('Cannot record production receipt before raw materials have been consumed. Please record material consumption first.')
       return
     }
 
-    if (receiptQuantity === '' || receiptQuantity <= 0) {
+    const parsedQty = Number(receiptQuantity)
+    if (receiptQuantity === '' || Number.isNaN(parsedQty) || parsedQty <= 0) {
       setError('Receipt quantity must be greater than zero.')
       return
     }
 
-    if (receiptQuantity > pendingQuantity) {
-      setError(`Receipt quantity (${formatQuantity(receiptQuantity)} ${uom}) cannot exceed pending quantity (${formatQuantity(pendingQuantity)} ${uom}).`)
+    if (parsedQty > pendingQuantity) {
+      setError(`Receipt quantity (${formatQuantity(parsedQty)} ${uom}) cannot exceed pending quantity (${formatQuantity(pendingQuantity)} ${uom}).`)
       return
     }
 
@@ -110,7 +111,7 @@ export function ReceiveFinishedGoodsModal({
       if (initialDraft) {
         await manufacturingService.updateProductionReceipt(initialDraft.id, {
           receiptDate,
-          receiptQuantity,
+          receiptQuantity: parsedQty,
           notes: notes.trim() || undefined,
           postImmediately,
         })
@@ -119,22 +120,19 @@ export function ReceiveFinishedGoodsModal({
           receiptNumber: receiptNumber.startsWith('PR-...') ? undefined : receiptNumber,
           receiptDate,
           productionOrderId: order.id,
-          receiptQuantity,
+          receiptQuantity: parsedQty,
           notes: notes.trim() || undefined,
           postImmediately,
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         postImmediately
-          ? 'Production receipt posted successfully.'
-          : 'Draft production receipt saved successfully.'
+          ? 'Production receipt posted.'
+          : 'Draft production receipt saved.'
       )
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 700)
+      onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving the production receipt.')
     } finally {
@@ -144,9 +142,13 @@ export function ReceiveFinishedGoodsModal({
 
   const handleDeleteDraft = async () => {
     if (!initialDraft) return
-    if (!window.confirm(`Are you sure you want to delete draft receipt ${initialDraft.receiptNumber}?`)) {
-      return
-    }
+      const ok = await confirmAction({
+      title: `Delete draft receipt ${initialDraft.receiptNumber}?`,
+      description: 'This draft finished goods receipt will be permanently deleted.',
+      confirmLabel: 'Delete draft',
+      variant: 'destructive',
+    })
+    if (!ok) return
 
     setIsSubmitting(true)
     try {
@@ -171,15 +173,17 @@ export function ReceiveFinishedGoodsModal({
         {/* Header matching Screenshot 0 */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              {initialDraft ? `Edit Production Receipt (${receiptNumber})` : 'Receive Finished Goods'}
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              {initialDraft
+                ? `Edit production receipt (${receiptNumber})`
+                : 'Receive finished goods'}
             </h2>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -202,80 +206,49 @@ export function ReceiveFinishedGoodsModal({
           </div>
         )}
 
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
-          </div>
-        )}
-
-        {/* Form Body matching Screenshot 0 */}
         <div className="space-y-4">
-          {/* Row 1: Receipt Number & Receipt Date * */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Receipt Number
-              </label>
-              <input
-                type="text"
-                disabled
-                value={receiptNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Receipt number
+              </span>
+              <span className="mt-1 text-sm font-medium tabular-nums text-foreground">
+                {receiptNumber}
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Receipt Date <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="date"
-                value={receiptDate}
-                onChange={(e) => setReceiptDate(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
-            </div>
-          </div>
-
-          {/* Row 2: Production Order & Product */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Production Order
-              </label>
-              <input
-                type="text"
-                disabled
-                value={order.orderNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed font-medium"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Product
-              </label>
-              <input
-                type="text"
-                disabled
-                value={order.productName}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
-              />
-            </div>
-          </div>
-
-          {/* Row 3: Receiving Warehouse */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
-              Receiving Warehouse
-            </label>
-            <input
-              type="text"
-              disabled
-              value={order.finishedGoodsWarehouseName}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium"
+            <DateField
+              label="Receipt date *"
+              value={receiptDate}
+              onChange={(e) => setReceiptDate(e.target.value)}
             />
+
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Production order
+              </span>
+              <span className="mt-1 text-sm font-medium tabular-nums text-foreground">
+                {order.orderNumber}
+              </span>
+            </div>
+
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Product
+              </span>
+              <span className="mt-1 text-sm font-medium text-foreground truncate">
+                {order.productName}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
+              Receiving warehouse
+            </span>
+            <span className="mt-1 text-sm font-medium text-foreground">
+              {order.finishedGoodsWarehouseName}
+            </span>
           </div>
 
           {/* Divider */}
@@ -304,41 +277,34 @@ export function ReceiveFinishedGoodsModal({
           </div>
 
           {/* Input Row: Receipt Quantity * & UOM */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Receipt Quantity <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="number"
-                min="0.0001"
-                max={pendingQuantity}
-                step="any"
-                value={receiptQuantity}
-                onChange={(e) => {
-                  const val = e.target.value === '' ? '' : parseFloat(e.target.value)
-                  setReceiptQuantity(isNaN(val as number) ? '' : val)
-                }}
-                placeholder={`Max ${formatQuantity(pendingQuantity)}`}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs tabular-nums text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <Input
+              label="Receipt quantity *"
+              type="number"
+              min="0.0001"
+              max={pendingQuantity}
+              step="any"
+              value={receiptQuantity}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val !== '' && Number(val) < 0) return
+                setReceiptQuantity(val)
+              }}
+              placeholder={`Max ${formatQuantity(pendingQuantity)}`}
+            />
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
                 UOM
-              </label>
-              <input
-                type="text"
-                disabled
-                value={uom}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
-              />
+              </span>
+              <span className="mt-1 text-sm font-medium uppercase text-foreground">
+                {uom}
+              </span>
             </div>
           </div>
 
-          {/* Dynamic Calculation Box matching Screenshot 0 */}
-          <div className="rounded-md border border-border/80 bg-secondary/20 p-4 space-y-2 text-xs">
+          {/* Dynamic Calculation Box */}
+          <div className="rounded-md border border-border/80 bg-surface-subtle p-3.5 space-y-1.5 text-xs">
             <div>
               <span className="text-muted-foreground">Total received after posting</span>{' '}
               <span className="font-medium text-foreground tabular-nums ml-2">
@@ -354,21 +320,21 @@ export function ReceiveFinishedGoodsModal({
           </div>
 
           {/* Notes */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
+          <div className="flex min-h-14 w-full flex-col rounded-md border border-border bg-card px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
               Notes
-            </label>
+            </span>
             <textarea
+              rows={2}
+              placeholder="Optional production receipt notes..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional production receipt notes..."
-              rows={3}
-              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
             />
           </div>
         </div>
 
-        {/* Footer Actions matching Screenshot 0 */}
+        {/* Footer Actions */}
         <div className="flex items-center justify-between pt-3 border-t border-border/80">
           <div>
             {initialDraft && (
@@ -378,9 +344,9 @@ export function ReceiveFinishedGoodsModal({
                 size="sm"
                 onClick={handleDeleteDraft}
                 disabled={isSubmitting}
-                className="text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
+                className="text-destructive border-destructive/25 hover:bg-destructive/10"
               >
-                Delete Draft
+                Delete draft
               </Button>
             )}
           </div>
@@ -392,19 +358,18 @@ export function ReceiveFinishedGoodsModal({
               size="sm"
               onClick={() => handleSubmit(false)}
               disabled={isSubmitting || !hasPostedConsumption}
-              className="h-9 px-4 text-xs font-medium cursor-pointer"
             >
-              Save Draft
+              Save draft
             </Button>
 
             <Button
               type="button"
+              variant="primary"
               size="sm"
               onClick={() => handleSubmit(true)}
               disabled={isSubmitting || !hasPostedConsumption}
-              className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs px-4 h-9 rounded-md cursor-pointer shadow-xs disabled:opacity-50"
             >
-              Post Receipt
+              Post receipt
             </Button>
           </div>
         </div>

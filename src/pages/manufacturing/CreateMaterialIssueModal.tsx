@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { X, AlertCircle, CheckCircle2, PackageCheck, Sparkles } from 'lucide-react'
+import { X, AlertCircle, PackageCheck, Sparkles } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { DateField } from '../../components/ui/DateField'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { toast } from '../../lib/feedback'
 import { manufacturingService } from '../../services/manufacturingService'
 import type {
   ProductionOrder,
@@ -25,7 +27,7 @@ interface IssueRowState {
   materialName: string
   pendingQuantity: number
   onHandQuantity: number
-  issueQuantity: number | ''
+  issueQuantity: number | string
   unitOfMeasure: string
 }
 
@@ -44,7 +46,6 @@ export function CreateMaterialIssueModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   // Initialize form state
   useEffect(() => {
@@ -60,7 +61,6 @@ export function CreateMaterialIssueModal({
         setIssueDate(new Date().toISOString().split('T')[0])
         setNotes('')
         setError(null)
-        setSuccessMessage(null)
 
         // Initialize rows from order requirements & availability
         const initialRows: IssueRowState[] = order.items.map((it) => {
@@ -92,7 +92,6 @@ export function CreateMaterialIssueModal({
         setIssueDate(initialDraft.issueDate)
         setNotes(initialDraft.notes || '')
         setError(null)
-        setSuccessMessage(null)
 
         const draftRows: IssueRowState[] = order.items.map((it) => {
           const draftItem = initialDraft.items.find((di) => di.materialId === it.materialId)
@@ -128,15 +127,9 @@ export function CreateMaterialIssueModal({
   }
 
   const handleRowQuantityChange = (materialId: number, val: string) => {
+    if (val !== '' && Number(val) < 0) return
     setRows((prev) =>
-      prev.map((r) => {
-        if (r.materialId !== materialId) return r
-        if (val === '') {
-          return { ...r, issueQuantity: '' }
-        }
-        const parsed = Math.max(0, parseFloat(val) || 0)
-        return { ...r, issueQuantity: parsed }
-      })
+      prev.map((r) => (r.materialId === materialId ? { ...r, issueQuantity: val } : r))
     )
   }
 
@@ -186,7 +179,6 @@ export function CreateMaterialIssueModal({
     try {
       setIsSubmitting(true)
       setError(null)
-      setSuccessMessage(null)
 
       const itemsPayload = rows.map((r) => ({
         materialId: r.materialId,
@@ -211,16 +203,13 @@ export function CreateMaterialIssueModal({
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         postImmediately
-          ? 'Material issue posted successfully! Inventory has been handed over to production.'
-          : 'Draft material issue saved successfully.'
+          ? 'Material issue posted and handed over to production.'
+          : 'Draft material issue saved.'
       )
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 900)
+      onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving material issue.')
     } finally {
@@ -238,18 +227,18 @@ export function CreateMaterialIssueModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Manufacturing / Production Orders / {order.orderNumber}
+            <p className="text-xs font-medium text-muted-foreground">
+              Production order · {order.orderNumber}
             </p>
-            <h2 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
-              {initialDraft ? `Edit Material Issue (${issueNumber})` : 'Issue Materials'}
+            <h2 className="text-xl font-semibold tracking-tight text-foreground mt-0.5">
+              {initialDraft ? `Edit material issue (${issueNumber})` : 'Issue materials'}
             </h2>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -263,67 +252,43 @@ export function CreateMaterialIssueModal({
           </div>
         )}
 
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
-          </div>
-        )}
-
         {/* Form Body */}
         <div className="space-y-4">
-          {/* Row 1: Material Issue Number & Issue Date * */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Material Issue Number
-              </label>
-              <input
-                type="text"
-                disabled
-                value={issueNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">Auto-generated</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Material issue number
+              </span>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-sm font-medium tabular-nums text-foreground">
+                  {issueNumber}
+                </span>
+                <span className="text-xs text-muted-foreground">Auto</span>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Issue Date <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="date"
-                value={issueDate}
-                onChange={(e) => setIssueDate(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
-            </div>
-          </div>
+            <DateField
+              label="Issue date *"
+              value={issueDate}
+              onChange={(e) => setIssueDate(e.target.value)}
+            />
 
-          {/* Row 2: Production Order & Source Warehouse */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Production Order
-              </label>
-              <input
-                type="text"
-                disabled
-                value={`${order.orderNumber} (${order.productName})`}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed font-medium truncate"
-              />
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Production order
+              </span>
+              <span className="mt-1 text-sm font-medium tabular-nums text-foreground truncate">
+                {order.orderNumber} ({order.productName})
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Source Warehouse
-              </label>
-              <input
-                type="text"
-                disabled
-                value={`${order.sourceWarehouseName} (${order.sourceWarehouseCode})`}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs text-muted-foreground cursor-not-allowed font-medium truncate"
-              />
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Source warehouse
+              </span>
+              <span className="mt-1 text-sm font-medium text-foreground truncate">
+                {order.sourceWarehouseName} ({order.sourceWarehouseCode})
+              </span>
             </div>
           </div>
 
@@ -411,16 +376,16 @@ export function CreateMaterialIssueModal({
           </div>
 
           {/* Notes */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
-              Notes <span className="text-xs text-muted-foreground font-normal">(Optional)</span>
-            </label>
+          <div className="flex min-h-14 w-full flex-col rounded-md border border-border bg-card px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
+              Notes
+            </span>
             <textarea
               rows={2}
               placeholder="Additional material issue information..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
             />
           </div>
 
@@ -428,24 +393,29 @@ export function CreateMaterialIssueModal({
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
             <Button
               type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
               variant="outline"
-              size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
-              Save Draft
+              Save draft
             </Button>
 
             <Button
               type="button"
-              size="sm"
+              variant="primary"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-success text-success-foreground hover:opacity-90 font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4 flex items-center gap-1.5"
             >
-              <PackageCheck className="h-4 w-4" />
-              <span>{isSubmitting ? 'Posting...' : 'Post Material Issue'}</span>
+              <PackageCheck className="h-3.5 w-3.5" />
+              <span>{isSubmitting ? 'Posting...' : 'Post issue'}</span>
             </Button>
           </div>
         </div>

@@ -1,29 +1,54 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Search,
-  Plus,
-  RotateCcw,
-  FileText,
-  Eye,
+  CheckCircle2,
   Download,
   Edit,
+  Eye,
+  FileText,
+  MoreHorizontal,
+  RefreshCw,
+  RotateCcw,
   Trash2,
-  ChevronLeft,
-  ChevronRight,
+  Wallet,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { Badge } from '../../components/ui/Badge'
-import { Table, THead, TBody, TR, TH, TD, RefLink } from '../../components/ui/Table'
-import { NativeSelect } from '../../components/ui/NativeSelect'
+import {
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  TableEmptyState,
+  TablePagination,
+} from '../../components/ui/Table'
 import { Alert } from '../../components/ui/Alert'
 import { CreateSalesInvoiceModal } from './CreateSalesInvoiceModal'
 import { CreateCustomerReceiptModal } from './CreateCustomerReceiptModal'
 import { SalesInvoiceDetailsModal } from './SalesInvoiceDetailsModal'
 import { financeService } from '../../services/financeService'
+import { useAuth } from '../../hooks/useAuth'
+import { formatMoney, formatShortDate } from '../../lib/format'
+import { confirmAction, toast } from '../../lib/feedback'
+import { cn } from '../../lib/cn'
+import { POST_STATUS_FILTERS } from './financeHelpers'
 import type { SalesInvoice, SalesInvoiceStatus } from '../../types/finance'
 import type { PageResponse } from '../../types/masterData'
 
-export function SalesInvoicesPage() {
+export interface SalesInvoicesPageProps {
+  isModalOpen?: boolean
+  setIsModalOpen?: (open: boolean) => void
+}
+
+export function SalesInvoicesPage({
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: setControlledModalOpen,
+}: SalesInvoicesPageProps = {}) {
+  const { organization } = useAuth()
+  const currency = organization?.baseCurrency
+
   const [invoices, setInvoices] = useState<SalesInvoice[]>([])
   const [pageData, setPageData] = useState<PageResponse<SalesInvoice> | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
@@ -33,8 +58,13 @@ export function SalesInvoicesPage() {
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [processingId, setProcessingId] = useState<number | null>(null)
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [internalModalOpen, setInternalModalOpen] = useState(false)
+  const isCreateModalOpen =
+    controlledModalOpen !== undefined ? controlledModalOpen : internalModalOpen
+  const setIsCreateModalOpen = setControlledModalOpen || setInternalModalOpen
   const [invoiceToEdit, setInvoiceToEdit] = useState<SalesInvoice | null>(null)
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
@@ -43,9 +73,7 @@ export function SalesInvoicesPage() {
 
   const loadInvoices = useCallback(
     (page = 0) => {
-      setIsLoading(true)
       setError(null)
-
       financeService
         .getSalesInvoices({
           search: search.trim() || undefined,
@@ -68,204 +96,321 @@ export function SalesInvoicesPage() {
   )
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadInvoices(0)
-    }, 250)
+    const timer = setTimeout(() => loadInvoices(0), 200)
     return () => clearTimeout(timer)
   }, [loadInvoices])
 
-  const handleOpenCreate = () => {
-    setInvoiceToEdit(null)
-    setIsCreateModalOpen(true)
-  }
+  useEffect(() => {
+    if (openMenuId === null) return
+    const handleOutside = () => setOpenMenuId(null)
+    window.addEventListener('click', handleOutside)
+    return () => window.removeEventListener('click', handleOutside)
+  }, [openMenuId])
 
   const handleOpenEdit = (inv: SalesInvoice) => {
+    setOpenMenuId(null)
     setInvoiceToEdit(inv)
     setIsCreateModalOpen(true)
   }
 
   const handleOpenDetails = (inv: SalesInvoice) => {
+    setOpenMenuId(null)
     setSelectedInvoice(inv)
     setIsDetailsModalOpen(true)
   }
 
   const handlePostInvoice = async (invoiceId: number) => {
+    setOpenMenuId(null)
+    setProcessingId(invoiceId)
     try {
       const updated = await financeService.postSalesInvoice(invoiceId)
       setSelectedInvoice(updated)
+      toast.success(`Invoice ${updated.invoiceNumber} posted`)
       loadInvoices(currentPage)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to post sales invoice')
+      toast.error(err instanceof Error ? err.message : 'Failed to post sales invoice.')
+    } finally {
+      setProcessingId(null)
     }
   }
 
-  const handleDeleteInvoice = async (invoiceId: number) => {
+  const handleDeleteInvoice = async (inv: SalesInvoice) => {
+    setOpenMenuId(null)
+    const ok = await confirmAction({
+      title: `Delete draft invoice ${inv.invoiceNumber}?`,
+      description: 'This draft sales invoice will be permanently deleted.',
+      confirmLabel: 'Delete draft',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    setProcessingId(inv.id)
     try {
-      await financeService.deleteSalesInvoice(invoiceId)
+      await financeService.deleteSalesInvoice(inv.id)
+      toast.success(`Draft invoice ${inv.invoiceNumber} deleted`)
+      setIsDetailsModalOpen(false)
       loadInvoices(currentPage)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to delete sales invoice')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete sales invoice.')
+    } finally {
+      setProcessingId(null)
     }
   }
 
-  const formatCurrency = (val: number | undefined) => {
-    if (val === undefined || val === null) return '₹0'
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 2,
-    }).format(val)
+  const hasFilters = Boolean(search || statusFilter)
+
+  const clearFilters = () => {
+    setSearch('')
+    setStatusFilter('')
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-64 sm:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search invoices..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
+      <div className="flex flex-wrap items-center gap-2.5 pt-1">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search invoices..."
+        />
 
-          <NativeSelect
-            dense
-            className="w-auto min-w-[9.5rem]"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as SalesInvoiceStatus | '')}
-          >
-            <option value="">All Statuses</option>
-            <option value="DRAFT">Draft</option>
-            <option value="POSTED">Posted</option>
-          </NativeSelect>
-
-          {(search || statusFilter) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('')
-              }}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline cursor-pointer ml-1"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Reset
-            </button>
-          )}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {POST_STATUS_FILTERS.map((pill) => {
+            const active = statusFilter === pill.value
+            return (
+              <button
+                key={pill.label}
+                type="button"
+                onClick={() => setStatusFilter(pill.value)}
+                className={cn(
+                  'h-8 px-3 rounded-md text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap',
+                  active
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-muted-foreground border-border/80 hover:text-foreground hover:bg-secondary/50'
+                )}
+              >
+                {pill.label}
+              </button>
+            )
+          })}
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <Button type="button" variant="primary" onClick={handleOpenCreate}>
-            <Plus className="h-4 w-4" />
-            New Invoice
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset
           </Button>
-        </div>
+        )}
       </div>
 
       {error && <Alert variant="destructive">{error}</Alert>}
 
-      <div className="overflow-hidden rounded-md border border-border bg-card shadow-xs">
-        <Table className="border-0 rounded-none shadow-none bg-transparent">
+      <div className="rounded-md border border-border/80 bg-card shadow-xs overflow-visible">
+        <Table
+          className="border-0 rounded-none shadow-none bg-transparent overflow-visible"
+          tableClassName="table-fixed"
+        >
           <THead>
             <tr>
-              <TH>Invoice No.</TH>
-              <TH>Customer</TH>
-              <TH className="text-right">Amount</TH>
-              <TH>Status</TH>
-              <TH className="text-right">Actions</TH>
+              <TH className="w-[13%]">Invoice no.</TH>
+              <TH className="w-[25%]">Customer</TH>
+              <TH className="w-[11%]">Date</TH>
+              <TH className="w-[13%] text-right">Amount</TH>
+              <TH className="w-[13%] text-right">Outstanding</TH>
+              <TH className="w-[12%] pl-6">Status</TH>
+              <TH className="w-[13%] px-3 text-right">Actions</TH>
             </tr>
           </THead>
           <TBody>
             {isLoading && invoices.length === 0 ? (
               <TR>
-                <TD colSpan={5} className="py-16 text-center text-muted-foreground">
-                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent mb-2" />
+                <TD colSpan={7} className="py-16 text-center text-muted-foreground">
+                  <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2 text-foreground" />
                   Loading invoices...
                 </TD>
               </TR>
             ) : invoices.length === 0 ? (
               <TR>
-                <TD colSpan={5} className="py-16 text-center text-muted-foreground">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <FileText className="h-8 w-8 text-muted-foreground/60" />
-                    <p className="text-sm font-medium text-foreground">No sales invoices found.</p>
-                    <p className="text-xs text-muted-foreground">
-                      Click &quot;New Invoice&quot; to bill a customer from a posted dispatch.
-                    </p>
-                  </div>
+                <TD colSpan={7} className="p-0">
+                  <TableEmptyState
+                    icon={<FileText className="h-5 w-5" />}
+                    title="No sales invoices found"
+                    description={
+                      hasFilters
+                        ? 'No sales invoices match your current search or status filter.'
+                        : 'Click "+ New invoice" above to bill a customer from a posted dispatch.'
+                    }
+                    action={
+                      hasFilters ? (
+                        <Button variant="outline" size="sm" onClick={clearFilters}>
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Reset filters
+                        </Button>
+                      ) : undefined
+                    }
+                  />
                 </TD>
               </TR>
             ) : (
               invoices.map((inv) => {
                 const isPosted = inv.status === 'POSTED'
+                const isBusy = processingId === inv.id
+                const hasBalance = isPosted && inv.outstandingAmount > 0
+
                 return (
-                  <TR
-                    key={inv.id}
-                    clickable
-                    onClick={() => handleOpenDetails(inv)}
-                  >
+                  <TR key={inv.id} clickable onClick={() => handleOpenDetails(inv)}>
                     <TD>
-                      <RefLink>{inv.invoiceNumber}</RefLink>
+                      <span className="text-ref-link">{inv.invoiceNumber}</span>
                     </TD>
+
                     <TD>
-                      <p className="font-medium">{inv.customerName}</p>
-                      <p className="text-xs text-ref text-muted-foreground">
-                        {inv.dispatchNumber}
+                      <p className="font-medium text-foreground truncate">{inv.customerName}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {inv.dispatchNumber} · {inv.salesOrderNumber}
                       </p>
                     </TD>
-                    <TD className="text-right tabular-nums font-medium">
-                      {formatCurrency(inv.totalAmount)}
+
+                    <TD className="text-muted-foreground tabular-nums">
+                      {formatShortDate(inv.invoiceDate)}
                     </TD>
-                    <TD>
+
+                    <TD className="text-right tabular-nums font-medium">
+                      {formatMoney(inv.totalAmount, currency, 2)}
+                    </TD>
+
+                    <TD className="text-right tabular-nums">
+                      {!isPosted ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : inv.outstandingAmount <= 0 ? (
+                        <span className="text-xs font-medium text-muted-foreground">Settled</span>
+                      ) : (
+                        <span className="font-medium text-foreground">
+                          {formatMoney(inv.outstandingAmount, currency, 2)}
+                        </span>
+                      )}
+                    </TD>
+
+                    <TD className="pl-6">
                       {isPosted ? (
                         <Badge variant="success">Posted</Badge>
                       ) : (
-                        <Badge variant="warning">Draft</Badge>
+                        <Badge variant="neutral">Draft</Badge>
                       )}
                     </TD>
-                    <TD className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="inline-flex items-center justify-end gap-1">
+
+                    <TD className="px-3 text-right">
+                      <div
+                        className="relative inline-flex items-center justify-end gap-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {!isPosted ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={isBusy}
+                            onClick={() => void handlePostInvoice(inv.id)}
+                          >
+                            {isBusy ? '...' : 'Post'}
+                          </Button>
+                        ) : hasBalance ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setOpenMenuId(null)
+                              setReceiptInvoiceId(inv.id)
+                              setIsReceiptModalOpen(true)
+                            }}
+                          >
+                            Collect
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenDetails(inv)}
+                          >
+                            View
+                          </Button>
+                        )}
+
                         <button
                           type="button"
-                          onClick={() => handleOpenDetails(inv)}
-                          className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
-                          title="View Details"
+                          onClick={() => setOpenMenuId(openMenuId === inv.id ? null : inv.id)}
+                          aria-label="Invoice actions"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <MoreHorizontal className="h-4 w-4" />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            financeService.downloadSalesInvoicePdf(inv.id, inv.invoiceNumber)
-                          }
-                          className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
-                          title="Download PDF"
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                        </button>
-                        {!isPosted && (
-                          <>
+
+                        {openMenuId === inv.id && (
+                          <div className="absolute right-0 top-9 z-40 w-44 rounded-md border border-border bg-card shadow-md py-1 text-left">
                             <button
                               type="button"
-                              onClick={() => handleOpenEdit(inv)}
-                              className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
-                              title="Edit Draft"
+                              onClick={() => handleOpenDetails(inv)}
+                              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
                             >
-                              <Edit className="h-3.5 w-3.5" />
+                              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                              View details
                             </button>
+
+                            {hasBalance && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenMenuId(null)
+                                  setReceiptInvoiceId(inv.id)
+                                  setIsReceiptModalOpen(true)
+                                }}
+                                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
+                              >
+                                <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+                                Record receipt
+                              </button>
+                            )}
+
                             <button
                               type="button"
-                              onClick={() => handleDeleteInvoice(inv.id)}
-                              className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
-                              title="Delete Draft"
+                              onClick={() => {
+                                setOpenMenuId(null)
+                                void financeService.downloadSalesInvoicePdf(inv.id, inv.invoiceNumber)
+                              }}
+                              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                              Download PDF
                             </button>
-                          </>
+
+                            {!isPosted && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEdit(inv)}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
+                                >
+                                  <Edit className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Edit draft
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handlePostInvoice(inv.id)}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 cursor-pointer"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Post invoice
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDeleteInvoice(inv)}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Delete draft
+                                </button>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
                     </TD>
@@ -276,41 +421,24 @@ export function SalesInvoicesPage() {
           </TBody>
         </Table>
 
-        {pageData && pageData.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-secondary/15 text-xs">
-            <span className="text-muted-foreground">
-              Showing {invoices.length} of {pageData.totalElements} invoices
-            </span>
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === 0}
-                onClick={() => loadInvoices(Math.max(0, currentPage - 1))}
-                className="h-7 w-7 p-0"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </Button>
-              <span className="px-2 text-muted-foreground tabular-nums">
-                {currentPage + 1} / {pageData.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage >= pageData.totalPages - 1}
-                onClick={() => loadInvoices(currentPage + 1)}
-                className="h-7 w-7 p-0"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
+        {pageData && (
+          <TablePagination
+            page={currentPage}
+            totalPages={pageData.totalPages}
+            totalElements={pageData.totalElements}
+            count={invoices.length}
+            itemLabel="invoices"
+            onPageChange={(nextPage) => loadInvoices(nextPage)}
+          />
         )}
       </div>
 
       <CreateSalesInvoiceModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false)
+          setInvoiceToEdit(null)
+        }}
         onSuccess={() => loadInvoices(currentPage)}
         invoiceToEdit={invoiceToEdit}
       />
@@ -324,7 +452,10 @@ export function SalesInvoicesPage() {
           handleOpenEdit(inv)
         }}
         onPost={handlePostInvoice}
-        onDelete={handleDeleteInvoice}
+        onDelete={async (invoiceId) => {
+          const match = invoices.find((i) => i.id === invoiceId) || selectedInvoice
+          if (match) await handleDeleteInvoice(match)
+        }}
         onRecordReceipt={(inv) => {
           setIsDetailsModalOpen(false)
           setReceiptInvoiceId(inv.id)

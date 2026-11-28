@@ -1,42 +1,91 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
-  Search,
-  Plus,
   Layers,
-  ChevronLeft,
-  ChevronRight,
   Eye,
-  RotateCcw,
-  Pencil,
-  Trash2,
+  MoreHorizontal,
   PackageCheck,
+  Pencil,
+  Ban,
+  Trash2,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
-import { Badge } from '../../components/ui/Badge'
-import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
-import { NativeSelect } from '../../components/ui/NativeSelect'
+import { SearchInput } from '../../components/ui/Input'
+import { Badge, type BadgeVariant } from '../../components/ui/Badge'
+import {
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  TableEmptyState,
+  TablePagination,
+} from '../../components/ui/Table'
 import { manufacturingService } from '../../services/manufacturingService'
+import { confirmAction, toast } from '../../lib/feedback'
+import { formatQuantity } from '../../lib/format'
+import { cn } from '../../lib/cn'
 import { CreateBomModal } from './CreateBomModal'
 import { BomDetailsModal } from './BomDetailsModal'
 import type { Bom, BomStatus } from '../../types/manufacturing'
 import type { PageResponse } from '../../types/masterData'
 
-export function BillOfMaterialsPage() {
+const BOM_STATUS_FILTERS: Array<{ id: BomStatus | ''; label: string }> = [
+  { id: '', label: 'All' },
+  { id: 'ACTIVE', label: 'Active' },
+  { id: 'DRAFT', label: 'Draft' },
+  { id: 'INACTIVE', label: 'Inactive' },
+]
+
+const STATUS_BADGE: Record<BomStatus, { variant: BadgeVariant; label: string }> = {
+  ACTIVE: { variant: 'success', label: 'Active' },
+  DRAFT: { variant: 'warning', label: 'Draft' },
+  INACTIVE: { variant: 'neutral', label: 'Inactive' },
+}
+
+export interface BillOfMaterialsPageProps {
+  isModalOpen?: boolean
+  setIsModalOpen?: (open: boolean) => void
+}
+
+export function BillOfMaterialsPage({
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: setControlledModalOpen,
+}: BillOfMaterialsPageProps = {}) {
   const [boms, setBoms] = useState<Bom[]>([])
   const [pageData, setPageData] = useState<PageResponse<Bom> | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [pageSize] = useState(10)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<BomStatus | ''>('')
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Modals
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [internalModalOpen, setInternalModalOpen] = useState(false)
+  const isCreateModalOpen =
+    controlledModalOpen !== undefined ? controlledModalOpen : internalModalOpen
+  const setIsCreateModalOpen = setControlledModalOpen || setInternalModalOpen
   const [editingDraft, setEditingDraft] = useState<Bom | null>(null)
   const [selectedBom, setSelectedBom] = useState<Bom | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+
+  const menuContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        menuContainerRef.current &&
+        !menuContainerRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const loadBoms = useCallback(
     (page = 0) => {
@@ -57,7 +106,7 @@ export function BillOfMaterialsPage() {
           setIsLoading(false)
         })
         .catch((err: unknown) => {
-          setError(err instanceof Error ? err.message : 'Failed to load Bill of Materials.')
+          setError(err instanceof Error ? err.message : 'Failed to load bills of materials.')
           setIsLoading(false)
         })
     },
@@ -65,7 +114,10 @@ export function BillOfMaterialsPage() {
   )
 
   useEffect(() => {
-    loadBoms(0)
+    const timer = setTimeout(() => {
+      loadBoms(0)
+    }, 0)
+    return () => clearTimeout(timer)
   }, [loadBoms])
 
   const handleActivateBom = async (id: number) => {
@@ -75,31 +127,43 @@ export function BillOfMaterialsPage() {
       setIsDetailsModalOpen(false)
       setSelectedBom(null)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to activate BOM')
+      toast.error(err instanceof Error ? err.message : 'Failed to activate BOM')
     }
   }
 
   const handleDeactivateBom = async (id: number) => {
-    if (!confirm('Are you sure you want to deactivate this BOM? It will no longer be available for new Production Orders.')) return
+    const ok = await confirmAction({
+      title: 'Deactivate this BOM?',
+      description: 'It will no longer be available for new production orders.',
+      confirmLabel: 'Deactivate BOM',
+      variant: 'destructive',
+    })
+    if (!ok) return
     try {
       await manufacturingService.deactivateBom(id)
       loadBoms(currentPage)
       setIsDetailsModalOpen(false)
       setSelectedBom(null)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to deactivate BOM')
+      toast.error(err instanceof Error ? err.message : 'Failed to deactivate BOM')
     }
   }
 
   const handleDeleteDraftBom = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this draft BOM?')) return
+    const ok = await confirmAction({
+      title: 'Delete draft BOM?',
+      description: 'This draft bill of materials will be permanently deleted.',
+      confirmLabel: 'Delete draft',
+      variant: 'destructive',
+    })
+    if (!ok) return
     try {
       await manufacturingService.deleteDraftBom(id)
       loadBoms(currentPage)
       setIsDetailsModalOpen(false)
       setSelectedBom(null)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to delete draft BOM')
+      toast.error(err instanceof Error ? err.message : 'Failed to delete draft BOM')
     }
   }
 
@@ -110,83 +174,64 @@ export function BillOfMaterialsPage() {
     setIsCreateModalOpen(true)
   }
 
-  const formatQuantity = (qty: number) => {
-    if (qty % 1 === 0) {
-      return qty.toLocaleString('en-IN', { maximumFractionDigits: 0 })
-    }
-    return qty.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 4 })
+  const hasActiveFilters = Boolean(search.trim() || statusFilter)
+  const clearAllFilters = () => {
+    setSearch('')
+    setStatusFilter('')
   }
 
   return (
-    <div className="space-y-4">
-      {/* 1. Toolbar matching reference design: Search, Status Filter, + Create BOM */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-        <div className="flex items-center gap-2.5">
-          {/* Search bar */}
-          <div className="relative w-64 sm:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search BOMs..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <SearchInput value={search} onChange={setSearch} placeholder="Search BOMs..." />
 
-          {/* Status Filter */}
-          <NativeSelect
-            dense
-            className="w-auto min-w-[9.5rem]"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as BomStatus | '')}
-          >
-            <option value="">All Statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="DRAFT">Draft</option>
-            <option value="INACTIVE">Inactive</option>
-          </NativeSelect>
-
-          {(search || statusFilter) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('')
-              }}
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline cursor-pointer ml-1"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Reset
-            </button>
-          )}
+        <div
+          className="inline-flex flex-wrap items-center gap-1"
+          role="group"
+          aria-label="Filter by status"
+        >
+          {BOM_STATUS_FILTERS.map((opt) => {
+            const active = statusFilter === opt.id
+            return (
+              <button
+                key={opt.id || 'all'}
+                type="button"
+                onClick={() => setStatusFilter(opt.id)}
+                className={cn(
+                  'h-8 rounded-md px-2.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap',
+                  active
+                    ? 'bg-ink text-ink-foreground'
+                    : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                )}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
         </div>
 
-        {/* Right side: + Create BOM button */}
-        <div className="flex items-center gap-2.5">
-          <Button
+        {hasActiveFilters && (
+          <button
             type="button"
-            onClick={() => {
-              setEditingDraft(null)
-              setIsCreateModalOpen(true)
-            }}
-            className="flex h-10 items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-4 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+            onClick={clearAllFilters}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer px-1"
           >
-            <Plus className="h-4 w-4" />
-            <span>Create BOM</span>
-          </Button>
-        </div>
+            <RotateCcw className="h-3 w-3" />
+            Reset
+          </button>
+        )}
       </div>
 
-      {/* 2. BOM Table matching screenshot (uploaded_media_0_1795538672466.png) */}
-      <div className="w-full">
+      <div className="w-full" ref={menuContainerRef}>
         {isLoading && boms.length === 0 ? (
-          <div className="py-20 text-center">
+          <div className="py-20 text-center rounded-md border border-border bg-card">
             <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-            <p className="mt-3 text-xs text-muted-foreground">Loading Bill of Materials...</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Loading bills of materials...
+            </p>
           </div>
         ) : error ? (
-          <div className="py-16 text-center">
+          <div className="py-16 text-center rounded-md border border-border bg-card">
             <p className="text-sm font-medium text-destructive">{error}</p>
             <Button
               variant="outline"
@@ -200,207 +245,204 @@ export function BillOfMaterialsPage() {
               Retry
             </Button>
           </div>
-        ) : boms.length === 0 ? (
-          <div className="py-16 text-center rounded-md border border-border/80 bg-card">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
-              <Layers className="h-6 w-6" />
-            </div>
-            <p className="text-base font-semibold text-foreground">No Bill of Materials found</p>
-            <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
-              A Bill of Materials defines which materials and how much of each material are required to manufacture a product.
-            </p>
-            <Button
-              size="sm"
-              onClick={() => setIsCreateModalOpen(true)}
-              className="mt-4 gap-1.5 text-xs"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Create First BOM</span>
-            </Button>
-          </div>
         ) : (
-          <>
-            <Table>
+          <div className="rounded-md border border-border/80 bg-card overflow-visible">
+            <Table className="border-0 rounded-none overflow-visible" tableClassName="table-fixed">
               <THead>
                 <tr>
-                  <TH>BOM code</TH>
-                  <TH>Product</TH>
-                  <TH>Output qty</TH>
-                  <TH className="text-center">Components</TH>
-                  <TH>Status</TH>
-                  <TH className="text-right">Actions</TH>
+                  <TH className="w-[14%]">BOM code</TH>
+                  <TH className="w-[32%]">Product</TH>
+                  <TH className="w-[14%] text-right">Output qty</TH>
+                  <TH className="w-[13%] text-right">Components</TH>
+                  <TH className="w-[12%] pl-6">Status</TH>
+                  <TH className="w-[15%] px-3 text-right">Actions</TH>
                 </tr>
               </THead>
               <TBody>
-                {boms.map((bom) => (
-                  <TR
-                    key={bom.id}
-                    clickable
-                    onClick={() => {
-                      setSelectedBom(bom)
-                      setIsDetailsModalOpen(true)
-                    }}
-                  >
-                    <TD>
-                      <span className="text-ref-link">{bom.bomCode}</span>
-                    </TD>
-
-                    <TD>
-                      <p className="font-medium">{bom.productName}</p>
-                      <p className="text-xs text-ref text-muted-foreground">
-                        {bom.productCode}
-                      </p>
-                    </TD>
-
-                    <TD className="tabular-nums font-medium">
-                      {formatQuantity(bom.outputQuantity)} {bom.unitOfMeasure}
-                    </TD>
-
-                    <TD className="text-center tabular-nums">
-                      <span className="font-medium">{bom.totalComponents}</span>
-                    </TD>
-
-                    <TD>
-                      {bom.status === 'ACTIVE' && (
-                        <Badge variant="success">Active</Badge>
-                      )}
-                      {bom.status === 'DRAFT' && (
-                        <Badge variant="warning">Draft</Badge>
-                      )}
-                      {bom.status === 'INACTIVE' && (
-                        <Badge variant="destructive">Inactive</Badge>
-                      )}
-                    </TD>
-
-                    <TD
-                      className="text-right space-x-1.5 whitespace-nowrap"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {bom.status === 'DRAFT' ? (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenEdit(bom)}
-                            className="h-8 px-2.5 text-xs cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <Pencil className="h-3 w-3" />
-                            <span>Edit</span>
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleActivateBom(bom.id)}
-                            className="h-8 px-2.5 text-xs bg-success text-success-foreground hover:opacity-90 cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <PackageCheck className="h-3 w-3" />
-                            <span>Activate</span>
-                          </Button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteDraftBom(bom.id)}
-                            className="text-xs text-destructive hover:underline cursor-pointer ml-1 p-1"
-                            title="Delete draft"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </>
-                      ) : bom.status === 'ACTIVE' ? (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeactivateBom(bom.id)}
-                            className="h-8 px-2.5 text-xs text-warning border-warning/30 hover:bg-warning/10 cursor-pointer"
-                          >
-                            Deactivate
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBom(bom)
-                              setIsDetailsModalOpen(true)
-                            }}
-                            className="h-8 px-2.5 text-xs cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                            <span>View</span>
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleActivateBom(bom.id)}
-                            className="h-8 px-2.5 text-xs text-success border-success/30 hover:bg-success/10 cursor-pointer"
-                          >
-                            Reactivate
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBom(bom)
-                              setIsDetailsModalOpen(true)
-                            }}
-                            className="h-8 px-2.5 text-xs cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                            <span>View</span>
-                          </Button>
-                        </>
-                      )}
+                {boms.length === 0 ? (
+                  <TR>
+                    <TD colSpan={6} className="p-0">
+                      <TableEmptyState
+                        icon={<Layers className="h-5 w-5" />}
+                        title="No bills of materials found"
+                        description={
+                          hasActiveFilters
+                            ? 'No bills of materials match your current search or status filter.'
+                            : 'Define the materials and quantities required to manufacture a product using "+ Create BOM" above.'
+                        }
+                        action={
+                          hasActiveFilters ? (
+                            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                              <RotateCcw className="h-3.5 w-3.5" />
+                              Reset filters
+                            </Button>
+                          ) : undefined
+                        }
+                      />
                     </TD>
                   </TR>
-                ))}
+                ) : (
+                  boms.map((bom) => {
+                    const badge = STATUS_BADGE[bom.status] ?? {
+                      variant: 'neutral',
+                      label: bom.status,
+                    }
+
+                    return (
+                      <TR
+                        key={bom.id}
+                        clickable
+                        onClick={() => {
+                          setOpenMenuId(null)
+                          setSelectedBom(bom)
+                          setIsDetailsModalOpen(true)
+                        }}
+                      >
+                        <TD>
+                          <span className="text-ref-link">{bom.bomCode}</span>
+                        </TD>
+
+                        <TD>
+                          <p className="font-medium truncate">{bom.productName}</p>
+                          <p className="text-ref text-muted-foreground">{bom.productCode}</p>
+                        </TD>
+
+                        <TD className="text-right tabular-nums font-medium">
+                          {formatQuantity(bom.outputQuantity)}{' '}
+                          <span className="text-xs font-normal text-muted-foreground uppercase">
+                            {bom.unitOfMeasure}
+                          </span>
+                        </TD>
+
+                        <TD className="text-right tabular-nums font-medium">
+                          {bom.totalComponents}
+                        </TD>
+
+                        <TD className="pl-6">
+                          <Badge variant={badge.variant}>{badge.label}</Badge>
+                        </TD>
+
+                        <TD className="px-3 text-right whitespace-nowrap">
+                          <div
+                            className="relative inline-flex items-center justify-end gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {bom.status === 'DRAFT' && (
+                              <button
+                                type="button"
+                                onClick={() => handleActivateBom(bom.id)}
+                                className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                                title="Activate BOM"
+                              >
+                                <PackageCheck className="h-3 w-3 text-muted-foreground" />
+                                Activate
+                              </button>
+                            )}
+
+                            {bom.status === 'INACTIVE' && (
+                              <button
+                                type="button"
+                                onClick={() => handleActivateBom(bom.id)}
+                                className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                                title="Reactivate BOM"
+                              >
+                                Reactivate
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setOpenMenuId((prev) => (prev === bom.id ? null : bom.id))
+                              }
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer transition-colors"
+                              aria-label="More BOM actions"
+                              aria-expanded={openMenuId === bom.id}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+
+                            {openMenuId === bom.id && (
+                              <div className="absolute right-0 top-full z-40 mt-1 w-40 rounded-md border border-border bg-card py-1 shadow-panel text-left">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setOpenMenuId(null)
+                                    setSelectedBom(bom)
+                                    setIsDetailsModalOpen(true)
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                  View details
+                                </button>
+                                {bom.status === 'DRAFT' && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuId(null)
+                                        handleOpenEdit(bom)
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                      Edit draft
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuId(null)
+                                        handleDeleteDraftBom(bom.id)
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                      Delete draft
+                                    </button>
+                                  </>
+                                )}
+                                {bom.status === 'ACTIVE' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenMenuId(null)
+                                      handleDeactivateBom(bom.id)
+                                    }}
+                                    className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer"
+                                  >
+                                    <Ban className="h-3.5 w-3.5" />
+                                    Deactivate
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </TD>
+                      </TR>
+                    )
+                  })
+                )}
               </TBody>
             </Table>
 
-            {/* Pagination footer */}
-            {pageData && pageData.totalPages > 1 && (
-              <div className="flex items-center justify-between border border-t-0 border-border/80 rounded-b-md bg-card px-4 py-3 text-xs text-muted-foreground">
-                <span>
-                  Showing {boms.length} of {pageData.totalElements} BOMs
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsLoading(true)
-                      loadBoms(currentPage - 1)
-                    }}
-                    disabled={currentPage === 0}
-                    className="h-8 gap-1 text-xs cursor-pointer"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" />
-                    <span>Previous</span>
-                  </Button>
-                  <span className="px-2 text-foreground font-medium">
-                    Page {pageData.page + 1} of {pageData.totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsLoading(true)
-                      loadBoms(currentPage + 1)
-                    }}
-                    disabled={currentPage >= pageData.totalPages - 1}
-                    className="h-8 gap-1 text-xs cursor-pointer"
-                  >
-                    <span>Next</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
+            {pageData && (
+              <TablePagination
+                page={currentPage}
+                totalPages={pageData.totalPages}
+                totalElements={pageData.totalElements}
+                count={boms.length}
+                itemLabel="BOMs"
+                onPageChange={(nextPage) => {
+                  setIsLoading(true)
+                  loadBoms(nextPage)
+                }}
+              />
             )}
-          </>
+          </div>
         )}
       </div>
 
-      {/* Create / Edit BOM Popup Modal */}
       <CreateBomModal
         isOpen={isCreateModalOpen}
         initialDraft={editingDraft}
@@ -413,7 +455,6 @@ export function BillOfMaterialsPage() {
         }}
       />
 
-      {/* BOM Details Modal */}
       <BomDetailsModal
         isOpen={isDetailsModalOpen}
         bom={selectedBom}

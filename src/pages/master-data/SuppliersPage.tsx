@@ -17,6 +17,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
 import { CreateSupplierModal } from './CreateSupplierModal'
 import { masterDataService } from '../../services/masterDataService'
+import { toast } from '../../lib/feedback'
 import type {
   Supplier,
   CreateSupplierPayload,
@@ -131,7 +132,7 @@ export function SuppliersPage({
       setSuppliers((prev) => prev.map((s) => (s.id === supplier.id ? updated : s)))
       loadSummary()
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to update supplier status')
+      toast.error(err instanceof Error ? err.message : 'Failed to update supplier status')
     } finally {
       setActiveMenuId(null)
     }
@@ -177,7 +178,7 @@ export function SuppliersPage({
       {showHeader && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
               Suppliers
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -259,16 +260,16 @@ export function SuppliersPage({
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`h-10 w-10 flex items-center justify-center rounded-md border transition-colors cursor-pointer relative ${
+              className={`h-9 w-9 flex items-center justify-center rounded-md border transition-colors cursor-pointer relative ${
                 isFilterOpen || selectedStatusFilter !== 'all'
-                  ? 'border-accent bg-brand/15 text-brand-deep'
-                  : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80'
+                  ? 'border-foreground bg-secondary text-foreground'
+                  : 'border-border bg-card text-muted-foreground hover:text-foreground'
               }`}
               title="Filter by Status"
             >
               <Filter className="h-4 w-4" />
               {selectedStatusFilter !== 'all' && (
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-brand-deep" />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-md bg-foreground" />
               )}
             </button>
 

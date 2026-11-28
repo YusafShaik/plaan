@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 export type KpiTone =
@@ -19,6 +20,7 @@ export interface KpiCardProps {
    * not metric strips — max 4 calm KPIs.
    */
   tone?: KpiTone
+  onClick?: () => void
   className?: string
 }
 
@@ -40,8 +42,48 @@ export function KpiCard({
   value,
   hint,
   tone = 'default',
+  onClick,
   className,
 }: KpiCardProps) {
+  const renderBody = (interactive: boolean) => (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        {interactive && (
+          <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-all group-hover:text-foreground group-hover:translate-x-0.5" />
+        )}
+      </div>
+      <div className="mt-1.5">
+        <p
+          className={cn(
+            'text-[22px] leading-7 font-semibold tracking-tight tabular-nums',
+            valueTone[tone]
+          )}
+        >
+          {value}
+        </p>
+        {hint != null && hint !== '' && (
+          <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+        )}
+      </div>
+    </>
+  )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          'group flex min-h-[84px] flex-col justify-between rounded-md border border-border bg-card px-4 py-3.5 text-left hover:bg-secondary/40 transition-colors cursor-pointer',
+          className
+        )}
+      >
+        {renderBody(true)}
+      </button>
+    )
+  }
+
   return (
     <div
       className={cn(
@@ -49,20 +91,7 @@ export function KpiCard({
         className
       )}
     >
-      <p
-        className={cn(
-          'text-[22px] leading-7 font-semibold tracking-tight tabular-nums',
-          valueTone[tone]
-        )}
-      >
-        {value}
-      </p>
-      <div className="mt-2">
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        {hint != null && hint !== '' && (
-          <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
-        )}
-      </div>
+      {renderBody(false)}
     </div>
   )
 }

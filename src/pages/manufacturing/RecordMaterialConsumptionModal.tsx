@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { X, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { X, AlertCircle } from 'lucide-react'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { DateField } from '../../components/ui/DateField'
 import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
+import { toast } from '../../lib/feedback'
 import { manufacturingService } from '../../services/manufacturingService'
 import type {
   ProductionOrder,
@@ -22,7 +24,7 @@ interface ConsumptionRowState {
   materialCode: string
   materialName: string
   availableInProduction: number
-  consumeQuantity: number | ''
+  consumeQuantity: number | string
   unitOfMeasure: string
 }
 
@@ -40,7 +42,6 @@ export function RecordMaterialConsumptionModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen || !order) return
@@ -55,7 +56,6 @@ export function RecordMaterialConsumptionModal({
         setConsumptionDate(new Date().toISOString().split('T')[0])
         setNotes('')
         setError(null)
-        setSuccessMessage(null)
 
         const initialRows: ConsumptionRowState[] = order.items.map((it) => {
           const issued = it.issuedQuantity ?? 0
@@ -81,7 +81,6 @@ export function RecordMaterialConsumptionModal({
         setConsumptionDate(initialDraft.consumptionDate)
         setNotes(initialDraft.notes || '')
         setError(null)
-        setSuccessMessage(null)
 
         const draftRows: ConsumptionRowState[] = order.items.map((it) => {
           const draftItem = initialDraft.items.find((di) => di.materialId === it.materialId)
@@ -115,15 +114,9 @@ export function RecordMaterialConsumptionModal({
   }
 
   const handleRowQuantityChange = (materialId: number, val: string) => {
+    if (val !== '' && Number(val) < 0) return
     setRows((prev) =>
-      prev.map((r) => {
-        if (r.materialId !== materialId) return r
-        if (val === '') {
-          return { ...r, consumeQuantity: '' }
-        }
-        const parsed = Math.max(0, parseFloat(val) || 0)
-        return { ...r, consumeQuantity: parsed }
-      })
+      prev.map((r) => (r.materialId === materialId ? { ...r, consumeQuantity: val } : r))
     )
   }
 
@@ -170,7 +163,6 @@ export function RecordMaterialConsumptionModal({
     try {
       setIsSubmitting(true)
       setError(null)
-      setSuccessMessage(null)
 
       const itemsPayload = rows.map((r) => ({
         materialId: r.materialId,
@@ -195,16 +187,13 @@ export function RecordMaterialConsumptionModal({
         })
       }
 
-      setSuccessMessage(
+      toast.success(
         postImmediately
-          ? 'Material consumption posted successfully! Material accountability updated.'
-          : 'Draft material consumption saved successfully.'
+          ? 'Material consumption posted.'
+          : 'Draft material consumption saved.'
       )
       onSuccess()
-
-      setTimeout(() => {
-        onClose()
-      }, 800)
+      onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred while saving material consumption.')
     } finally {
@@ -222,15 +211,17 @@ export function RecordMaterialConsumptionModal({
         {/* Header matching Screenshot 2 */}
         <div className="flex items-center justify-between pb-3 border-b border-border/80">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              {initialDraft ? `Edit Material Consumption (${consumptionNumber})` : 'Record Material Consumption'}
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              {initialDraft
+                ? `Edit material consumption (${consumptionNumber})`
+                : 'Record material consumption'}
             </h2>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -244,53 +235,32 @@ export function RecordMaterialConsumptionModal({
           </div>
         )}
 
-        {successMessage && (
-          <div className="flex items-start gap-2.5 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-            <p className="flex-1 font-medium">{successMessage}</p>
-          </div>
-        )}
-
         {/* Form Body */}
         <div className="space-y-4">
-          {/* Row 1: Consumption Number & Consumption Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Consumption Number
-              </label>
-              <input
-                type="text"
-                disabled
-                value={consumptionNumber}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed"
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+              <span className="text-xs font-medium text-muted-foreground leading-none">
+                Consumption number
+              </span>
+              <span className="mt-1 text-sm font-medium tabular-nums text-foreground">
+                {consumptionNumber}
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1.5">
-                Consumption Date <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="date"
-                value={consumptionDate}
-                onChange={(e) => setConsumptionDate(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/30 px-3.5 text-xs text-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground cursor-pointer"
-              />
-            </div>
+            <DateField
+              label="Consumption date *"
+              value={consumptionDate}
+              onChange={(e) => setConsumptionDate(e.target.value)}
+            />
           </div>
 
-          {/* Row 2: Production Order */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
-              Production Order
-            </label>
-            <input
-              type="text"
-              disabled
-              value={order.orderNumber}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary/50 px-3.5 text-xs tabular-nums text-muted-foreground cursor-not-allowed font-medium"
-            />
+          <div className="flex min-h-14 w-full flex-col justify-center rounded-md border border-border/70 bg-secondary px-3.5 py-2 select-none">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
+              Production order
+            </span>
+            <span className="mt-1 text-sm font-medium tabular-nums text-foreground">
+              {order.orderNumber}
+            </span>
           </div>
 
           {/* Table matching Screenshot 2: Material | Available in production | Consume Qty | Remaining */}
@@ -357,16 +327,16 @@ export function RecordMaterialConsumptionModal({
           </div>
 
           {/* Notes */}
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
+          <div className="flex min-h-14 w-full flex-col rounded-md border border-border bg-card px-3.5 py-2 focus-within:border-foreground focus-within:ring-1 focus-within:ring-foreground">
+            <span className="text-xs font-medium text-muted-foreground leading-none">
               Notes
-            </label>
+            </span>
             <textarea
               rows={2}
               placeholder="Optional consumption notes..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="flex w-full rounded-md border border-border/80 bg-secondary/30 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground resize-none"
+              className="mt-1 w-full resize-none border-0 bg-transparent p-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0"
             />
           </div>
 
@@ -374,23 +344,28 @@ export function RecordMaterialConsumptionModal({
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
             <Button
               type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
               variant="outline"
-              size="sm"
               disabled={isSubmitting}
               onClick={() => handleSubmit(false)}
-              className="text-xs font-medium cursor-pointer rounded-md px-3.5"
             >
-              Save Draft
+              Save draft
             </Button>
 
             <Button
               type="button"
-              size="sm"
+              variant="primary"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="bg-brand hover:bg-brand-hover text-brand-foreground font-semibold text-xs cursor-pointer shadow-xs rounded-md px-4"
             >
-              <span>{isSubmitting ? 'Posting...' : 'Post Consumption'}</span>
+              <span>{isSubmitting ? 'Posting...' : 'Post consumption'}</span>
             </Button>
           </div>
         </div>

@@ -32,7 +32,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-background flex flex-col justify-between p-6 md:p-8">
+    <div className="relative min-h-screen w-full bg-surface-subtle dark:bg-background flex flex-col justify-between p-6 md:p-8">
       {/* Brand Header */}
       <header className="flex items-center">
         <div className="flex items-center gap-2 select-none">
@@ -53,7 +53,7 @@ export function LoginPage() {
 
       {/* Main Center Content */}
       <main className="flex-1 flex flex-col justify-center items-center py-10">
-        <div className="w-full max-w-[390px] mx-auto">
+        <div className="w-full max-w-[400px] mx-auto rounded-md border border-border bg-card p-6 sm:p-8 shadow-xs">
           {/* Titles */}
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-[28px] font-semibold tracking-tight text-foreground">
@@ -118,25 +118,8 @@ export function LoginPage() {
       </main>
 
       {/* Footer */}
-      <footer className="flex flex-col items-center justify-center gap-4 text-xs text-muted-foreground pb-2">
-        <button
-          type="button"
-          className="rounded-full bg-secondary text-secondary-foreground hover:bg-muted px-4 py-1.5 font-medium transition-colors cursor-pointer"
-        >
-          Help
-        </button>
-
-        <nav aria-label="Legal links" className="flex items-center gap-6">
-          <a href="#terms" className="hover:text-foreground transition-colors">
-            Terms
-          </a>
-          <a href="#privacy" className="hover:text-foreground transition-colors">
-            Privacy
-          </a>
-          <a href="#cookies" className="hover:text-foreground transition-colors">
-            Cookies
-          </a>
-        </nav>
+      <footer className="flex items-center justify-center text-xs text-muted-foreground pb-2">
+        <span>Plaan Manufacturing &amp; Operations</span>
       </footer>
     </div>
   )

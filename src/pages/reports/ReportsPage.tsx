@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronRight, Search } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { ComingSoonReport } from './ComingSoonReport'
 import { PendingPurchaseOrdersReport } from './PendingPurchaseOrdersReport'
 import { PurchaseSummaryReport } from './PurchaseSummaryReport'
@@ -16,6 +16,7 @@ import { ExpenseReport } from './ExpenseReport'
 import { MaintenanceHistoryReport } from './MaintenanceHistoryReport'
 import { DueOverdueMaintenanceReport } from './DueOverdueMaintenanceReport'
 import { EquipmentDowntimeReport } from './EquipmentDowntimeReport'
+import { SearchInput } from '../../components/ui/Input'
 import { ContentCanvas } from '../../components/layout/ContentCanvas'
 import {
   REPORT_CATEGORIES,
@@ -48,6 +49,7 @@ export function ReportsPage({
     const q = search.trim().toLowerCase()
     return REPORT_CATEGORIES.map((category) => {
       const reports = REPORTS.filter((r) => {
+        if (!r.available) return false
         if (r.categoryId !== category.id) return false
         if (!q) return true
         return (
@@ -125,16 +127,12 @@ export function ReportsPage({
         </p>
       </div>
 
-      <div className="relative max-w-xl">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search reports..."
-          className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search reports..."
+        className="w-full max-w-xl"
+      />
 
       {grouped.length === 0 ? (
         <div className="rounded-md border border-border bg-card px-6 py-12 text-center shadow-xs">
@@ -144,7 +142,7 @@ export function ReportsPage({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-4">
           {grouped.map(({ category, reports }) => {
             const Icon = category.icon
             return (

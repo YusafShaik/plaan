@@ -3,12 +3,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  Plus,
   RotateCcw,
-  Search,
   Wrench,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { Badge } from '../../components/ui/Badge'
 import { Table, THead, TBody, TR, TH, TD, RefLink } from '../../components/ui/Table'
 import { NativeSelect } from '../../components/ui/NativeSelect'
@@ -44,7 +43,15 @@ function statusBadge(status: MaintenanceWorkOrderStatus) {
   return <Badge variant="neutral">{STATUS_LABEL[status]}</Badge>
 }
 
-export function WorkOrdersPage() {
+export interface WorkOrdersPageProps {
+  isModalOpen?: boolean
+  setIsModalOpen?: (open: boolean) => void
+}
+
+export function WorkOrdersPage({
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: setControlledModalOpen,
+}: WorkOrdersPageProps = {}) {
   const [orders, setOrders] = useState<MaintenanceWorkOrder[]>([])
   const [pageData, setPageData] = useState<PageResponse<MaintenanceWorkOrder> | null>(null)
   const [summary, setSummary] = useState<MaintenanceWorkOrderSummary | null>(null)
@@ -56,7 +63,10 @@ export function WorkOrdersPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [internalModalOpen, setInternalModalOpen] = useState(false)
+  const isCreateOpen =
+    controlledModalOpen !== undefined ? controlledModalOpen : internalModalOpen
+  const setIsCreateOpen = setControlledModalOpen || setInternalModalOpen
   const [selected, setSelected] = useState<MaintenanceWorkOrder | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
@@ -127,27 +137,22 @@ export function WorkOrdersPage() {
         />
       </KpiCardGrid>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="relative w-64 sm:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search work orders..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search work orders..."
+          />
           <NativeSelect
             dense
             className="w-auto min-w-[9rem]"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as MaintenanceWorkOrderStatus | '')}
           >
-            <option value="">All Statuses</option>
+            <option value="">All statuses</option>
             <option value="OPEN">Open</option>
-            <option value="IN_PROGRESS">In Progress</option>
+            <option value="IN_PROGRESS">In progress</option>
             <option value="COMPLETED">Completed</option>
             <option value="CANCELLED">Cancelled</option>
           </NativeSelect>
@@ -157,7 +162,7 @@ export function WorkOrdersPage() {
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as MaintenanceWorkOrderType | '')}
           >
-            <option value="">All Types</option>
+            <option value="">All types</option>
             <option value="PREVENTIVE">Preventive</option>
             <option value="BREAKDOWN">Breakdown</option>
           </NativeSelect>
@@ -176,23 +181,19 @@ export function WorkOrdersPage() {
             </button>
           )}
         </div>
-        <Button type="button" variant="primary" className="ml-auto" onClick={() => setIsCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-          New Work Order
-        </Button>
       </div>
 
       {error && <Alert variant="destructive">{error}</Alert>}
 
       <div className="overflow-hidden rounded-md border border-border bg-card shadow-xs">
-        <Table className="border-0 rounded-none shadow-none bg-transparent">
+        <Table className="border-0 rounded-none shadow-none bg-transparent" tableClassName="table-fixed">
           <THead>
             <tr>
-              <TH>Reference</TH>
-              <TH>Equipment</TH>
-              <TH>Type</TH>
-              <TH>Status</TH>
-              <TH className="text-right">Actions</TH>
+              <TH className="w-[22%]">Reference</TH>
+              <TH className="w-[30%]">Equipment</TH>
+              <TH className="w-[18%]">Type</TH>
+              <TH className="w-[16%]">Status</TH>
+              <TH className="w-[14%] text-right">Actions</TH>
             </tr>
           </THead>
           <TBody>

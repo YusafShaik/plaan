@@ -1,28 +1,35 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import {
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  X,
   PackageCheck,
   Download,
   RotateCcw,
-  Check,
   Plus,
   Send,
   Ban,
   Eye,
+  MoreHorizontal,
   History,
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SearchInput } from '../../components/ui/Input'
 import { KpiCard, KpiCardGrid } from '../../components/ui/KpiCard'
-import { Badge } from '../../components/ui/Badge'
-import { Table, THead, TBody, TR, TH, TD } from '../../components/ui/Table'
-import { UnderlineTabs } from '../../components/ui/Tabs'
+import { Badge, type BadgeVariant } from '../../components/ui/Badge'
+import {
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  TableEmptyState,
+  TablePagination,
+} from '../../components/ui/Table'
 import { CreateGoodsReceiptModal } from './CreateGoodsReceiptModal'
 import { GoodsReceiptDetailsModal } from './GoodsReceiptDetailsModal'
 import { procurementService } from '../../services/procurementService'
+import { confirmAction, toast } from '../../lib/feedback'
+import { formatQuantity, formatShortDate } from '../../lib/format'
+import { cn } from '../../lib/cn'
 import type { PageResponse } from '../../types/masterData'
 import type {
   GoodsReceipt,
@@ -31,29 +38,42 @@ import type {
   StockMovement,
 } from '../../types/procurement'
 
+const GRN_STATUS_FILTERS: Array<{ id: string; label: string }> = [
+  { id: 'all', label: 'All' },
+  { id: 'POSTED', label: 'Posted' },
+  { id: 'DRAFT', label: 'Draft' },
+  { id: 'CANCELLED', label: 'Cancelled' },
+]
+
+const GRN_STATUS_BADGE: Record<GoodsReceiptStatus, { variant: BadgeVariant; label: string }> = {
+  POSTED: { variant: 'success', label: 'Posted' },
+  DRAFT: { variant: 'neutral', label: 'Draft' },
+  CANCELLED: { variant: 'destructive', label: 'Cancelled' },
+}
+
 export interface GoodsReceiptsPageProps {
   showHeader?: boolean
   isModalOpen?: boolean
   setIsModalOpen?: (open: boolean) => void
+  preselectedPoId?: number
 }
 
 export function GoodsReceiptsPage({
   showHeader = true,
   isModalOpen,
   setIsModalOpen,
+  preselectedPoId,
 }: GoodsReceiptsPageProps) {
-  // Modal states
   const [internalModalOpen, setInternalModalOpen] = useState(false)
   const isCreateOpen = isModalOpen !== undefined ? isModalOpen : internalModalOpen
   const setCreateOpen = setIsModalOpen || setInternalModalOpen
 
   const [selectedReceipt, setSelectedReceipt] = useState<GoodsReceipt | null>(null)
   const [downloadingGrnId, setDownloadingGrnId] = useState<number | null>(null)
+  const [openMenuGrnId, setOpenMenuGrnId] = useState<number | null>(null)
 
-  // Active view tab: 'receipts' | 'movements'
   const [subTab, setSubTab] = useState<'receipts' | 'movements'>('receipts')
 
-  // Receipts data
   const [receipts, setReceipts] = useState<GoodsReceipt[]>([])
   const [summary, setSummary] = useState<GoodsReceiptSummary | null>(null)
   const [pageData, setPageData] = useState<PageResponse<GoodsReceipt> | null>(null)
@@ -61,22 +81,22 @@ export function GoodsReceiptsPage({
   const [pageSize] = useState(10)
   const [search, setSearch] = useState('')
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Stock movements data
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [isLoadingMovements, setIsLoadingMovements] = useState(false)
   const [movementSearch, setMovementSearch] = useState('')
 
-  const filterRef = useRef<HTMLDivElement>(null)
+  const menuContainerRef = useRef<HTMLDivElement>(null)
 
-  // Close filter dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-        setIsFilterOpen(false)
+      if (
+        menuContainerRef.current &&
+        !menuContainerRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuGrnId(null)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -120,6 +140,7 @@ export function GoodsReceiptsPage({
   )
 
   const loadMovements = useCallback(() => {
+    setIsLoadingMovements(true)
     procurementService
       .getStockMovements()
       .then((data) => {
@@ -134,8 +155,7 @@ export function GoodsReceiptsPage({
 
   useEffect(() => {
     loadSummary()
-    loadMovements()
-  }, [loadSummary, loadMovements])
+  }, [loadSummary])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -153,12 +173,18 @@ export function GoodsReceiptsPage({
         setSelectedReceipt(null)
       }
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to post goods receipt')
+      toast.error(err instanceof Error ? err.message : 'Failed to post goods receipt')
     }
   }
 
   const handleCancelReceipt = async (receiptId: number) => {
-    if (!window.confirm('Are you sure you want to cancel this goods receipt?')) return
+    const ok = await confirmAction({
+      title: 'Cancel goods receipt?',
+      description: 'This draft goods receipt will be marked as cancelled.',
+      confirmLabel: 'Cancel GRN',
+      variant: 'destructive',
+    })
+    if (!ok) return
     try {
       await procurementService.cancelGoodsReceipt(receiptId)
       loadSummary()
@@ -167,7 +193,7 @@ export function GoodsReceiptsPage({
         setSelectedReceipt(null)
       }
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to cancel goods receipt')
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel goods receipt')
     }
   }
 
@@ -176,7 +202,7 @@ export function GoodsReceiptsPage({
       setDownloadingGrnId(receiptId)
       await procurementService.downloadGoodsReceiptPdf(receiptId, grnNumber)
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to download goods receipt note')
+      toast.error(err instanceof Error ? err.message : 'Failed to download goods receipt note')
     } finally {
       setDownloadingGrnId(null)
     }
@@ -212,7 +238,10 @@ export function GoodsReceiptsPage({
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `goods_receipts_export_${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute(
+      'download',
+      `goods_receipts_export_${new Date().toISOString().split('T')[0]}.csv`
+    )
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -239,25 +268,62 @@ export function GoodsReceiptsPage({
 
   const totalCount = pageData?.totalElements ?? receipts.length
 
+  const viewSwitcher = (
+    <div
+      className="inline-flex items-center rounded-md border border-border bg-secondary/70 p-0.5"
+      role="tablist"
+      aria-label="Goods receipt view"
+    >
+      <button
+        type="button"
+        role="tab"
+        aria-selected={subTab === 'receipts'}
+        onClick={() => setSubTab('receipts')}
+        className={cn(
+          'rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer',
+          subTab === 'receipts'
+            ? 'bg-card text-foreground shadow-xs'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+      >
+        Receipts
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={subTab === 'movements'}
+        onClick={() => {
+          setSubTab('movements')
+          loadMovements()
+        }}
+        className={cn(
+          'rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer',
+          subTab === 'movements'
+            ? 'bg-card text-foreground shadow-xs'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+      >
+        Stock movements
+      </button>
+    </div>
+  )
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {showHeader && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between border-b border-border pb-4">
           <div>
             <h1 className="text-[26px] leading-[28px] font-semibold tracking-tight text-foreground">
-              Goods Receipts (GRN)
+              Goods receipts (GRN)
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Receive ordered inventory against issued purchase orders, log delivery notes, and track stock receipts.
+              Receive ordered inventory against issued purchase orders and track inbound stock.
             </p>
           </div>
 
-          <Button
-            onClick={() => setCreateOpen(true)}
-            className="gap-2 bg-ink text-ink-foreground hover:opacity-90 font-medium px-4 py-2 rounded-md text-sm cursor-pointer shadow-xs"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Create goods receipt</span>
+          <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-3.5 w-3.5" />
+            Create goods receipt
           </Button>
         </div>
       )}
@@ -283,452 +349,352 @@ export function GoodsReceiptsPage({
         />
       </KpiCardGrid>
 
-      <div className="space-y-3">
-        <UnderlineTabs
-          items={[
-            { id: 'receipts', label: 'Goods receipts' },
-            {
-              id: 'movements',
-              label:
-                movements.length > 0
-                  ? `Stock movements (${movements.length})`
-                  : 'Stock movements',
-            },
-          ]}
-          value={subTab}
-          onChange={(id) => {
-            const next = id as 'receipts' | 'movements'
-            setSubTab(next)
-            if (next === 'movements') loadMovements()
-          }}
-        />
-        {subTab === 'movements' && (
-          <p className="text-xs text-muted-foreground">
-            Inbound inventory movement ledger against purchase orders
-          </p>
-        )}
-      </div>
-
-      {/* TAB 1: GOODS RECEIPTS */}
+      {/* VIEW 1: GOODS RECEIPTS */}
       {subTab === 'receipts' && (
         <div className="space-y-4">
-          {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              {selectedStatusFilter !== 'all' && (
-                <span className="inline-flex items-center gap-2 rounded-md border border-border bg-secondary px-3.5 py-1.5 text-sm text-foreground animate-in fade-in-50 duration-150">
-                  <span className="text-muted-foreground text-xs font-normal">Status:</span>
-                  <span className="font-medium text-xs uppercase">{selectedStatusFilter}</span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStatusFilter('all')}
-                    className="ml-1 rounded-md p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
-                    title="Remove filter"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search GRN, PO, supplier..."
+              />
+
+              <div
+                className="inline-flex flex-wrap items-center gap-1"
+                role="group"
+                aria-label="Filter by status"
+              >
+                {GRN_STATUS_FILTERS.map((opt) => {
+                  const active = selectedStatusFilter === opt.id
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setSelectedStatusFilter(opt.id)}
+                      className={cn(
+                        'h-8 rounded-md px-2.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap',
+                        active
+                          ? 'bg-ink text-ink-foreground'
+                          : 'border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
 
               {hasActiveFilters && (
                 <button
                   type="button"
                   onClick={clearAllFilters}
-                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer ml-1"
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer px-1"
                 >
                   <RotateCcw className="h-3 w-3" />
-                  Reset all
+                  Reset
                 </button>
               )}
             </div>
 
-            {/* Right side controls */}
-            <div className="flex items-center gap-2.5 ml-auto">
-              {/* Search bar */}
-              <div className="relative w-64 sm:w-72">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search GRN, PO, supplier..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-sm font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-                />
-              </div>
-
-              {/* Filter Popover */}
-              <div className="relative" ref={filterRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors cursor-pointer ${
-                    selectedStatusFilter !== 'all' || isFilterOpen
-                      ? 'border-foreground bg-secondary text-foreground'
-                      : 'border-border/80 bg-secondary text-muted-foreground hover:text-foreground hover:border-border'
-                  }`}
-                  title="Filter by status"
-                >
-                  <Filter className="h-4 w-4" />
-                </button>
-
-                {isFilterOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-md border border-border bg-card p-2 shadow-panel animate-in fade-in-50 zoom-in-95 duration-100">
-                    <div className="px-2 py-1.5 border-b border-border/60 mb-1 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">Filter Status</span>
-                      {selectedStatusFilter !== 'all' && (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedStatusFilter('all')}
-                          className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                        >
-                          Reset
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-0.5">
-                      {[
-                        { id: 'all', label: 'All Statuses' },
-                        { id: 'POSTED', label: 'Posted' },
-                        { id: 'DRAFT', label: 'Draft' },
-                        { id: 'CANCELLED', label: 'Cancelled' },
-                      ].map((option) => {
-                        const isSelected = selectedStatusFilter === option.id
-                        return (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedStatusFilter(option.id)
-                              setIsFilterOpen(false)
-                            }}
-                            className={`flex w-full items-center justify-between rounded-md px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                              isSelected
-                                ? 'bg-secondary text-foreground font-semibold'
-                                : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
-                            }`}
-                          >
-                            <span>{option.label}</span>
-                            {isSelected && <Check className="h-3.5 w-3.5 text-foreground stroke-[2.5]" />}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Export CSV */}
-              <button
-                type="button"
+            <div className="flex items-center gap-2 self-start lg:self-auto">
+              {viewSwitcher}
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleExportCsv}
                 disabled={receipts.length === 0}
-                className="flex h-10 items-center gap-1.5 rounded-md border border-border/80 bg-secondary px-3.5 text-xs font-medium text-foreground hover:border-border hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 title="Export as CSV"
               >
                 <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="hidden sm:inline">Export</span>
-              </button>
+                Export
+              </Button>
             </div>
           </div>
 
-          {/* Table Section */}
-          <div className="w-full">
+          <div className="w-full" ref={menuContainerRef}>
             {isLoading && receipts.length === 0 ? (
-              <div className="py-20 text-center">
+              <div className="py-20 text-center rounded-md border border-border bg-card">
                 <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
                 <p className="mt-3 text-xs text-muted-foreground">Loading goods receipts...</p>
               </div>
             ) : error ? (
-              <div className="py-16 text-center">
+              <div className="py-16 text-center rounded-md border border-border bg-card">
                 <p className="text-sm font-medium text-destructive">{error}</p>
                 <Button variant="outline" size="sm" onClick={() => loadReceipts(0)} className="mt-3">
                   Retry
                 </Button>
               </div>
-            ) : receipts.length === 0 ? (
-              <div className="py-20 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
-                  <PackageCheck className="h-6 w-6" />
-                </div>
-                <p className="text-base font-semibold text-foreground">No goods receipts found</p>
-                <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
-                  {search || selectedStatusFilter !== 'all'
-                    ? 'No goods receipts match your filter criteria. Try resetting filters.'
-                    : 'Your organization has no goods receipts yet. Click "+ Create goods receipt" to record your first delivery against an issued PO.'}
-                </p>
-                {hasActiveFilters ? (
-                  <Button variant="outline" size="sm" onClick={clearAllFilters} className="mt-4 gap-1.5">
-                    <RotateCcw className="h-3.5 w-3.5" />
-                    <span>Reset filters</span>
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => setCreateOpen(true)}
-                    className="mt-4 gap-1.5 bg-ink text-ink-foreground"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Create goods receipt</span>
-                  </Button>
-                )}
-              </div>
             ) : (
-              <Table>
-                <THead>
-                  <tr>
-                    <TH>GRN number</TH>
-                    <TH>PO number</TH>
-                    <TH>Supplier</TH>
-                    <TH>Receiving warehouse</TH>
-                    <TH>Receipt date</TH>
-                    <TH>Delivery note</TH>
-                    <TH>Items received</TH>
-                    <TH className="text-center">Status</TH>
-                    <TH className="text-right w-28" />
-                  </tr>
-                </THead>
-                <TBody>
-                    {receipts.map((grn) => (
-                      <TR
-                        key={grn.id}
-                        onClick={() => setSelectedReceipt(grn)}
-                        clickable
-                        className="group"
-                      >
-                        <TD>
-                          <span className="text-ref-link">
-                            {grn.grnNumber}
-                          </span>
-                        </TD>
-
-                        <TD className="text-ref text-foreground">
-                          {grn.poNumber}
-                        </TD>
-
-                        <TD>
-                          <p className="font-medium">{grn.supplierName}</p>
-                          <p className="text-xs text-ref text-muted-foreground">{grn.supplierCode}</p>
-                        </TD>
-
-                        <TD>{grn.warehouseName}</TD>
-
-                        <TD className="font-normal">{grn.receiptDate}</TD>
-
-                        <TD className="text-ref font-normal">
-                          {grn.deliveryNoteNumber || '—'}
-                        </TD>
-
-                        <TD className="font-normal">
-                          {grn.itemsCount} {grn.itemsCount === 1 ? 'item' : 'items'}
-                        </TD>
-
-                        <TD className="text-center">
-                          {grn.status === 'POSTED' && (
-                            <Badge variant="success">Posted</Badge>
-                          )}
-                          {grn.status === 'DRAFT' && (
-                            <Badge variant="neutral">Draft</Badge>
-                          )}
-                          {grn.status === 'CANCELLED' && (
-                            <Badge variant="destructive">Cancelled</Badge>
-                          )}
-                        </TD>
-
-                        <TD className="text-right whitespace-nowrap">
-                          <div
-                            className="flex items-center justify-end gap-1"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setSelectedReceipt(grn)}
-                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
-                              title="View GRN Details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleDownloadPdf(grn.id, grn.grnNumber)}
-                              disabled={downloadingGrnId === grn.id}
-                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer transition-colors"
-                              title="Download GRN PDF Note"
-                            >
-                              {downloadingGrnId === grn.id ? (
-                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent inline-block" />
-                              ) : (
-                                <Download className="h-4 w-4" />
-                              )}
-                            </button>
-
-                            {grn.status === 'DRAFT' && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handlePostReceipt(grn.id)}
-                                  className="p-1.5 rounded-md text-success hover:text-success hover:bg-success/10 cursor-pointer transition-colors"
-                                  title="Post Goods Receipt (Commit to Inventory)"
-                                >
-                                  <Send className="h-4 w-4" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCancelReceipt(grn.id)}
-                                  className="p-1.5 rounded-md text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
-                                  title="Cancel Draft"
-                                >
-                                  <Ban className="h-4 w-4" />
-                                </button>
-                              </>
-                            )}
-                          </div>
+              <div className="rounded-md border border-border/80 bg-card overflow-visible">
+                <Table className="border-0 rounded-none overflow-visible" tableClassName="table-fixed">
+                  <THead>
+                    <tr>
+                      <TH className="w-[11%]">GRN number</TH>
+                      <TH className="w-[10%]">PO number</TH>
+                      <TH className="w-[20%]">Supplier</TH>
+                      <TH className="w-[14%]">Warehouse</TH>
+                      <TH className="w-[10%]">Receipt date</TH>
+                      <TH className="w-[10%]">Delivery note</TH>
+                      <TH className="w-[5%] text-right">Items</TH>
+                      <TH className="w-[9%] pl-5">Status</TH>
+                      <TH className="w-[11%] px-3 text-right">Actions</TH>
+                    </tr>
+                  </THead>
+                  <TBody>
+                    {receipts.length === 0 ? (
+                      <TR>
+                        <TD colSpan={9} className="p-0">
+                          <TableEmptyState
+                            icon={<PackageCheck className="h-5 w-5" />}
+                            title="No goods receipts found"
+                            description={
+                              hasActiveFilters
+                                ? 'No goods receipts match your current search or status filter.'
+                                : 'Record your first delivery against an issued PO using "+ Create goods receipt" above.'
+                            }
+                            action={
+                              hasActiveFilters ? (
+                                <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                                  <RotateCcw className="h-3.5 w-3.5" />
+                                  Reset filters
+                                </Button>
+                              ) : undefined
+                            }
+                          />
                         </TD>
                       </TR>
-                    ))}
-                </TBody>
-              </Table>
-            )}
+                    ) : (
+                      receipts.map((grn) => {
+                        const badge = GRN_STATUS_BADGE[grn.status] ?? {
+                          variant: 'neutral',
+                          label: grn.status,
+                        }
 
-            {/* Pagination Controls */}
-            {receipts.length > 0 && pageData && (
-              <div className="flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
-                <div>
-                  Showing {receipts.length} of {totalCount} goods receipts
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => loadReceipts(currentPage - 1)}
-                    disabled={currentPage === 0}
-                    className="h-8 gap-1 text-xs cursor-pointer"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" />
-                    <span>Previous</span>
-                  </Button>
-                  <span className="px-2 text-foreground font-medium">
-                    Page {pageData.page + 1} of {pageData.totalPages || 1}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => loadReceipts(currentPage + 1)}
-                    disabled={currentPage >= pageData.totalPages - 1}
-                    className="h-8 gap-1 text-xs cursor-pointer"
-                  >
-                    <span>Next</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                        return (
+                          <TR
+                            key={grn.id}
+                            onClick={() => {
+                              setOpenMenuGrnId(null)
+                              setSelectedReceipt(grn)
+                            }}
+                            clickable
+                            className="group"
+                          >
+                            <TD>
+                              <span className="text-ref-link">{grn.grnNumber}</span>
+                            </TD>
+
+                            <TD className="text-ref text-foreground font-normal">
+                              {grn.poNumber}
+                            </TD>
+
+                            <TD>
+                              <p className="font-medium text-foreground truncate">
+                                {grn.supplierName}
+                              </p>
+                              <p className="text-ref text-muted-foreground">
+                                {grn.supplierCode}
+                              </p>
+                            </TD>
+
+                            <TD className="truncate">{grn.warehouseName}</TD>
+
+                            <TD className="tabular-nums text-muted-foreground font-normal">
+                              {formatShortDate(grn.receiptDate)}
+                            </TD>
+
+                            <TD className="text-ref font-normal truncate">
+                              {grn.deliveryNoteNumber || '—'}
+                            </TD>
+
+                            <TD className="text-right tabular-nums font-normal">
+                              {grn.itemsCount}
+                            </TD>
+
+                            <TD className="pl-5">
+                              <Badge variant={badge.variant}>{badge.label}</Badge>
+                            </TD>
+
+                            <TD className="px-3 text-right whitespace-nowrap">
+                              <div
+                                className="relative inline-flex items-center justify-end gap-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {grn.status === 'DRAFT' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePostReceipt(grn.id)}
+                                    className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer transition-colors"
+                                    title="Post goods receipt to inventory"
+                                  >
+                                    <Send className="h-3 w-3 text-muted-foreground" />
+                                    Post
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setOpenMenuGrnId((prev) =>
+                                      prev === grn.id ? null : grn.id
+                                    )
+                                  }
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer transition-colors"
+                                  aria-label="More receipt actions"
+                                  aria-expanded={openMenuGrnId === grn.id}
+                                >
+                                  {downloadingGrnId === grn.id ? (
+                                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+                                  ) : (
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  )}
+                                </button>
+
+                                {openMenuGrnId === grn.id && (
+                                  <div className="absolute right-0 top-full z-40 mt-1 w-44 rounded-md border border-border bg-card py-1 shadow-panel text-left">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuGrnId(null)
+                                        setSelectedReceipt(grn)
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                    >
+                                      <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                      View details
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenMenuGrnId(null)
+                                        handleDownloadPdf(grn.id, grn.grnNumber)
+                                      }}
+                                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary cursor-pointer"
+                                    >
+                                      <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                                      Download PDF
+                                    </button>
+                                    {grn.status === 'DRAFT' && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setOpenMenuGrnId(null)
+                                          handleCancelReceipt(grn.id)
+                                        }}
+                                        className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer"
+                                      >
+                                        <Ban className="h-3.5 w-3.5" />
+                                        Cancel draft
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </TD>
+                          </TR>
+                        )
+                      })
+                    )}
+                  </TBody>
+                </Table>
+
+                {pageData && (
+                  <TablePagination
+                    page={currentPage}
+                    totalPages={pageData.totalPages}
+                    totalElements={totalCount}
+                    count={receipts.length}
+                    itemLabel="goods receipts"
+                    onPageChange={loadReceipts}
+                  />
+                )}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* TAB 2: STOCK MOVEMENTS (TRANSACTION HISTORY) */}
+      {/* VIEW 2: STOCK MOVEMENTS */}
       {subTab === 'movements' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-sm font-semibold text-foreground">Stock Movements Ledger</h2>
-              <p className="text-xs text-muted-foreground">
-                Inbound receipts logged across all warehouses from purchase order fulfillment
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <SearchInput
+              value={movementSearch}
+              onChange={setMovementSearch}
+              placeholder="Search reference, item, PO..."
+            />
+            {viewSwitcher}
+          </div>
+
+          {isLoadingMovements ? (
+            <div className="py-20 text-center rounded-md border border-border bg-card">
+              <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+              <p className="mt-3 text-xs text-muted-foreground">
+                Loading stock movements...
               </p>
             </div>
-
-            <div className="relative w-64 sm:w-72">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search reference, item, PO..."
-                value={movementSearch}
-                onChange={(e) => setMovementSearch(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-border/80 bg-secondary pl-10 pr-3.5 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground"
-              />
-            </div>
-          </div>
-
-          <div className="rounded-md border border-border/80 bg-card overflow-hidden">
-            {isLoadingMovements ? (
-              <div className="py-20 text-center">
-                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-                <p className="mt-3 text-xs text-muted-foreground">Loading stock movements ledger...</p>
-              </div>
-            ) : filteredMovements.length === 0 ? (
-              <div className="py-16 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3">
-                  <History className="h-6 w-6" />
-                </div>
-                <p className="text-base font-semibold text-foreground">No stock movements yet</p>
-                <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
-                  When goods receipts are posted, inventory inbound transactions will automatically appear here.
-                </p>
-              </div>
-            ) : (
-              <Table className="border-0 rounded-none bg-transparent">
-                <THead>
-                  <tr>
-                    <TH>Reference</TH>
-                    <TH>Purchase order</TH>
-                    <TH>Item</TH>
-                    <TH>Warehouse</TH>
-                    <TH>Movement</TH>
-                    <TH>Date & time</TH>
-                    <TH>Type</TH>
-                  </tr>
-                </THead>
-                <TBody>
-                    {filteredMovements.map((m) => (
-                      <TR key={m.id} clickable>
-                        <TD className="text-ref text-foreground">
-                          {m.referenceNumber}
-                        </TD>
-
-                        <TD className="text-ref font-normal">
-                          {m.poNumber}
-                        </TD>
-
-                        <TD>
-                          <div>
-                            <span className="font-medium">{m.itemName}</span>
-                            <span className="ml-2 text-xs text-ref text-muted-foreground">
-                              {m.itemCode}
-                            </span>
-                          </div>
-                        </TD>
-
-                        <TD>
-                          <span className="text-ref text-foreground">{m.warehouseCode}</span>
-                          <span className="ml-1 text-muted-foreground font-normal">({m.warehouseName})</span>
-                        </TD>
-
-                        <TD className="tabular-nums font-medium text-success">
-                          +{m.quantity} {m.unitOfMeasure}
-                        </TD>
-
-                        <TD className="font-normal">
-                          {new Date(m.createdAt).toLocaleDateString()} {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </TD>
-
-                        <TD>
-                          <Badge variant="success" className="h-auto px-2 py-0.5 text-xs font-medium">
-                            Inbound Receipt
-                          </Badge>
-                        </TD>
-                      </TR>
-                    ))}
-                </TBody>
-              </Table>
-            )}
-          </div>
+          ) : (
+            <Table tableClassName="table-fixed">
+              <THead>
+                <tr>
+                  <TH className="w-[14%]">Reference</TH>
+                  <TH className="w-[12%]">Purchase order</TH>
+                  <TH className="w-[26%]">Item</TH>
+                  <TH className="w-[18%]">Warehouse</TH>
+                  <TH className="w-[11%] text-right">Movement</TH>
+                  <TH className="w-[11%]">Date</TH>
+                  <TH className="w-[8%]">Type</TH>
+                </tr>
+              </THead>
+              <TBody>
+                {filteredMovements.length === 0 ? (
+                  <TR>
+                    <TD colSpan={7} className="p-0">
+                      <TableEmptyState
+                        icon={<History className="h-5 w-5" />}
+                        title="No stock movements yet"
+                        description="When goods receipts are posted, inbound inventory transactions will appear here."
+                      />
+                    </TD>
+                  </TR>
+                ) : (
+                  filteredMovements.map((m) => (
+                    <TR key={m.id}>
+                      <TD className="text-ref text-foreground">{m.referenceNumber}</TD>
+                      <TD className="text-ref font-normal">{m.poNumber}</TD>
+                      <TD>
+                        <p className="font-medium text-foreground truncate">{m.itemName}</p>
+                        <p className="text-ref text-muted-foreground">{m.itemCode}</p>
+                      </TD>
+                      <TD className="truncate">
+                        <span className="text-ref text-foreground">{m.warehouseCode}</span>
+                        <span className="ml-1.5 text-muted-foreground font-normal">
+                          {m.warehouseName}
+                        </span>
+                      </TD>
+                      <TD className="text-right tabular-nums font-medium text-success">
+                        +{formatQuantity(m.quantity)} {m.unitOfMeasure}
+                      </TD>
+                      <TD className="tabular-nums text-muted-foreground font-normal">
+                        {formatShortDate(m.createdAt)}
+                      </TD>
+                      <TD>
+                        <Badge variant="success">Inbound receipt</Badge>
+                      </TD>
+                    </TR>
+                  ))
+                )}
+              </TBody>
+            </Table>
+          )}
         </div>
       )}
 
       {/* Create Goods Receipt Modal */}
       <CreateGoodsReceiptModal
         isOpen={isCreateOpen}
+        preselectedPoId={preselectedPoId}
         onClose={() => setCreateOpen(false)}
         onSuccess={() => {
           loadSummary()
@@ -739,7 +705,7 @@ export function GoodsReceiptsPage({
         }}
       />
 
-      {/* View Details Modal */}
+      {/* View Details Drawer */}
       <GoodsReceiptDetailsModal
         isOpen={!!selectedReceipt}
         receipt={selectedReceipt}
